@@ -1,0 +1,33 @@
+streamlit
+langgraph
+langchain-google-genai
+langchain-core
+google-genai
+pandas
+numpy
+scikit-learn
+torch
+xgboost
+lightgbm    
+plotly
+python-dotenv
+
+# Optional: for HuggingFace/transformers/PEFT support
+transformers
+peft
+bitsandbytes
+
+# Optional: for Llama.cpp support
+llama-cpp-python
+
+# Optional: for datasets
+datasets
+
+# Jupyter for notebooks
+notebook
+jupyter
+
+# Visualization (if used)
+matplotlib
+seaborn
+imblearn
