@@ -31,3 +31,5 @@ jupyter
 matplotlib
 seaborn
 imblearn
+kaggle
+torchvision

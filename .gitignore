@@ -12,3 +12,6 @@ __pycache__
 # Secret files
 nut_agent/secrets/
 .history/
+
+# Dataset files
+cifake_data/
