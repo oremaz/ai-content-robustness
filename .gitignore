@@ -15,3 +15,6 @@ nut_agent/secrets/
 
 # Dataset files
 cifake_data/
+
+# Results and model weights
+results/
