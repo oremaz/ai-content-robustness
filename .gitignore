@@ -18,3 +18,4 @@ cifake_data/
 
 # Results and model weights
 results/
+ml_pipeline/results/
