@@ -33,3 +33,6 @@ seaborn
 imblearn
 kaggle
 torchvision
+timm
+albumentations
+Pillow
