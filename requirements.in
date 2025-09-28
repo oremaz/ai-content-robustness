@@ -20,6 +20,8 @@ pytorch-wavelets
 tqdm
 efficientnet-pytorch
 pytorch-lightning
+PyWavelets
+ftfy
 
 # Optional: for Llama.cpp support
 llama-cpp-python

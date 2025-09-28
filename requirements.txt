@@ -122,6 +122,8 @@ fsspec[http]==2025.9.0
     #   huggingface-hub
     #   pytorch-lightning
     #   torch
+ftfy==6.3.1
+    # via -r requirements.in
 gitdb==4.0.12
     # via gitpython
 gitpython==3.1.45
@@ -373,6 +375,7 @@ numpy==2.2.6
     #   peft
     #   pydeck
     #   pytorch-wavelets
+    #   pywavelets
     #   scikit-learn
     #   scipy
     #   seaborn
@@ -524,6 +527,8 @@ pytorch-wavelets==1.3.0
     # via -r requirements.in
 pytz==2025.2
     # via pandas
+pywavelets==1.9.0
+    # via -r requirements.in
 pyyaml==6.0.3
     # via
     #   accelerate
@@ -735,7 +740,9 @@ urllib3==2.5.0
     #   kaggle
     #   requests
 wcwidth==0.2.14
-    # via prompt-toolkit
+    # via
+    #   ftfy
+    #   prompt-toolkit
 webcolors==24.11.1
     # via jsonschema
 webencodings==0.5.1
