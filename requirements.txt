@@ -12,11 +12,15 @@ aiohttp==3.12.15
     # via fsspec
 aiosignal==1.4.0
     # via aiohttp
+albucore==0.0.24
+    # via albumentations
+albumentations==2.0.8
+    # via -r requirements.in
 altair==5.5.0
     # via streamlit
 annotated-types==0.7.0
     # via pydantic
-anyio==4.10.0
+anyio==4.11.0
     # via
     #   google-genai
     #   httpx
@@ -40,7 +44,7 @@ attrs==25.3.0
     #   referencing
 babel==2.17.0
     # via jupyterlab-server
-beautifulsoup4==4.13.5
+beautifulsoup4==4.14.0
     # via nbconvert
 bitsandbytes==0.42.0
     # via -r requirements.in
@@ -90,6 +94,8 @@ dill==0.4.0
     #   multiprocess
 diskcache==5.6.3
     # via llama-cpp-python
+efficientnet-pytorch==0.7.1
+    # via -r requirements.in
 executing==2.2.1
     # via stack-data
 fastjsonschema==2.21.2
@@ -114,6 +120,7 @@ fsspec[http]==2025.9.0
     # via
     #   datasets
     #   huggingface-hub
+    #   pytorch-lightning
     #   torch
 gitdb==4.0.12
     # via gitpython
@@ -128,17 +135,17 @@ google-auth==2.40.3
     #   google-ai-generativelanguage
     #   google-api-core
     #   google-genai
-google-genai==1.38.0
+google-genai==1.39.1
     # via -r requirements.in
 googleapis-common-protos==1.70.0
     # via
     #   google-api-core
     #   grpcio-status
-grpcio==1.75.0
+grpcio==1.75.1
     # via
     #   google-api-core
     #   grpcio-status
-grpcio-status==1.75.0
+grpcio-status==1.75.1
     # via google-api-core
 h11==0.16.0
     # via httpcore
@@ -152,11 +159,12 @@ httpx==0.28.1
     #   jupyterlab
     #   langgraph-sdk
     #   langsmith
-huggingface-hub==0.35.0
+huggingface-hub==0.35.1
     # via
     #   accelerate
     #   datasets
     #   peft
+    #   timm
     #   tokenizers
     #   transformers
 idna==3.10
@@ -252,7 +260,7 @@ jupyter-server==2.17.0
     #   notebook-shim
 jupyter-server-terminals==0.5.3
     # via jupyter-server
-jupyterlab==4.4.7
+jupyterlab==4.4.9
     # via
     #   jupyter
     #   notebook
@@ -285,17 +293,21 @@ langgraph-checkpoint==2.1.1
     #   langgraph-prebuilt
 langgraph-prebuilt==0.6.4
     # via langgraph
-langgraph-sdk==0.2.8
+langgraph-sdk==0.2.9
     # via langgraph
-langsmith==0.4.28
+langsmith==0.4.31
     # via langchain-core
-lark==1.2.2
+lark==1.3.0
     # via rfc3987-syntax
 lightgbm==4.6.0
     # via -r requirements.in
+lightning-utilities==0.15.2
+    # via
+    #   pytorch-lightning
+    #   torchmetrics
 llama-cpp-python==0.3.16
     # via -r requirements.in
-markupsafe==3.0.2
+markupsafe==3.0.3
     # via
     #   jinja2
     #   nbconvert
@@ -336,7 +348,7 @@ nest-asyncio==1.6.0
     # via ipykernel
 networkx==3.5
     # via torch
-notebook==7.4.5
+notebook==7.4.7
     # via
     #   -r requirements.in
     #   jupyter
@@ -344,26 +356,35 @@ notebook-shim==0.2.4
     # via
     #   jupyterlab
     #   notebook
-numpy==2.3.3
+numpy==2.2.6
     # via
     #   -r requirements.in
     #   accelerate
+    #   albucore
+    #   albumentations
     #   contourpy
     #   datasets
     #   imbalanced-learn
     #   lightgbm
     #   llama-cpp-python
     #   matplotlib
+    #   opencv-python-headless
     #   pandas
     #   peft
     #   pydeck
+    #   pytorch-wavelets
     #   scikit-learn
     #   scipy
     #   seaborn
     #   streamlit
+    #   torchmetrics
     #   torchvision
     #   transformers
     #   xgboost
+opencv-python-headless==4.12.0.88
+    # via
+    #   albucore
+    #   albumentations
 orjson==3.11.3
     # via
     #   langgraph-sdk
@@ -385,11 +406,14 @@ packaging==25.0
     #   jupyterlab-server
     #   langchain-core
     #   langsmith
+    #   lightning-utilities
     #   matplotlib
     #   nbconvert
     #   peft
     #   plotly
+    #   pytorch-lightning
     #   streamlit
+    #   torchmetrics
     #   transformers
 pandas==2.3.2
     # via
@@ -407,6 +431,7 @@ pexpect==4.9.0
     # via ipython
 pillow==11.3.0
     # via
+    #   -r requirements.in
     #   matplotlib
     #   streamlit
     #   torchvision
@@ -414,7 +439,7 @@ platformdirs==4.4.0
     # via jupyter-core
 plotly==6.3.0
     # via -r requirements.in
-prometheus-client==0.22.1
+prometheus-client==0.23.1
     # via jupyter-server
 prompt-toolkit==3.0.52
     # via
@@ -462,6 +487,7 @@ pycparser==2.23
     # via cffi
 pydantic==2.11.9
     # via
+    #   albumentations
     #   google-genai
     #   langchain-core
     #   langchain-google-genai
@@ -477,7 +503,7 @@ pygments==2.19.2
     #   ipython-pygments-lexers
     #   jupyter-console
     #   nbconvert
-pyparsing==3.2.4
+pyparsing==3.2.5
     # via matplotlib
 python-dateutil==2.9.0.post0
     # via
@@ -492,16 +518,23 @@ python-json-logger==3.3.0
     # via jupyter-events
 python-slugify==8.0.4
     # via kaggle
+pytorch-lightning==2.5.5
+    # via -r requirements.in
+pytorch-wavelets==1.3.0
+    # via -r requirements.in
 pytz==2025.2
     # via pandas
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via
     #   accelerate
+    #   albumentations
     #   datasets
     #   huggingface-hub
     #   jupyter-events
     #   langchain-core
     #   peft
+    #   pytorch-lightning
+    #   timm
     #   transformers
 pyzmq==27.1.0
     # via
@@ -514,7 +547,7 @@ referencing==0.36.2
     #   jsonschema
     #   jsonschema-specifications
     #   jupyter-events
-regex==2025.9.1
+regex==2025.9.18
     # via transformers
 requests==2.32.5
     # via
@@ -550,6 +583,7 @@ safetensors==0.6.2
     # via
     #   accelerate
     #   peft
+    #   timm
     #   transformers
 scikit-learn==1.7.2
     # via
@@ -557,6 +591,7 @@ scikit-learn==1.7.2
     #   imbalanced-learn
 scipy==1.16.2
     # via
+    #   albumentations
     #   bitsandbytes
     #   imbalanced-learn
     #   lightgbm
@@ -566,10 +601,13 @@ seaborn==0.13.2
     # via -r requirements.in
 send2trash==1.8.3
     # via jupyter-server
+simsimd==6.5.3
+    # via albucore
 six==1.17.0
     # via
     #   kaggle
     #   python-dateutil
+    #   pytorch-wavelets
     #   rfc3339-validator
 smmap==5.0.2
     # via gitdb
@@ -579,8 +617,10 @@ soupsieve==2.8
     # via beautifulsoup4
 stack-data==0.6.3
     # via ipython
-streamlit==1.49.1
+streamlit==1.50.0
     # via -r requirements.in
+stringzilla==4.0.14
+    # via albucore
 sympy==1.14.0
     # via torch
 tenacity==9.1.2
@@ -600,9 +640,11 @@ threadpoolctl==3.6.0
     # via
     #   imbalanced-learn
     #   scikit-learn
+timm==1.0.20
+    # via -r requirements.in
 tinycss2==1.4.0
     # via bleach
-tokenizers==0.22.0
+tokenizers==0.22.1
     # via transformers
 toml==0.10.2
     # via streamlit
@@ -610,10 +652,19 @@ torch==2.8.0
     # via
     #   -r requirements.in
     #   accelerate
+    #   efficientnet-pytorch
     #   peft
+    #   pytorch-lightning
+    #   pytorch-wavelets
+    #   timm
+    #   torchmetrics
     #   torchvision
+torchmetrics==1.8.2
+    # via pytorch-lightning
 torchvision==0.23.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   timm
 tornado==6.5.2
     # via
     #   ipykernel
@@ -625,10 +676,12 @@ tornado==6.5.2
     #   terminado
 tqdm==4.67.1
     # via
+    #   -r requirements.in
     #   datasets
     #   huggingface-hub
     #   kaggle
     #   peft
+    #   pytorch-lightning
     #   transformers
 traitlets==5.14.3
     # via
@@ -645,7 +698,7 @@ traitlets==5.14.3
     #   nbclient
     #   nbconvert
     #   nbformat
-transformers==4.56.1
+transformers==4.56.2
     # via
     #   -r requirements.in
     #   peft
@@ -662,9 +715,11 @@ typing-extensions==4.15.0
     #   huggingface-hub
     #   ipython
     #   langchain-core
+    #   lightning-utilities
     #   llama-cpp-python
     #   pydantic
     #   pydantic-core
+    #   pytorch-lightning
     #   referencing
     #   streamlit
     #   torch
@@ -679,7 +734,7 @@ urllib3==2.5.0
     # via
     #   kaggle
     #   requests
-wcwidth==0.2.13
+wcwidth==0.2.14
     # via prompt-toolkit
 webcolors==24.11.1
     # via jsonschema

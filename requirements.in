@@ -16,6 +16,10 @@ python-dotenv
 transformers
 peft
 bitsandbytes
+pytorch-wavelets
+tqdm
+efficientnet-pytorch
+pytorch-lightning
 
 # Optional: for Llama.cpp support
 llama-cpp-python
