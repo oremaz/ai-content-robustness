@@ -4,18 +4,20 @@ langchain-google-genai
 langchain-core
 google-genai
 pandas
-numpy
-scikit-learn
+numpy==1.26.3
+scikit-learn==1.7.2
 torch
 xgboost
 lightgbm    
 plotly
 python-dotenv
+scipy==1.16.2
 
 # Optional: for HuggingFace/transformers/PEFT support
-transformers
+transformers==4.51.3
 peft
-bitsandbytes
+#bitsandbytes==0.47.0 (if available)
+#trl
 pytorch-wavelets
 tqdm
 efficientnet-pytorch
@@ -39,6 +41,7 @@ seaborn
 imblearn
 kaggle
 torchvision
-timm
+timm==1.0.9
 albumentations
 Pillow
+rich
