@@ -21,10 +21,10 @@ anyio==4.12.1
     #   google-genai
     #   httpx
     #   jupyter-server
-appnope==0.1.4
-    # via ipykernel
 argon2-cffi==25.1.0
-    # via jupyter-server
+    # via
+    #   -r requirements.in
+    #   jupyter-server
 argon2-cffi-bindings==25.1.0
     # via argon2-cffi
 arrow==1.4.0
@@ -73,6 +73,10 @@ comm==0.2.3
     #   ipywidgets
 contourpy==1.3.3
     # via matplotlib
+cuda-bindings==12.9.4
+    # via torch
+cuda-pathfinder==1.4.3
+    # via cuda-bindings
 cycler==0.12.1
     # via matplotlib
 datasets==4.4.2
@@ -163,6 +167,8 @@ imbalanced-learn==0.14.1
     # via imblearn
 imblearn==0.0
     # via -r requirements.in
+iniconfig==2.3.0
+    # via pytest
 ipykernel==7.1.0
     # via
     #   jupyter
@@ -380,6 +386,47 @@ numpy==1.26.3
     #   torchvision
     #   transformers
     #   xgboost
+nvidia-cublas-cu12==12.8.4.1
+    # via
+    #   nvidia-cudnn-cu12
+    #   nvidia-cusolver-cu12
+    #   torch
+nvidia-cuda-cupti-cu12==12.8.90
+    # via torch
+nvidia-cuda-nvrtc-cu12==12.8.93
+    # via torch
+nvidia-cuda-runtime-cu12==12.8.90
+    # via torch
+nvidia-cudnn-cu12==9.10.2.21
+    # via torch
+nvidia-cufft-cu12==11.3.3.83
+    # via torch
+nvidia-cufile-cu12==1.13.1.3
+    # via torch
+nvidia-curand-cu12==10.3.9.90
+    # via torch
+nvidia-cusolver-cu12==11.7.3.90
+    # via torch
+nvidia-cusparse-cu12==12.5.8.93
+    # via
+    #   nvidia-cusolver-cu12
+    #   torch
+nvidia-cusparselt-cu12==0.7.1
+    # via torch
+nvidia-nccl-cu12==2.27.5
+    # via
+    #   torch
+    #   xgboost
+nvidia-nvjitlink-cu12==12.8.93
+    # via
+    #   nvidia-cufft-cu12
+    #   nvidia-cusolver-cu12
+    #   nvidia-cusparse-cu12
+    #   torch
+nvidia-nvshmem-cu12==3.4.5
+    # via torch
+nvidia-nvtx-cu12==12.8.90
+    # via torch
 opencv-python-headless==4.11.0.86
     # via
     #   albucore
@@ -410,6 +457,7 @@ packaging==25.0
     #   nbconvert
     #   peft
     #   plotly
+    #   pytest
     #   pytorch-lightning
     #   streamlit
     #   torchmetrics
@@ -444,6 +492,8 @@ platformdirs==4.5.1
     #   jupyter-core
 plotly==6.5.0
     # via -r requirements.in
+pluggy==1.6.0
+    # via pytest
 prometheus-client==0.23.1
     # via jupyter-server
 prompt-toolkit==3.0.52
@@ -500,9 +550,16 @@ pygments==2.19.2
     #   ipython-pygments-lexers
     #   jupyter-console
     #   nbconvert
+    #   pytest
     #   rich
 pyparsing==3.3.1
     # via matplotlib
+pytest==9.0.2
+    # via
+    #   -r requirements.in
+    #   pytest-asyncio
+pytest-asyncio==1.3.0
+    # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   arrow
@@ -611,6 +668,7 @@ setuptools==80.9.0
     # via
     #   jupyterlab
     #   lightning-utilities
+    #   torch
 simsimd==6.5.12
     # via albucore
 six==1.17.0
@@ -658,7 +716,7 @@ tokenizers==0.21.4
     # via transformers
 toml==0.10.2
     # via streamlit
-torch==2.2.2
+torch==2.10.0
     # via
     #   -r requirements.in
     #   accelerate
@@ -671,7 +729,7 @@ torch==2.2.2
     #   torchvision
 torchmetrics==1.8.2
     # via pytorch-lightning
-torchvision==0.17.2
+torchvision==0.25.0
     # via
     #   -r requirements.in
     #   timm
@@ -712,6 +770,8 @@ transformers==4.51.3
     # via
     #   -r requirements.in
     #   peft
+triton==3.6.0
+    # via torch
 types-requests==2.32.4.20250913
     # via
     #   kaggle
@@ -720,9 +780,7 @@ types-tqdm==4.67.0.20250809
     # via kaggle
 typing-extensions==4.15.0
     # via
-    #   aiosignal
     #   altair
-    #   anyio
     #   beautifulsoup4
     #   google-genai
     #   huggingface-hub
@@ -733,7 +791,6 @@ typing-extensions==4.15.0
     #   pydantic
     #   pydantic-core
     #   pytorch-lightning
-    #   referencing
     #   streamlit
     #   torch
     #   typing-inspection
@@ -755,7 +812,9 @@ uuid-utils==0.12.0
     #   langchain-core
     #   langsmith
 watchdog==6.0.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   streamlit
 wcwidth==0.2.14
     # via
     #   ftfy

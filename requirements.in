@@ -42,7 +42,15 @@ imblearn
 kaggle
 torchvision
 timm==1.0.9
+tabicl
 albumentations
 Pillow
 rich
 watchdog
+
+# Testing
+pytest
+pytest-asyncio
+
+# Security
+argon2-cffi
