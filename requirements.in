@@ -8,13 +8,13 @@ numpy==1.26.3
 scikit-learn==1.7.2
 torch
 xgboost
-lightgbm    
+lightgbm
 plotly
 python-dotenv
 scipy==1.16.2
 
 # Optional: for HuggingFace/transformers/PEFT support
-transformers==4.51.3
+transformers
 peft
 #bitsandbytes==0.47.0 (if available)
 #trl
@@ -54,3 +54,11 @@ pytest-asyncio
 
 # Security
 argon2-cffi
+
+# Food Vision (NutriCoach image analysis)
+openai  # OpenRouter API (OpenAI-compatible)
+rfdetr  # RF-DETR object detection (Method 1)
+supervision  # Detection result handling
+roboflow  # Dataset download for fine-tuning
+sentence-transformers  # Embeddings for RAG method
+langgraph-checkpoint-sqlite  # LangGraph v2 persistence
