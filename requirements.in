@@ -62,3 +62,15 @@ supervision  # Detection result handling
 roboflow  # Dataset download for fine-tuning
 sentence-transformers  # Embeddings for RAG method
 langgraph-checkpoint-sqlite  # LangGraph v2 persistence
+
+# Explainable detector notebook
+shap
+spacy
+
+# RL evasion (text)
+trl
+
+# RL evasion (image)
+diffusers
+textstat
+editdistance
