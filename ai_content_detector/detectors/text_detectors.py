@@ -287,26 +287,31 @@ class BinocularsDetector(BaseDetector):
             logits_performer = self._performer(**tokens).logits[:, :-1]
 
         target_ids = tokens["input_ids"][:, 1:]
-        attention_mask = tokens["attention_mask"][:, 1:]
+        attention_mask = tokens["attention_mask"][:, 1:].to(logits_observer.dtype)
 
-        # Per-token cross entropy
+        # Numerator: observer perplexity — the observer's per-token cross-entropy
+        # against the *actual* tokens (how surprised the observer is by the text).
         ce_observer = F.cross_entropy(
             logits_observer.transpose(1, 2),
             target_ids,
             reduction="none",
         )
 
-        ce_cross = F.cross_entropy(
-            logits_performer.transpose(1, 2),
-            target_ids,
-            reduction="none",
-        )
+        # Denominator: cross-perplexity — the per-token cross-entropy between the
+        # two models' *predictive distributions* (NOT the performer's perplexity
+        # on the actual tokens). This is the quantity that makes Binoculars
+        # robust: H(performer_dist, observer_dist) averaged over positions.
+        # See Hans et al., ICML 2024, and the reference implementation's
+        # ``entropy`` function.
+        performer_probs = F.softmax(logits_performer, dim=-1)
+        observer_log_probs = F.log_softmax(logits_observer, dim=-1)
+        ce_cross = -(performer_probs * observer_log_probs).sum(dim=-1)
 
         # Apply attention mask and compute mean per sequence
         ce_observer = (ce_observer * attention_mask).sum(dim=-1) / attention_mask.sum(dim=-1).clamp(min=1)
         ce_cross = (ce_cross * attention_mask).sum(dim=-1) / attention_mask.sum(dim=-1).clamp(min=1)
 
-        scores = (ce_observer / ce_cross).cpu().numpy().tolist()
+        scores = (ce_observer / ce_cross.clamp(min=1e-6)).cpu().numpy().tolist()
         return scores[0] if is_single else scores
 
     def detect(self, content: Union[str, List[str]]) -> Union[DetectionResult, List[DetectionResult]]:

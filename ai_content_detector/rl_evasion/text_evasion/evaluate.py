@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import numpy as np
 
@@ -14,7 +14,6 @@ def evaluate_text_evasion(
     generated_texts: List[str],
     source_texts: List[str],
     reward_fn,
-    fpr_thresholds: Optional[List[float]] = None,
 ) -> Dict[str, float]:
     """Evaluate text evasion across multiple metrics.
 
@@ -22,15 +21,11 @@ def evaluate_text_evasion(
         generated_texts: Texts produced by the evasion model.
         source_texts: Original source texts (prompts).
         reward_fn: CompositeReward instance for scoring.
-        fpr_thresholds: FPR operating points to compute TPR at.
 
     Returns:
         Dict with metrics: mean_reward, mean_evasion, mean_semantic,
         attack_success_rate, per_detector scores.
     """
-    if fpr_thresholds is None:
-        fpr_thresholds = [0.01, 0.05]
-
     all_rewards = []
     all_evasion = []
     all_semantic = []

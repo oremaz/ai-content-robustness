@@ -118,7 +118,6 @@ def run_meta_adapt(args):
     model_name = args.model or "Qwen/Qwen3.5-9B-Base"
     output_dir = args.output_dir or "results/meta_adapt"
     outer_steps = args.epochs or 100
-    first_order = not getattr(args, "second_order", True)
 
     logger.info("Loading model %s for meta-learning...", model_name)
 
@@ -166,7 +165,7 @@ def run_meta_adapt(args):
         inner_steps=5,
         outer_steps=outer_steps,
         detectors_per_episode=min(3, len(zoo.detectors)),
-        first_order=first_order,
+        first_order=args.first_order,
         output_dir=output_dir,
     )
     maml.train(prompts)
@@ -188,8 +187,7 @@ def run_benchmark(args):
     from .benchmarking.datasets import load_dataset_by_name
     from .benchmarking.baselines import get_all_baselines, get_lightweight_baselines
 
-    dataset_name = args.modality if args.modality in ("hc3", "cnn_dailymail") else "hc3"
-    dataset = load_dataset_by_name(dataset_name, max_samples=args.epochs or 200)
+    dataset = load_dataset_by_name(args.dataset, max_samples=args.epochs or 200)
 
     model_name = args.model or "Qwen/Qwen3.5-9B-Base"
 
@@ -335,6 +333,14 @@ def main():
     parser.add_argument("--epochs", type=int, default=None, help="Number of training epochs")
     parser.add_argument("--rounds", type=int, default=None, help="Arms race rounds")
     parser.add_argument("--modality", type=str, default="text", choices=["text", "image"])
+    parser.add_argument(
+        "--first-order", action="store_true",
+        help="meta_adapt: use FOMAML (first-order) instead of full second-order MAML",
+    )
+    parser.add_argument(
+        "--dataset", type=str, default="hc3", choices=["hc3", "cnn_dailymail"],
+        help="benchmark: which dataset to evaluate on",
+    )
     parser.add_argument("--output-dir", type=str, default=None, help="Output directory")
 
     args = parser.parse_args()

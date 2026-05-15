@@ -629,7 +629,10 @@ class WaRPADDetector(BaseDetector):
         return out
 
     def _embed_batch(self, patches: List[np.ndarray]) -> "np.ndarray":
-        """Run DINOv2 on a list of (H, W, 3) float [0,1] patches; return (N, D) L2-normalized CLS."""
+        """Embed a list of (H, W, 3) float [0,1] patches with the DINO backbone.
+
+        Returns (N, D) L2-normalized CLS-token embeddings.
+        """
         import torch
         from PIL import Image as _PIL
 
@@ -640,7 +643,7 @@ class WaRPADDetector(BaseDetector):
         inputs = self._processor(images=pil, return_tensors="pt").to(self._device)
         with torch.no_grad():
             out = self._model(**inputs)
-            # DINOv2 last_hidden_state: (B, 1+N_patches, D); CLS = [:, 0]
+            # DINOv2/v3 last_hidden_state: (B, 1+N_patches, D); CLS = [:, 0]
             cls = out.last_hidden_state[:, 0]
             cls = torch.nn.functional.normalize(cls, dim=-1)
         return cls.cpu().numpy()

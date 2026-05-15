@@ -221,7 +221,17 @@ class BenchmarkRunner:
             t0 = time.time()
 
             generated_texts = self._apply_method(method)
-            source_texts = self.dataset.prompts[:len(generated_texts)]
+            # Semantic preservation must be measured against whatever the method
+            # transformed. Post-hoc methods (paraphrase, synonym sub) rewrite the
+            # dataset's AI text, so the original AI text is the reference; on
+            # prompt-only datasets there is no such text, so the prompt is used.
+            if getattr(self.dataset, "ai_texts_available", True):
+                source_texts = [
+                    ai or prompt
+                    for ai, prompt in zip(self.dataset.ai_texts, self.dataset.prompts)
+                ][:len(generated_texts)]
+            else:
+                source_texts = self.dataset.prompts[:len(generated_texts)]
 
             metrics = evaluate_text_evasion(
                 generated_texts=generated_texts,

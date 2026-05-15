@@ -426,7 +426,7 @@ class MAMLAdaptation:
 
             # Gradient clipping for stability
             torch.nn.utils.clip_grad_norm_(
-                [param for _, param in lora_params],
+                [param for _, param in adaptable],
                 max_norm=self.gradient_clip,
             )
 

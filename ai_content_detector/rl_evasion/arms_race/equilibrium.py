@@ -137,8 +137,16 @@ class ArmsRaceExperiment:
             logger.info("--- Attacker phase ---")
             self.attacker.train()
 
-            # Generate outputs for evaluation and defender retraining
-            attacker_eval = self.attacker.evaluate(num_samples=min(cfg.eval_prompts, 200))
+            # Evaluate the attacker. For text mode we evaluate strictly on the
+            # held-out prompt split (disjoint from the prompts the defender is
+            # retrained on below) so the Nash gap is not inflated by leakage.
+            if self.eval_prompt_idx:
+                attacker_eval = self.attacker.evaluate(
+                    num_samples=min(cfg.eval_prompts, 200),
+                    prompt_indices=self.eval_prompt_idx,
+                )
+            else:
+                attacker_eval = self.attacker.evaluate(num_samples=min(cfg.eval_prompts, 200))
             round_metrics["attacker"] = attacker_eval
 
             logger.info(

@@ -72,8 +72,14 @@ class StyleEmbeddingDetector(BaseDetector):
                 device = "cuda" if torch.cuda.is_available() else "cpu"
             self._device = device
 
-            self._tokenizer = AutoTokenizer.from_pretrained(self._model_name)
-            self._model = AutoModel.from_pretrained(self._model_name)
+            # LUAR ships custom modeling code on the Hub, so trust_remote_code
+            # is required — without it AutoModel.from_pretrained raises.
+            self._tokenizer = AutoTokenizer.from_pretrained(
+                self._model_name, trust_remote_code=True,
+            )
+            self._model = AutoModel.from_pretrained(
+                self._model_name, trust_remote_code=True,
+            )
             self._model.to(device)
             self._model.eval()
 

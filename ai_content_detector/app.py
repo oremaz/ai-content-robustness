@@ -86,6 +86,8 @@ def load_image_detectors():
         SigLIPDetector,
         FrequencyDetector,
         PatchBasedClassifier,
+        WaRPADDetector,
+        DenoisingTrajectoryDetector,
     )
 
     candidates = [
@@ -94,6 +96,8 @@ def load_image_detectors():
         DINOv2Detector(),
         SigLIPDetector(),
         FrequencyDetector(),
+        WaRPADDetector(),
+        DenoisingTrajectoryDetector(),
     ]
     
     # Try adding patch-based versions of available spatial classifiers

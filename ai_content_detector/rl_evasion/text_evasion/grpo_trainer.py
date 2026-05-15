@@ -417,8 +417,18 @@ class GRPOTextEvasionTrainer:
         self.tokenizer.save_pretrained(final_dir)
         logger.info("Manual GRPO training complete. Model saved to %s", final_dir)
 
-    def evaluate(self, num_samples: int = 100) -> Dict[str, float]:
-        """Evaluate the trained model's evasion capability."""
+    def evaluate(
+        self,
+        num_samples: int = 100,
+        prompt_indices: Optional[List[int]] = None,
+    ) -> Dict[str, float]:
+        """Evaluate the trained model's evasion capability.
+
+        If ``prompt_indices`` is given, evaluation runs only on those prompts
+        (used by the arms race to evaluate on a held-out split that is disjoint
+        from the prompts the defender was retrained on). Otherwise it falls back
+        to the first ``num_samples`` prompts.
+        """
         from .evaluate import evaluate_text_evasion
 
         device = next(self.model.parameters()).device
@@ -427,7 +437,12 @@ class GRPOTextEvasionTrainer:
         generated_texts = []
         source_texts = []
 
-        for i in range(min(num_samples, len(self.prompts))):
+        if prompt_indices:
+            eval_indices = list(prompt_indices)[:num_samples]
+        else:
+            eval_indices = list(range(min(num_samples, len(self.prompts))))
+
+        for i in eval_indices:
             prompt = self.prompts[i]
             inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=self.config.max_seq_length).to(device)
 
