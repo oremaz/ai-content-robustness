@@ -40,7 +40,42 @@ class BaseDetector(ABC):
     def is_available(self) -> bool:
         """Return True if this detector can run (deps installed, checkpoint exists, etc.)."""
         return True
-        
+
+    # Instance-attribute names that may hold heavy loaded resources
+    # (models, tokenizers, pipelines). unload() clears any that are present.
+    _RESOURCE_ATTRS = (
+        "_model", "_tokenizer", "_vectorizer", "_predictor", "_processor",
+        "_pipe", "_pipeline", "_observer", "_performer",
+    )
+
+    def unload(self) -> None:
+        """Release loaded models / heavy resources so GPU + RAM can be reclaimed.
+
+        Safe to call when nothing is loaded. After unloading, the detector
+        returns to its lazy state and reloads on the next detect() call.
+        Prevents GPU memory from accumulating across repeated analyses.
+        """
+        freed = False
+        for attr in self._RESOURCE_ATTRS:
+            if getattr(self, attr, None) is not None:
+                setattr(self, attr, None)
+                freed = True
+        # Reset a cached "available" flag (only if it was True) so the
+        # model reloads on next use; leave False/None untouched.
+        if getattr(self, "_available", None):
+            self._available = None
+        if not freed:
+            return
+        import gc
+        gc.collect()
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+
     def _dynamic_threshold(self, length: int, base_threshold: float) -> float:
         """Dynamic thresholding based on input length to mitigate short-text bias."""
         if length < 50:

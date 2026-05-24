@@ -44,6 +44,20 @@ st.caption(
 # Detector loading (cached)
 # ---------------------------------------------------------------------------
 
+def _unload_detectors(detectors):
+    """Free model memory held by detectors to prevent GPU OOM accumulation.
+
+    Detector objects are cached (@st.cache_resource) and persist across
+    Streamlit reruns, so their loaded models would otherwise stay resident
+    in GPU/RAM after every analysis.
+    """
+    for d in detectors:
+        try:
+            d.unload()
+        except Exception:
+            pass
+
+
 @st.cache_resource
 def load_text_detectors():
     """Load all available text detectors."""
@@ -73,6 +87,9 @@ def load_text_detectors():
             available.append(d)
         else:
             unavailable.append(d.name)
+    # The availability scan loads every model; free them so they don't sit
+    # idle in GPU memory. They reload lazily when actually used.
+    _unload_detectors(candidates)
     return available, unavailable
 
 
@@ -113,6 +130,8 @@ def load_image_detectors():
             available.append(d)
         else:
             unavailable.append(d.name)
+    # Free models loaded during the availability scan; they reload lazily.
+    _unload_detectors(candidates)
     return available, unavailable
 
 
@@ -215,7 +234,12 @@ def text_tab():
 
         with st.spinner("Running detectors..."):
             ensemble = EnsembleAggregator(active_detectors)
-            results = ensemble.detect(text)
+            try:
+                results = ensemble.detect(text)
+            finally:
+                # Free model memory after each analysis so repeated runs
+                # don't accumulate GPU memory and trigger OOM.
+                _unload_detectors(detectors)
 
         display_results(results)
 
@@ -262,7 +286,10 @@ def image_tab():
         if st.button("Analyze Image", type="primary"):
             with st.spinner("Running detectors..."):
                 ensemble = EnsembleAggregator(active_detectors)
-                results = ensemble.detect(image)
+                try:
+                    results = ensemble.detect(image)
+                finally:
+                    _unload_detectors(detectors)
 
             display_results(results)
 

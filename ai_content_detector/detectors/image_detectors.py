@@ -471,6 +471,10 @@ class PatchBasedClassifier(BaseDetector):
     def is_available(self) -> bool:
         return self.base_detector.is_available()
 
+    def unload(self) -> None:
+        """Delegate to the wrapped detector, which holds the actual model."""
+        self.base_detector.unload()
+
     def detect(self, content: Union[Image.Image, np.ndarray]) -> DetectionResult:
         if not self.is_available():
             raise RuntimeError(f"{self.base_detector.name} not available")

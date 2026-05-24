@@ -467,9 +467,8 @@ class FastDetectGPTDetector(BaseDetector):
 
         is_single = isinstance(content, str)
         texts = [content] if is_single else content
+        # texts is always a list, so _compute_curvature returns a list.
         raw_curvatures = self._compute_curvature(texts)
-        if is_single:
-            raw_curvatures = [raw_curvatures]
 
         import math
         results = []

@@ -55,8 +55,9 @@ The headline experiment alternates the two sides for several rounds: the attacke
 
 1. Install dependencies and run the test suite (steps 1–2 below) - this confirms a healthy checkout.
 2. Run the smoke test (step 3) - it imports every component and prints what is and isn't available on your machine.
-3. Launch the Streamlit app (step 4) and paste some text - this makes the detector side concrete.
-4. Skim "What each file does" below, then read the papers in the order of the "Key references" list.
+3. Optionally train the supervised detector checkpoints (step 4) - the supervised text/image detectors stay unavailable without them.
+4. Launch the Streamlit app (step 5) and paste some text - this makes the detector side concrete.
+5. Skim "What each file does" below, then read the papers in the order of the "Key references" list.
 
 ---
 
@@ -188,7 +189,7 @@ Trains a paragraph-level XGBoost classifier on the MAGE dataset using the surpri
 The framework is designed to degrade gracefully: anything that won't fit on the available hardware is reported as `is_available() == False` and the rest keeps working.
 
 ### Minimum (CPU only, ~8 GB RAM)
-- Streamlit app with the lightweight detectors: `TFIDFDetector`, `FrequencyDetector`, `ParaphraseRoundTripDetector` (CPU-slow), and the supervised checkpoint detectors that fit on CPU (`ModernBERTDetector` in QLoRA mode, classifier-only image detectors).
+- Streamlit app with the lightweight zero-shot detectors: `FrequencyDetector` and `ParaphraseRoundTripDetector` (CPU-slow). The supervised checkpoint detectors (`TFIDFDetector`, `ModernBERTDetector` in QLoRA mode, and the classifier-only image detectors `EfficientNetDetector` / `CLIPImageDetector` / `DINOv2Detector`) also *run* on CPU once their inference weights fit — **but only after their checkpoints have been trained** (see step 4 below). On a fresh checkout no checkpoints exist, so these detectors report `is_available() == False` and the app lists them under "Unavailable detectors".
 - The full test suite (pure-Python, no model loads).
 - Non-RL baselines: `VanillaBaseline`, `SynonymSubstitutionBaseline`, `OpenRouterBaseline`.
 - ❗ **Not** available on CPU: `DivEyeDetector` (now scored with Qwen 3.5 9B-Base, ~18 GB bf16), Binoculars / Fast-DetectGPT (Falcon-7B pair), `WaRPADDetector` (DINOv3 ViT-L/16 needs CUDA in practice), `IPADDetector`, all RL trainers (GRPO/MultiSPIN/DDPO).
@@ -254,7 +255,28 @@ PYTHONPATH=. python -m ai_content_detector.rl_evasion.run_experiments --experime
 ```
 Imports every component, instantiates the lightweight ones, and prints a per-stage status. This is the fastest way to confirm a fresh checkout is healthy.
 
-### 4. Try the interactive app
+### 4. Train the supervised detector checkpoints
+
+The supervised detectors — `ModernBERTDetector`, `TFIDFDetector` (text) and `EfficientNetDetector`, `CLIPImageDetector`, `DINOv2Detector` (image) — load **internal checkpoints that are not shipped with the repo**. `ml_pipeline/results/` is git-ignored, so a fresh clone has no weights and no `index.jsonl` registry. Until you produce them, every one of these detectors reports `unavailable: No matching checkpoint in index.jsonl` and is skipped by the app and the ensemble.
+
+These checkpoints are produced by two training notebooks in the sibling `ml_pipeline/` package (GPU strongly recommended):
+
+```bash
+# Text detectors -> writes ml_pipeline/results/bench_aitextdetect/
+jupyter notebook ml_pipeline/bench-aitextdetect.ipynb
+
+# Image detectors -> writes ml_pipeline/results/bench_imai_artifact/
+jupyter notebook ml_pipeline/bench-imai-artifact.ipynb
+```
+
+Each run trains the models and appends one line per checkpoint to `results/<run>/index.jsonl` (the registry the detectors query), alongside the weight files (`.pt`, `.pkl`, or a HuggingFace `save_pretrained/` directory). See `ml_pipeline/README.md` → "Checkpoints & Results" for the artifact layout.
+
+Notes:
+- The detectors resolve the registry as `<cwd>/results/<run>/index.jsonl` (relative to the current working directory). Launch the app and experiments from the repo root, or from `ml_pipeline/`, so the path resolves to the trained checkpoints.
+- If you already have the checkpoints (trained on another machine), just copy `ml_pipeline/results/bench_aitextdetect/` and `ml_pipeline/results/bench_imai_artifact/` — including their `index.jsonl` — onto the target machine.
+- This step is optional: skip it if you only want the zero-shot detectors (`Binoculars`, `Fast-DetectGPT`, `DivEye`, `WaRPAD`, `IPAD`), which auto-download public HuggingFace weights and need no local training.
+
+### 5. Try the interactive app
 ```bash
 streamlit run ai_content_detector/app.py
 ```
@@ -262,7 +284,7 @@ streamlit run ai_content_detector/app.py
 - The image tab does the same for an uploaded image.
 - An "Unavailable detectors" panel lists what couldn't be loaded (missing checkpoint, insufficient VRAM, etc.) so you know what's running.
 
-### 5. Run a single evasion experiment
+### 6. Run a single evasion experiment
 
 The CLI is `python -m ai_content_detector.rl_evasion.run_experiments --experiment <name>`. The available experiments:
 
@@ -292,13 +314,13 @@ PYTHONPATH=. python -m ai_content_detector.rl_evasion.run_experiments \
     --output-dir results/grpo_qwen
 ```
 
-### 6. Run the explainability notebook
+### 7. Run the explainability notebook
 ```bash
 jupyter notebook ai_content_detector/notebooks/explainable_detector.ipynb
 ```
 Loads MAGE, splits paragraphs from disjoint documents, extracts surprisal + stylometric features, fits an XGBoost classifier, and shows SHAP waterfall + summary plots. Both paragraph-level and document-level macro-averaged metrics are printed.
 
-### 7. Reproduce the headline comparison
+### 8. Reproduce the headline comparison
 ```bash
 PYTHONPATH=. python -m ai_content_detector.rl_evasion.run_experiments \
     --experiment benchmark \
