@@ -262,11 +262,23 @@ The supervised detectors — `ModernBERTDetector`, `TFIDFDetector` (text) and `E
 These checkpoints are produced by two training notebooks in the sibling `ml_pipeline/` package (GPU strongly recommended):
 
 ```bash
+# Required for the QLoRA notebook kernels before launching the notebooks
+uv pip install -U 'bitsandbytes>=0.46.1'
+
 # Text detectors -> writes ml_pipeline/results/bench_aitextdetect/
 jupyter notebook ml_pipeline/bench-aitextdetect.ipynb
 
 # Image detectors -> writes ml_pipeline/results/bench_imai_artifact/
 jupyter notebook ml_pipeline/bench-imai-artifact.ipynb
+```
+
+For non-interactive runs, install Papermill and execute the same notebooks from the command line:
+
+```bash
+uv pip install papermill
+
+papermill ml_pipeline/bench-aitextdetect.ipynb ml_pipeline/bench-aitextdetect.executed.ipynb
+papermill ml_pipeline/bench-imai-artifact.ipynb ml_pipeline/bench-imai-artifact.executed.ipynb
 ```
 
 Each run trains the models and appends one line per checkpoint to `results/<run>/index.jsonl` (the registry the detectors query), alongside the weight files (`.pt`, `.pkl`, or a HuggingFace `save_pretrained/` directory). See `ml_pipeline/README.md` → "Checkpoints & Results" for the artifact layout.
