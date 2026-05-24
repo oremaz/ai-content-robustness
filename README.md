@@ -238,10 +238,13 @@ If a model needs more memory than is available, the corresponding `is_available(
 ### 1. Install dependencies
 ```bash
 # From the repo root, in your venv (uv, conda, or plain venv all fine)
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 python -m spacy download en_core_web_sm
+
+# On the CUDA 12.4 GPU VM used for notebook training, install the standalone GPU file instead:
+uv pip install -r requirements_gpu.in
 ```
-The `requirements.txt` pins `transformers`, `peft`, `diffusers`, `trl`, `torch`, `pywavelets`, `editdistance`, `xgboost`, `shap`, `streamlit`, and the dataset packages.
+The `requirements.txt` pins the standard environment. The standalone `requirements_gpu.in` installs the full project plus CUDA 12.4 PyTorch wheels (`torch==2.6.0+cu124`, `torchvision==0.21.0+cu124`, `torchaudio==2.6.0+cu124`) for the VM.
 
 ### 2. Verify the install
 ```bash
@@ -262,8 +265,18 @@ The supervised detectors — `ModernBERTDetector`, `TFIDFDetector` (text) and `E
 These checkpoints are produced by two training notebooks in the sibling `ml_pipeline/` package (GPU strongly recommended):
 
 ```bash
-# Required for the QLoRA notebook kernels before launching the notebooks
-uv pip install -U 'bitsandbytes>=0.46.1'
+# If you are on the GPU VM, install the standalone CUDA 12.4 requirements first.
+uv pip install -r requirements_gpu.in
+
+# Verify the torch stack before launching the notebooks. This catches
+# torchvision::nms / PreTrainedModel import errors caused by mixed torch wheels.
+python - <<'PY'
+import torch, torchvision
+from transformers import PreTrainedModel
+print("torch:", torch.__version__, "cuda:", torch.version.cuda)
+print("torchvision:", torchvision.__version__)
+print("transformers PreTrainedModel import: ok")
+PY
 
 # Text detectors -> writes ml_pipeline/results/bench_aitextdetect/
 jupyter notebook ml_pipeline/bench-aitextdetect.ipynb
@@ -272,11 +285,9 @@ jupyter notebook ml_pipeline/bench-aitextdetect.ipynb
 jupyter notebook ml_pipeline/bench-imai-artifact.ipynb
 ```
 
-For non-interactive runs, install Papermill and execute the same notebooks from the command line:
+For non-interactive runs, execute the same notebooks with Papermill (`requirements_gpu.in` includes it):
 
 ```bash
-uv pip install papermill
-
 papermill ml_pipeline/bench-aitextdetect.ipynb ml_pipeline/bench-aitextdetect.executed.ipynb
 papermill ml_pipeline/bench-imai-artifact.ipynb ml_pipeline/bench-imai-artifact.executed.ipynb
 ```

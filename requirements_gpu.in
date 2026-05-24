@@ -1,0 +1,89 @@
+# Standalone GPU VM requirements.
+# Install directly on Linux x86_64 GPU VMs with:
+#   uv pip install -r requirements_gpu.in
+#
+# CUDA 12.4 wheels mirror the stage_orel_inria VM setup.
+# Keep cuDNN/NCCL explicit: newer CUDA packages share the same nvidia/... paths
+# and can overwrite the runtime used by these torch wheels.
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch==2.6.0+cu124 ; sys_platform == "linux" and platform_machine == "x86_64"
+torchvision==0.21.0+cu124 ; sys_platform == "linux" and platform_machine == "x86_64"
+torchaudio==2.6.0+cu124 ; sys_platform == "linux" and platform_machine == "x86_64"
+nvidia-cudnn-cu12==9.1.0.70 ; sys_platform == "linux" and platform_machine == "x86_64"
+nvidia-nccl-cu12==2.21.5 ; sys_platform == "linux" and platform_machine == "x86_64"
+bitsandbytes>=0.46.1 ; sys_platform == "linux" and platform_machine == "x86_64"
+
+streamlit
+langgraph
+langchain-google-genai
+langchain-core
+google-genai
+pandas
+numpy==1.26.3
+scikit-learn==1.7.2
+xgboost
+lightgbm
+plotly
+python-dotenv
+scipy==1.16.2
+
+# Optional: for HuggingFace/transformers/PEFT support
+transformers
+peft
+#trl
+pytorch-wavelets
+tqdm
+efficientnet-pytorch
+pytorch-lightning
+PyWavelets
+ftfy
+
+# Optional: for Llama.cpp support
+llama-cpp-python
+
+# Optional: for datasets
+datasets
+
+# Jupyter and non-interactive notebook execution
+notebook
+jupyter
+papermill
+
+# Visualization (if used)
+matplotlib
+seaborn
+imblearn
+kaggle
+timm==1.0.9
+tabicl
+albumentations
+Pillow
+rich
+watchdog
+
+# Testing
+pytest
+pytest-asyncio
+
+# Security
+argon2-cffi
+
+# Food Vision (NutriCoach image analysis)
+openai  # OpenRouter API (OpenAI-compatible)
+rfdetr  # RF-DETR object detection (Method 1)
+supervision  # Detection result handling
+roboflow  # Dataset download for fine-tuning
+sentence-transformers  # Embeddings for RAG method
+langgraph-checkpoint-sqlite  # LangGraph v2 persistence
+
+# Explainable detector notebook
+shap
+spacy
+
+# RL evasion (text)
+trl
+
+# RL evasion (image)
+diffusers
+textstat
+editdistance
