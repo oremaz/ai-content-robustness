@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import numpy as np
 from PIL import Image
@@ -447,7 +447,179 @@ class FrequencyDetector(BaseDetector):
 
 
 # ===========================================================================
-# 6. On-Manifold Patch Classification (OMAT inspired / NeurIPS 2025)
+# 6. MLEP entropy-pattern detector (NeurIPS 2025)
+# ===========================================================================
+
+
+class MLEPDetector(BaseDetector):
+    """Multi-granularity Local Entropy Patterns for AI-image detection.
+
+    Yuan et al. (NeurIPS 2025) propose MLEP feature maps: compute Shannon
+    entropy on shuffled small patches at multiple scales, disrupting semantic
+    content while preserving local pixel-dependency cues. Their best detector is
+    a CNN trained on these maps. This class implements the MLEP feature
+    extraction path and a lightweight heuristic scorer; pass ``classifier_path``
+    to use a trained sklearn-style classifier on the extracted feature vector.
+    """
+
+    name = "MLEP Entropy Patterns"
+    modality = "image"
+
+    def __init__(
+        self,
+        patch_sizes: Sequence[int] = (8, 16, 32),
+        bins: int = 16,
+        threshold: float = 0.32,
+        classifier_path: Optional[str] = None,
+        image_size: int = 256,
+        seed: int = 0,
+    ):
+        self.patch_sizes = tuple(int(p) for p in patch_sizes)
+        self.bins = int(bins)
+        self.threshold = float(threshold)
+        self.classifier_path = classifier_path
+        self.image_size = int(image_size)
+        self.seed = int(seed)
+        self._classifier = None
+        self._available: Optional[bool] = None
+
+    def is_available(self) -> bool:
+        if self._available is None:
+            if self.classifier_path is None:
+                self._available = True
+            else:
+                self._available = Path(self.classifier_path).exists()
+        return bool(self._available)
+
+    def _load_classifier(self):
+        if self.classifier_path is None or self._classifier is not None:
+            return
+        import joblib
+        self._classifier = joblib.load(self.classifier_path)
+
+    @staticmethod
+    def _to_rgb_float(content: Union[Image.Image, np.ndarray], size: int) -> np.ndarray:
+        if isinstance(content, Image.Image):
+            image = content.convert("RGB")
+        else:
+            arr = np.asarray(content)
+            if arr.ndim == 4:
+                arr = arr[0]
+            if arr.ndim == 3 and arr.shape[0] == 3 and arr.shape[-1] != 3:
+                arr = np.transpose(arr, (1, 2, 0))
+            if arr.ndim == 2:
+                arr = np.stack([arr, arr, arr], axis=-1)
+            arr = arr.astype(np.float32)
+            arr = arr / 255.0 if arr.max() > 1.5 else arr
+            image = Image.fromarray(np.clip(arr * 255.0, 0, 255).astype(np.uint8))
+        image = image.resize((size, size), Image.BILINEAR)
+        return np.asarray(image, dtype=np.float32) / 255.0
+
+    @staticmethod
+    def _patch_entropy(patch: np.ndarray, bins: int) -> float:
+        hist, _ = np.histogram(patch, bins=bins, range=(0.0, 1.0), density=False)
+        probs = hist.astype(np.float64)
+        total = probs.sum()
+        if total <= 0:
+            return 0.0
+        probs = probs[probs > 0] / total
+        return float(-(probs * np.log2(probs)).sum())
+
+    def _entropy_map(self, gray: np.ndarray, patch_size: int) -> np.ndarray:
+        rng = np.random.default_rng(self.seed + patch_size)
+        h, w = gray.shape
+        n_y = h // patch_size
+        n_x = w // patch_size
+        if n_y == 0 or n_x == 0:
+            raise ValueError(f"patch_size={patch_size} is larger than image size {gray.shape}")
+
+        out = np.zeros((n_y, n_x), dtype=np.float32)
+        for y in range(n_y):
+            for x in range(n_x):
+                patch = gray[
+                    y * patch_size : (y + 1) * patch_size,
+                    x * patch_size : (x + 1) * patch_size,
+                ].reshape(-1)
+                shuffled = rng.permutation(patch)
+                out[y, x] = self._patch_entropy(shuffled, self.bins)
+        return out
+
+    def extract_features(self, content: Union[Image.Image, np.ndarray]) -> Dict[str, float]:
+        img = self._to_rgb_float(content, self.image_size)
+        gray = img.mean(axis=-1)
+        max_entropy = float(np.log2(max(self.bins, 2)))
+
+        features: Dict[str, float] = {}
+        scale_means = []
+        scale_stds = []
+        for patch_size in self.patch_sizes:
+            emap = self._entropy_map(gray, patch_size)
+            norm = emap / max_entropy if max_entropy > 0 else emap
+            gy, gx = np.gradient(norm.astype(np.float32))
+            features[f"mlep_mean_p{patch_size}"] = float(np.mean(norm))
+            features[f"mlep_std_p{patch_size}"] = float(np.std(norm))
+            features[f"mlep_grad_p{patch_size}"] = float(np.mean(np.sqrt(gx ** 2 + gy ** 2)))
+            scale_means.append(features[f"mlep_mean_p{patch_size}"])
+            scale_stds.append(features[f"mlep_std_p{patch_size}"])
+
+        features["mlep_mean_entropy"] = float(np.mean(scale_means))
+        features["mlep_entropy_std"] = float(np.mean(scale_stds))
+        features["mlep_cross_scale_delta"] = float(max(scale_means) - min(scale_means))
+        # Heuristic artifact statistic: semantic content is mostly disrupted, so
+        # unstable entropy across local positions/scales is treated as evidence.
+        features["mlep_artifact_index"] = float(
+            0.45 * features["mlep_entropy_std"]
+            + 0.35 * features["mlep_cross_scale_delta"]
+            + 0.20 * abs(features["mlep_mean_entropy"] - 0.55)
+        )
+        return features
+
+    def _feature_vector(self, features: Dict[str, float]) -> np.ndarray:
+        keys = []
+        for patch_size in self.patch_sizes:
+            keys.extend([
+                f"mlep_mean_p{patch_size}",
+                f"mlep_std_p{patch_size}",
+                f"mlep_grad_p{patch_size}",
+            ])
+        keys.extend(["mlep_mean_entropy", "mlep_entropy_std", "mlep_cross_scale_delta", "mlep_artifact_index"])
+        return np.array([features[k] for k in keys], dtype=np.float32)
+
+    def detect(self, content: Union[Image.Image, np.ndarray]) -> DetectionResult:
+        if not self.is_available():
+            raise RuntimeError("MLEP classifier path is not available")
+
+        features = self.extract_features(content)
+        vector = self._feature_vector(features)
+        if self.classifier_path is not None:
+            self._load_classifier()
+            if hasattr(self._classifier, "predict_proba"):
+                ai_score = float(self._classifier.predict_proba([vector])[0][1])
+            else:
+                raw = float(self._classifier.decision_function([vector])[0])
+                ai_score = float(1.0 / (1.0 + np.exp(-raw)))
+        else:
+            ai_score = float(
+                1.0 / (1.0 + np.exp(-10.0 * (features["mlep_artifact_index"] - self.threshold)))
+            )
+
+        ai_score = float(np.clip(ai_score, 0.0, 1.0))
+        return DetectionResult(
+            score=ai_score,
+            label=DetectionResult.label_from_score(ai_score),
+            detector_name=self.name,
+            details={
+                **features,
+                "patch_sizes": list(self.patch_sizes),
+                "bins": self.bins,
+                "threshold": self.threshold,
+                "classifier_path": self.classifier_path,
+            },
+        )
+
+
+# ===========================================================================
+# 7. On-Manifold Patch Classification (OMAT inspired / NeurIPS 2025)
 # ===========================================================================
 
 
@@ -532,7 +704,7 @@ class PatchBasedClassifier(BaseDetector):
 
 
 # ===========================================================================
-# 7. WaRPAD — Faithful reproduction (Choi et al., NeurIPS 2025; arXiv 2511.14030)
+# 8. WaRPAD — Faithful reproduction (Choi et al., NeurIPS 2025; arXiv 2511.14030)
 # ===========================================================================
 
 
@@ -717,14 +889,14 @@ class WaRPADDetector(BaseDetector):
 
 
 # ===========================================================================
-# 8. Denoising-Trajectory Detector (DTAD-style; LATTE-inspired implementation)
+# 9. Denoising-Trajectory Detector (DTAD-style; LATTE-inspired implementation)
 # ===========================================================================
 
 
 class DenoisingTrajectoryDetector(BaseDetector):
     """Zero-shot AI-image detector using denoising-trajectory biases.
 
-    Faithful to the framing of DTAD (Liu et al., NeurIPS 2025: "Denoising
+    Faithful to the framing of DTAD (Liang et al., NeurIPS 2025: "Denoising
     Trajectory Biases for Zero-Shot AI-Generated Image Detection") and built on
     the public LATTE pipeline (Vasilcoiu et al.,
     https://github.com/AnaMVasilcoiu/LATTE-Diffusion-Detector). At each of a

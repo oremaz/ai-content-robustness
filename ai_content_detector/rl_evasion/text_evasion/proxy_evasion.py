@@ -1,4 +1,4 @@
-"""HUMPA-style Decoding-Time Proxy Evasion (NeurIPS 2025).
+"""HUMPA-style Decoding-Time Proxy Evasion (ICLR 2025).
 
 Intervenes during the decoding of a target LLM, shifting next-token 
 logits using an RL-trained proxy Small Language Model (SLM) to 
@@ -10,7 +10,7 @@ import torch.nn.functional as F
 class ProxyEvasionWrapper:
     """Wraps a target LLM to inject proxy SLM logits during generation.
     
-    This implements decoding-time intervention as described in HUMPA (Wang et al., NeurIPS 2025),
+    This implements decoding-time intervention as described in HUMPA (Wang et al., ICLR 2025),
     modifying token probabilities without requiring fine-tuning of the base model.
     """
     

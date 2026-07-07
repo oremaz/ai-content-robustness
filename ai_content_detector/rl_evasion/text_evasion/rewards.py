@@ -183,6 +183,11 @@ def build_detector_reward_from_name(name: str, device: str = "auto") -> Detector
         det = DivEyeDetector(device=device)
         return DetectorReward(lambda text, d=det: d.detect(text).score, name="diveye")
 
+    elif name in ("disrupt_recover", "dr"):
+        from ai_content_detector.detectors.text_detectors import DisruptRecoverDetector
+        det = DisruptRecoverDetector()
+        return DetectorReward(lambda text, d=det: d.detect(text).score, name="disrupt_recover")
+
     elif name == "roberta_classifier":
         # Use a pretrained RoBERTa-based detector (e.g., from RADAR)
         return _build_roberta_detector_reward(device)

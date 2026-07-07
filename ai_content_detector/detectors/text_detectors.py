@@ -6,9 +6,11 @@ Includes both internal (checkpoint-based) and external (zero-shot) detectors.
 from __future__ import annotations
 
 import logging
+import os
+import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import numpy as np
 
@@ -603,7 +605,406 @@ InversionDetector = ParaphraseRoundTripDetector
 
 
 # ===========================================================================
-# 6. Inverse Prompting for AI Detection (IPAD - NeurIPS 2025)
+# 6. Disrupt-and-Recover (D&R-style, ICLR 2026)
+# ===========================================================================
+
+
+class DisruptRecoverDetector(BaseDetector):
+    """D&R-style black-box detector via local disruption and single recovery call.
+
+    Sun et al. (ICLR 2026) propose Disrupt-and-Recover (D&R): corrupt the input
+    locally, ask a black-box LLM to recover it once, and use posterior
+    concentration as the signal. AI text tends to be recovered more exactly
+    than human text after the same corruption.
+
+    This implementation is deliberately a lightweight, configurable hook rather
+    than an overclaimed reproduction of the authors' still-sparse public code.
+    Pass ``recover_fn`` for experiments, or configure an OpenAI-compatible API
+    with ``OPENAI_API_KEY`` / ``OPENROUTER_API_KEY`` and a model name.
+    """
+
+    name = "Disrupt-and-Recover"
+    modality = "text"
+
+    def __init__(
+        self,
+        recover_fn: Optional[Callable[[str], str]] = None,
+        disruption_rate: float = 0.22,
+        disruption_mode: str = "shuffle",
+        min_words: int = 35,
+        threshold: float = 0.72,
+        temperature: float = 0.08,
+        seed: int = 13,
+        api_model: Optional[str] = None,
+        api_base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        self._recover_fn = recover_fn
+        self._disruption_rate = float(disruption_rate)
+        self._disruption_mode = disruption_mode
+        self._min_words = int(min_words)
+        self._threshold = float(threshold)
+        self._temperature = float(temperature)
+        self._seed = int(seed)
+        self._api_model = api_model or os.environ.get("DR_RECOVERY_MODEL")
+        self._api_base_url = api_base_url or os.environ.get("OPENAI_BASE_URL")
+        if self._api_base_url is None and os.environ.get("OPENROUTER_API_KEY"):
+            self._api_base_url = "https://openrouter.ai/api/v1"
+        self._api_key = (
+            api_key
+            or os.environ.get("OPENAI_API_KEY")
+            or os.environ.get("OPENROUTER_API_KEY")
+        )
+        self._client = None
+        self._available: Optional[bool] = None
+
+    def is_available(self) -> bool:
+        if self._recover_fn is not None:
+            return True
+        if self._available is None:
+            try:
+                from openai import OpenAI  # noqa: F401
+                self._available = bool(self._api_key and self._api_model)
+            except ImportError:
+                self._available = False
+        return bool(self._available)
+
+    @staticmethod
+    def _word_tokens(text: str) -> List[str]:
+        return re.findall(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*", text)
+
+    def _disrupt(self, text: str) -> str:
+        import random
+
+        if self._disruption_mode not in {"shuffle", "mask"}:
+            raise ValueError("disruption_mode must be 'shuffle' or 'mask'")
+
+        if self._disruption_mode == "shuffle":
+            return self._shuffle_within_chunks(text, random.Random(self._seed + len(text)))
+
+        # Preserve whitespace/punctuation so the recovery model only fills
+        # semantic holes, not formatting damage.
+        parts = re.findall(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*|\s+|[^\w\s]", text)
+        word_positions = [
+            i for i, part in enumerate(parts)
+            if re.fullmatch(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*", part)
+        ]
+        if not word_positions:
+            return text
+
+        n_mask = max(1, int(round(len(word_positions) * self._disruption_rate)))
+        rng = random.Random(self._seed + len(text))
+        for idx in rng.sample(word_positions, min(n_mask, len(word_positions))):
+            parts[idx] = "[MASK]"
+        return "".join(parts)
+
+    def _shuffle_within_chunks(self, text: str, rng: "random.Random") -> str:
+        chunks = re.split(r"([.!?;:\n]+)", text)
+        out: List[str] = []
+        for chunk in chunks:
+            if re.fullmatch(r"[.!?;:\n]+", chunk or ""):
+                out.append(chunk)
+                continue
+
+            parts = re.findall(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*|\s+|[^\w\s]", chunk)
+            word_positions = [
+                i for i, part in enumerate(parts)
+                if re.fullmatch(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*", part)
+            ]
+            if len(word_positions) < 3:
+                out.append(chunk)
+                continue
+
+            n_shuffle = max(2, int(round(len(word_positions) * self._disruption_rate)))
+            selected = rng.sample(word_positions, min(n_shuffle, len(word_positions)))
+            words = [parts[i] for i in selected]
+            rng.shuffle(words)
+            if words == [parts[i] for i in selected] and len(words) > 1:
+                words = words[1:] + words[:1]
+            for idx, word in zip(selected, words):
+                parts[idx] = word
+            out.append("".join(parts))
+        return "".join(out)
+
+    @staticmethod
+    def _format_recovery_prompt(corrupted_text: str) -> str:
+        return (
+            "Recover the original passage from the corrupted version below. "
+            "Some words may be locally reordered or replaced by [MASK]. "
+            "Return only the recovered passage, with no explanation.\n\n"
+            f"Corrupted passage:\n{corrupted_text}\n\nRecovered passage:"
+        )
+
+    def _load_client(self):
+        if self._client is not None:
+            return
+        from openai import OpenAI
+
+        kwargs: Dict[str, str] = {"api_key": self._api_key or ""}
+        if self._api_base_url:
+            kwargs["base_url"] = self._api_base_url
+        self._client = OpenAI(**kwargs)
+
+    def _recover(self, corrupted_text: str) -> str:
+        if self._recover_fn is not None:
+            return self._recover_fn(corrupted_text)
+        if not self.is_available():
+            raise RuntimeError(
+                "DisruptRecoverDetector needs recover_fn or an OpenAI-compatible "
+                "API key plus DR_RECOVERY_MODEL/api_model."
+            )
+        self._load_client()
+        prompt = self._format_recovery_prompt(corrupted_text)
+        response = self._client.chat.completions.create(
+            model=self._api_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=512,
+        )
+        return response.choices[0].message.content.strip()
+
+    @staticmethod
+    def _word_edit_similarity(source: str, recovered: str) -> float:
+        source_words = DisruptRecoverDetector._word_tokens(source.lower())
+        recovered_words = DisruptRecoverDetector._word_tokens(recovered.lower())
+        max_len = max(len(source_words), len(recovered_words), 1)
+        try:
+            import editdistance
+            distance = editdistance.eval(source_words, recovered_words)
+        except ImportError:
+            from difflib import SequenceMatcher
+            return float(SequenceMatcher(None, source_words, recovered_words).ratio())
+        return float(max(0.0, 1.0 - distance / max_len))
+
+    def _similarity_to_ai_score(self, similarity: float) -> float:
+        import math
+
+        temp = max(self._temperature, 1e-6)
+        score = 1.0 / (1.0 + math.exp(-(similarity - self._threshold) / temp))
+        return float(max(0.0, min(1.0, score)))
+
+    def detect(self, content: Union[str, List[str]]) -> Union[DetectionResult, List[DetectionResult]]:
+        if not self.is_available():
+            raise RuntimeError("Disrupt-and-Recover recovery model is not configured")
+
+        is_single = isinstance(content, str)
+        texts = [content] if is_single else content
+
+        results = []
+        for text in texts:
+            word_count = len(self._word_tokens(text))
+            if word_count < self._min_words:
+                results.append(DetectionResult(
+                    score=0.5,
+                    label="uncertain",
+                    detector_name=self.name,
+                    details={
+                        "reason": "too short for stable disrupt-and-recover scoring",
+                        "word_count": word_count,
+                        "min_words": self._min_words,
+                    },
+                ))
+                continue
+
+            try:
+                corrupted = self._disrupt(text)
+                recovered = self._recover(corrupted).strip()
+                similarity = self._word_edit_similarity(text, recovered)
+                ai_score = self._similarity_to_ai_score(similarity)
+                ai_score = self._complexity_penalty(text, ai_score)
+                results.append(DetectionResult(
+                    score=ai_score,
+                    label=DetectionResult.label_from_score(ai_score),
+                    detector_name=self.name,
+                    details={
+                        "word_edit_similarity": similarity,
+                        "corrupted": corrupted,
+                        "recovered": recovered,
+                        "threshold": self._threshold,
+                        "disruption_rate": self._disruption_rate,
+                        "disruption_mode": self._disruption_mode,
+                    },
+                ))
+            except Exception as e:
+                logger.error("DisruptRecoverDetector failed: %s", e)
+                results.append(DetectionResult(
+                    score=0.5,
+                    label="error",
+                    detector_name=self.name,
+                    details={"error": str(e)},
+                ))
+
+        return results[0] if is_single else results
+
+
+# ===========================================================================
+# 7. Markov-informed calibration (ICLR 2026)
+# ===========================================================================
+
+
+class MarkovCalibratedTextDetector(BaseDetector):
+    """Markov-informed local-score calibration wrapper.
+
+    Wu et al. (ICLR 2026) show that token-level metric-detector scores benefit
+    from two structural priors: nearby scores should be similar, while initial
+    positions are less stable. Their paper implements this with a Markov random
+    field and mean-field approximation.
+
+    Most detectors in this package expose document scores, not raw token scores.
+    This wrapper therefore applies the same idea to overlapping local windows:
+    score each window with a base detector or callable, run a mean-field-style
+    neighbor smoother, downweight unstable early windows, and aggregate the
+    calibrated local probabilities. Use it as a lightweight calibration layer,
+    not as a replacement for a paper-exact token-level MRF implementation.
+    """
+
+    name = "Markov-Calibrated Detector"
+    modality = "text"
+
+    def __init__(
+        self,
+        base_detector: Optional[BaseDetector] = None,
+        score_fn: Optional[Callable[[str], float]] = None,
+        window_size: int = 64,
+        stride: int = 32,
+        neighbor_weight: float = 0.8,
+        unary_weight: float = 1.0,
+        initial_discount: float = 0.5,
+        iterations: int = 4,
+    ):
+        if base_detector is None and score_fn is None:
+            raise ValueError("MarkovCalibratedTextDetector needs base_detector or score_fn")
+        self.base_detector = base_detector
+        self.score_fn = score_fn
+        self.window_size = int(window_size)
+        self.stride = int(stride)
+        self.neighbor_weight = float(neighbor_weight)
+        self.unary_weight = float(unary_weight)
+        self.initial_discount = float(initial_discount)
+        self.iterations = int(iterations)
+        if base_detector is not None:
+            self.name = f"Markov-Calibrated {base_detector.name}"
+
+    def is_available(self) -> bool:
+        if self.base_detector is not None:
+            return self.base_detector.is_available()
+        return self.score_fn is not None
+
+    @staticmethod
+    def _logit(p: np.ndarray, eps: float = 1e-5) -> np.ndarray:
+        p = np.clip(p.astype(np.float64), eps, 1.0 - eps)
+        return np.log(p / (1.0 - p))
+
+    @staticmethod
+    def _sigmoid(x: np.ndarray) -> np.ndarray:
+        return 1.0 / (1.0 + np.exp(-x))
+
+    @staticmethod
+    def calibrate_scores(
+        raw_scores: Sequence[float],
+        neighbor_weight: float = 0.8,
+        unary_weight: float = 1.0,
+        initial_discount: float = 0.5,
+        iterations: int = 4,
+    ) -> np.ndarray:
+        """Mean-field-style calibration for a 1D score chain."""
+        raw = np.asarray(raw_scores, dtype=np.float64)
+        if raw.size == 0:
+            return raw.astype(np.float32)
+        if raw.size == 1:
+            return np.clip(raw, 0.0, 1.0).astype(np.float32)
+
+        unary = MarkovCalibratedTextDetector._logit(raw)
+        weights = np.ones_like(raw)
+        weights[0] = float(initial_discount)
+        if raw.size > 2:
+            weights[1] = max(float(initial_discount), 0.75)
+        q = np.clip(raw, 1e-5, 1.0 - 1e-5)
+
+        for _ in range(max(1, int(iterations))):
+            prev = np.concatenate(([q[0]], q[:-1]))
+            nxt = np.concatenate((q[1:], [q[-1]]))
+            # Binary pairwise MRF mean-field update: neighbor fields push each
+            # node toward adjacent beliefs, while the unary term preserves the
+            # detector's own evidence.
+            neighbor_field = (prev - 0.5) + (nxt - 0.5)
+            logits = float(unary_weight) * weights * unary + float(neighbor_weight) * neighbor_field
+            q = MarkovCalibratedTextDetector._sigmoid(logits)
+        return np.clip(q, 0.0, 1.0).astype(np.float32)
+
+    def _windows(self, text: str) -> List[str]:
+        words = text.split()
+        if len(words) <= self.window_size:
+            return [text]
+        stride = max(1, self.stride)
+        windows = []
+        for start in range(0, len(words), stride):
+            chunk = words[start : start + self.window_size]
+            if len(chunk) < max(8, self.window_size // 4) and windows:
+                break
+            windows.append(" ".join(chunk))
+            if start + self.window_size >= len(words):
+                break
+        return windows or [text]
+
+    def _score_window(self, window: str) -> float:
+        if self.score_fn is not None:
+            return float(self.score_fn(window))
+        if self.base_detector is None:
+            raise RuntimeError("No base detector or score_fn configured")
+        result = self.base_detector.detect(window)
+        if isinstance(result, list):
+            result = result[0]
+        return float(result.score)
+
+    def detect(self, content: Union[str, List[str]]) -> Union[DetectionResult, List[DetectionResult]]:
+        if not self.is_available():
+            raise RuntimeError("Markov calibration base detector is unavailable")
+
+        is_single = isinstance(content, str)
+        texts = [content] if is_single else content
+
+        results = []
+        for text in texts:
+            windows = self._windows(text)
+            raw_scores = [max(0.0, min(1.0, self._score_window(w))) for w in windows]
+            calibrated = self.calibrate_scores(
+                raw_scores,
+                neighbor_weight=self.neighbor_weight,
+                unary_weight=self.unary_weight,
+                initial_discount=self.initial_discount,
+                iterations=self.iterations,
+            )
+
+            if len(calibrated) > 1:
+                weights = np.ones(len(calibrated), dtype=np.float32)
+                weights[0] = float(self.initial_discount)
+                if len(weights) > 2:
+                    weights[1] = max(float(self.initial_discount), 0.75)
+                ai_score = float(np.average(calibrated, weights=weights))
+            else:
+                ai_score = float(calibrated[0])
+            ai_score = self._complexity_penalty(text, ai_score)
+            results.append(DetectionResult(
+                score=ai_score,
+                label=DetectionResult.label_from_score(ai_score),
+                detector_name=self.name,
+                details={
+                    "raw_window_scores": [float(s) for s in raw_scores],
+                    "calibrated_window_scores": [float(s) for s in calibrated],
+                    "num_windows": len(windows),
+                    "window_size": self.window_size,
+                    "stride": self.stride,
+                    "neighbor_weight": self.neighbor_weight,
+                    "initial_discount": self.initial_discount,
+                },
+            ))
+
+        return results[0] if is_single else results
+
+
+# ===========================================================================
+# 8. Inverse Prompting for AI Detection (IPAD - NeurIPS 2025)
 # ===========================================================================
 
 
@@ -823,7 +1224,7 @@ class IPADDetector(BaseDetector):
 class DivEyeDetector(BaseDetector):
     """Zero-shot detector using surprisal diversity features.
 
-    Paper: Basani & Chen, "Diversity Boosts AI-Generated Text Detection" (TMLR 2026).
+    Paper: Basani & Chen, "Diversity Boosts AI-Generated Text Detection" (TMLR 2025).
     Core idea: human text has higher variability in lexical/structural unpredictability.
     Features: mean, std, skewness, kurtosis of token-level surprisal, plus 1st/2nd derivatives.
 

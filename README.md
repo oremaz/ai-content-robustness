@@ -4,7 +4,7 @@ A research laboratory for studying the interaction between **AI-content detector
 
 The framework lets you (a) score a piece of text or image with a configurable ensemble of state-of-the-art zero-shot and supervised detectors, (b) train a generator with reinforcement learning to evade those detectors while preserving meaning, and (c) run a multi-round *arms race* where attacker and defender update against each other and the resulting equilibrium is measured.
 
-The detectors and attacks implemented are drawn from the recent literature (ICML 2024, ICLR 2024, NeurIPS 2023, ICLR 2025, ICML 2025, NeurIPS 2025, TMLR 2026). Each component is described in detail below, so you can use this README as a reference without having to read the original papers.
+The detectors and attacks implemented are drawn from the recent literature listed in [`references.bib`](references.bib). Each component is described in detail below, so you can use this README as a reference without having to read the original papers.
 
 ---
 
@@ -57,7 +57,7 @@ The headline experiment alternates the two sides for several rounds: the attacke
 2. Run the smoke test (step 3) - it imports every component and prints what is and isn't available on your machine.
 3. Optionally train the supervised detector checkpoints (step 4) - the supervised text/image detectors stay unavailable without them.
 4. Launch the Streamlit app (step 5) and paste some text - this makes the detector side concrete.
-5. Skim "What each file does" below, then read the papers in the order of the "Key references" list.
+5. Skim "What each file does" below, then read the papers in the order of the "Key references" BibTeX keys.
 
 ---
 
@@ -112,7 +112,9 @@ The defensive side. Every detector implements the same `BaseDetector` interface:
 | `TFIDFDetector` | TF-IDF features + logistic regression. Cheap CPU-only baseline. Loads from `bench_aitextdetect`. | Internal |
 | `BinocularsDetector` | Zero-shot. Loads two reference LMs (default: Falcon-7B and Falcon-7B-Instruct). The score is the ratio of the text's *perplexity* under one model to the *cross-perplexity* between the two models - the per-token cross-entropy of one model's next-token distribution against the other's. Human writing produces a higher ratio than typical LLM samples. | Hans et al., ICML 2024 |
 | `FastDetectGPTDetector` | Zero-shot. Computes the *conditional probability curvature*: the gap between the log-probability of the actual text and the expected log-probability of nearby samples drawn from a reference LM. AI text sits in a steeper local maximum. | Bao et al., ICLR 2024 |
-| `DivEyeDetector` | Zero-shot. Scores the input under `Qwen/Qwen3.5-9B-Base`, then extracts the distribution of token-level surprisals (mean, std, skewness, kurtosis, first/second derivatives). Human writing has higher surprisal *diversity* than AI. The Base (non-RLHF'd) variant is used on purpose: instruction-tuned models have peaked logits on alignment tokens that distort the diversity signal. | Basani & Chen, TMLR 2026 |
+| `DivEyeDetector` | Zero-shot. Scores the input under `Qwen/Qwen3.5-9B-Base`, then extracts the distribution of token-level surprisals (mean, std, skewness, kurtosis, first/second derivatives). Human writing has higher surprisal *diversity* than AI. The Base (non-RLHF'd) variant is used on purpose: instruction-tuned models have peaked logits on alignment tokens that distort the diversity signal. | Basani & Chen, TMLR 2025 |
+| `DisruptRecoverDetector` | D&R-style black-box hook. Locally shuffles words within chunks (or masks words for ablations), calls a user-supplied or OpenAI-compatible recovery model once, and scores how exactly the recovered text matches the original. High recoverability is treated as evidence of posterior concentration. Calibration is intentionally explicit (`threshold`, `disruption_rate`) because the authors' public code is still sparse. | Sun et al., ICLR 2026 |
+| `MarkovCalibratedTextDetector` | Calibration wrapper. Splits a document into overlapping local windows, scores each window with an existing detector/callable, applies mean-field-style Markov smoothing across neighboring windows, discounts unstable early windows, and aggregates the calibrated probabilities. | Wu et al., ICLR 2026 |
 | `IPADDetector` | Faithful reproduction. Uses three published LoRA adapters on `microsoft/Phi-3-medium-128k-instruct`: one *prompt inverter* that hypothesizes the prompt that could have produced the input, and two *distinguishers* (RC and PTCV) that score how well the input is consistent with that hypothesized prompt. Final score = average of the two yes-token probabilities. | Chen et al., NeurIPS 2025 |
 | `ParaphraseRoundTripDetector` | Lightweight round-trip heuristic. Asks an LLM to rewrite the input into "clear standard prose"; large normalized edit distance between the original and the rewrite suggests the input is far from the natural-language manifold. Useful as an auxiliary signal, not a stand-alone SOTA detector. The legacy alias `InversionDetector` still works. | DIPPER-inspired, Krishna et al., NeurIPS 2023 |
 
@@ -128,8 +130,9 @@ All zero-shot detectors apply *length-aware thresholds* and a complexity normali
 | `SigLIPDetector` | Wraps a HuggingFace SigLIP-based image-classification pipeline that emits a `fake/ai/synthetic` label. | HF model card |
 | `PatchBasedClassifier` | Wraps any of the above. Slides a 128×128 window over the image, scores each patch, and aggregates with the 85th percentile. Forces the underlying classifier to detect *local* artifacts rather than relying on a global spurious correlation (lighting, watermark, JPEG fingerprint). | Generic best practice |
 | `FrequencyDetector` | Lightweight high-/low-frequency *energy ratio* heuristic on a single-level Haar DWT. Diffusion models leave excess HF energy from the denoising process. Useful baseline; *not* the published WaRPAD algorithm. | N/A |
+| `MLEPDetector` | Multi-granularity local entropy patterns. Computes Shannon entropy maps from deterministically shuffled local patches at multiple scales, turning semantic-heavy image content into artifact-focused entropy statistics. A trained sklearn-style classifier can be plugged in; otherwise it uses a calibration-ready heuristic score. | Yuan et al., NeurIPS 2025 |
 | `WaRPADDetector` | Faithful reproduction. For each non-overlapping 224×224 patch over the image (rescaled to 896×896): subtract α·HF(x) where HF is the 2-level Haar high-frequency content (α = 0.1), embed both the original and the perturbed patch with **DINOv3 ViT-L/16** (`facebook/dinov3-vitl16-pretrain-lvd1689m`), take the cosine similarity of their CLS tokens. Real photos give embeddings that are *robust* to HF perturbations (cosine close to 1); generated images do not. (Note: DINOv3 weights are gated on HuggingFace; run `huggingface-cli login` once.) | Choi et al., NeurIPS 2025 |
-| `DenoisingTrajectoryDetector` | DTAD-style. Encodes the input image to a Stable Diffusion VAE latent. At a grid of timesteps, adds Gaussian noise to the latent and runs a single-step DDIM denoise to predict `x_0`. Generated images converge faster along this trajectory than real photos, so the average cosine similarity between predicted `x_0` and the original latent is higher for AI images. | Liu et al., NeurIPS 2025 (DTAD); implementation grounded in LATTE (Vasilcoiu et al.) |
+| `DenoisingTrajectoryDetector` | DTAD-style. Encodes the input image to a Stable Diffusion VAE latent. At a grid of timesteps, adds Gaussian noise to the latent and runs a single-step DDIM denoise to predict `x_0`. Generated images converge faster along this trajectory than real photos, so the average cosine similarity between predicted `x_0` and the original latent is higher for AI images. | Liang et al., NeurIPS 2025 (DTAD); implementation grounded in LATTE (Vasilcoiu et al.) |
 
 #### `style_detector.py`
 
@@ -148,11 +151,12 @@ The offensive side. The CLI entry point is `rl_evasion/run_experiments.py`.
 - **`proxy_evasion.py`**: A *research stub* exploring the decoding-time logit-shift idea (HUMPA, Wang et al., ICLR 2025). Adds the logits of a small "humanizing" proxy model to the logits of the target model at every step. The proxy training loop is not implemented; treat this as a hook for experimentation, not a finished method.
 - **`feature_bank.py`**: Persistent memory of probe classifiers. After a training round, train a small linear probe on stylometric features that separate the latest generations from human text; keep the K probes with highest AUROC. Future rounds can include the bank's confidence as an extra reward term so the attacker has to defeat *every* feature family it has previously failed on.
 - **`rewards.py`**: Reward functions: detector-evasion (`1 − detector_score`), semantic similarity (E5 sentence embeddings, mean-pooled with the `query:` prefix), and a quadratic length-ratio quality penalty. `CompositeReward` combines them and rejects degenerate short outputs (default: < 20 tokens) by returning `total = 0`.
+- The reward factory also accepts `disrupt_recover` / `dr` as an explicit detector name. It is not in the default RL detector ensemble because it requires either a custom `recover_fn` in code or an OpenAI-compatible recovery API.
 - **`evaluate.py`**: Evaluation harness: aggregates per-detector evasion, attack-success rate, mean semantic similarity, and TPR at given FPR operating points (linearly interpolated, not nearest-neighbor).
 
 #### Image (`rl_evasion/image_evasion/`)
 
-- **`ddpo_trainer.py`**: Denoising Diffusion Policy Optimization. Treats every DDIM denoising step as an RL action and updates the UNet (with LoRA) via importance-sampled policy gradient with PPO-style ratio clipping. Reward = detector-evasion + CLIP image-text alignment + aesthetic score. Includes evaluation under **diffusion purification** (a separate, *pretrained* `StableDiffusionImg2ImgPipeline` adds noise at strength 0.15 and re-denoises the attacker's output before scoring; this measures whether the evasion survives spectral scrubbing). | Black et al., NeurIPS 2023; Saberi et al., ICML 2025
+- **`ddpo_trainer.py`**: Denoising Diffusion Policy Optimization. Treats every DDIM denoising step as an RL action and updates the UNet (with LoRA) via importance-sampled policy gradient with PPO-style ratio clipping. Reward = detector-evasion + CLIP image-text alignment + aesthetic score. Includes evaluation under **diffusion purification** (a separate, *pretrained* `StableDiffusionImg2ImgPipeline` adds noise at strength 0.15 and re-denoises the attacker's output before scoring; this measures whether the evasion survives spectral scrubbing). | Black et al., ICLR 2024; Saberi et al., ICLR 2024
 
 #### Arms race (`rl_evasion/arms_race/`)
 
@@ -180,7 +184,7 @@ A Streamlit UI. The text tab takes a paragraph and shows each available detector
 Trains a paragraph-level XGBoost classifier on the MAGE dataset using the surprisal + stylometric features defined in `multispin.py`'s extractors. Then uses SHAP `TreeExplainer` to visualize, per paragraph, which features pushed the model toward "AI" or "human". Document-level macro-averaged AUROC is reported alongside paragraph-level AUROC, with disjoint document IDs across train and test asserted at split time so paragraph correlation can't leak across the boundary.
 
 ### `tests/`
-146 unit tests pinning the math of every critical component: reward sign convention and length penalty, GRPO advantage normalization and policy-gradient sign, MultiSPIN DPO log-sigmoid arithmetic, the WaRPAD Haar HF reconstruction (constant image → zero HF; noise → non-zero; offset edge → localized HF), the equilibrium Nash-gap bounds and monotonicity, ensemble aggregation, feature-bank probe training, evaluation metrics, and image-detector return-type contracts. The tests are pure-Python and CPU-only; they don't require any LLM or diffusion model to be installed.
+158 unit tests pinning the math of every critical component: reward sign convention and length penalty, GRPO advantage normalization and policy-gradient sign, MultiSPIN DPO log-sigmoid arithmetic, D&R disruption/recovery scoring, Markov score calibration, MLEP entropy maps, the WaRPAD Haar HF reconstruction (constant image → zero HF; noise → non-zero; offset edge → localized HF), the equilibrium Nash-gap bounds and monotonicity, ensemble aggregation, feature-bank probe training, evaluation metrics, and image-detector return-type contracts. The tests are pure-Python and CPU-only; they don't require any LLM or diffusion model to be installed.
 
 ---
 
@@ -190,6 +194,8 @@ The framework is designed to degrade gracefully: anything that won't fit on the 
 
 ### Minimum (CPU only, ~8 GB RAM)
 - Streamlit app with the lightweight zero-shot detectors: `FrequencyDetector` and `ParaphraseRoundTripDetector` (CPU-slow). The supervised checkpoint detectors (`TFIDFDetector`, `ModernBERTDetector` in QLoRA mode, and the classifier-only image detectors `EfficientNetDetector` / `CLIPImageDetector` / `DINOv2Detector`) also *run* on CPU once their inference weights fit — **but only after their checkpoints have been trained** (see step 4 below). On a fresh checkout no checkpoints exist, so these detectors report `is_available() == False` and the app lists them under "Unavailable detectors".
+- `DisruptRecoverDetector` can run from CPU because it delegates recovery to either an injected Python callable or an external OpenAI-compatible chat API. It only appears as available when a recovery model is configured.
+- `MarkovCalibratedTextDetector` and `MLEPDetector` are CPU-friendly. Markov calibration wraps another text scorer; MLEP runs directly on uploaded images and appears in the app by default.
 - The full test suite (pure-Python, no model loads).
 - Non-RL baselines: `VanillaBaseline`, `SynonymSubstitutionBaseline`, `OpenRouterBaseline`.
 - ❗ **Not** available on CPU: `DivEyeDetector` (now scored with Qwen 3.5 9B-Base, ~18 GB bf16), Binoculars / Fast-DetectGPT (Falcon-7B pair), `WaRPADDetector` (DINOv3 ViT-L/16 needs CUDA in practice), `IPADDetector`, all RL trainers (GRPO/MultiSPIN/DDPO).
@@ -218,6 +224,9 @@ Adds:
 |---|---|---|
 | Binoculars / Fast-DetectGPT | `tiiuae/falcon-7b` ×2 | 28 GB fp16 / 8 GB 4-bit |
 | DivEye scoring | `Qwen/Qwen3.5-9B-Base` | 18 GB |
+| Disrupt-and-Recover | External recovery API or injected `recover_fn` | 0 local VRAM |
+| Markov calibration | Existing detector/callable | 0 additional VRAM |
+| MLEP entropy patterns | Numpy/PIL feature extractor, optional sklearn classifier | 0 local VRAM |
 | IPAD | `microsoft/Phi-3-medium-128k-instruct` + 3 LoRA | 28 GB |
 | ParaphraseRoundTrip | `Qwen/Qwen3.5-4B` | 8 GB |
 | Style detector | `rrivera1849/LUAR-MUD` | < 1 GB |
@@ -250,7 +259,7 @@ The `requirements.txt` pins the standard environment. The standalone `requiremen
 ```bash
 PYTHONPATH=. pytest ai_content_detector/tests/ -v
 ```
-Expected: 146 tests pass in ~10 seconds (CPU only).
+Expected: 158 tests pass in ~10 seconds (CPU only).
 
 ### 3. Smoke-test the wiring
 ```bash
@@ -307,6 +316,16 @@ streamlit run ai_content_detector/app.py
 - The image tab does the same for an uploaded image.
 - An "Unavailable detectors" panel lists what couldn't be loaded (missing checkpoint, insufficient VRAM, etc.) so you know what's running.
 
+To enable the optional D&R black-box detector in the app, configure a recovery model before launching Streamlit:
+
+```bash
+export OPENAI_API_KEY=...
+export DR_RECOVERY_MODEL=gpt-4o-mini
+streamlit run ai_content_detector/app.py
+```
+
+For OpenRouter, set `OPENROUTER_API_KEY` and `DR_RECOVERY_MODEL`; the detector automatically uses `https://openrouter.ai/api/v1`. In code, you can avoid network calls entirely by constructing `DisruptRecoverDetector(recover_fn=...)`.
+
 ### 6. Run a single evasion experiment
 
 The CLI is `python -m ai_content_detector.rl_evasion.run_experiments --experiment <name>`. The available experiments:
@@ -355,10 +374,29 @@ By default the `benchmark` experiment runs the baselines returned by `get_all_ba
 
 ---
 
+## What this means for a novel idea
+
+The two most relevant previously unimplemented target-venue papers for this codebase were:
+
+1. **Wu et al., ICLR 2026 - Markov-Informed Calibration**: most relevant on the text side because the repo already has several raw detector scores, but not a principled local-evidence calibration layer. It is now implemented as `MarkovCalibratedTextDetector`.
+2. **Yuan et al., NeurIPS 2025 - MLEP**: most relevant on the image side because it explicitly tries to remove semantic/content bias by using shuffled local entropy patterns. It is now implemented as `MLEPDetector`.
+
+The repo is already strong on classic zero-shot text likelihood signals, black-box paraphrase attacks, RL evasion, and modern zero-shot image signals. The remaining novelty space is not "add one more classifier." The strongest gaps are:
+
+1. Calibration over token/local evidence, especially Markov-informed smoothing of noisy detector scores.
+2. Hybrid-content detection, because realistic documents are often AI-assisted rather than fully AI-written.
+3. Detector signals that explicitly remove semantic/content bias: D&R recovery, OOD framing, MLEP-style shuffled entropy, and OmniAID-style semantic/artifact separation all point in this direction.
+4. Evaluation under adaptive attacks: use `AdversarialParaphrasingBaseline`, GRPO/MultiSPIN, and held-out detector pools before claiming novelty.
+
+---
+
 ## Reproduction caveats
 
 A short list of where each component sits relative to the original paper, so reviewers know what they're looking at:
 
+- **D&R / `DisruptRecoverDetector`**: configurable ICLR 2026 D&R-style hook, not a paper-exact reproduction. It implements local word-order disruption (with mask mode for ablations), one recovery call, and recoverability scoring. The authors' public repository confirms the high-level method but does not yet expose a complete calibrated detector pipeline, so thresholds should be calibrated on your own validation split before reporting numbers.
+- **Markov calibration**: `MarkovCalibratedTextDetector` adapts Wu et al.'s token-level MRF idea to the local-window scores exposed by this repo's detectors. It is a faithful calibration pattern, not a drop-in reproduction of their exact token-metric implementation.
+- **MLEP**: `MLEPDetector` implements shuffled multi-scale entropy feature extraction and an optional classifier hook. Without a trained classifier path it uses a transparent heuristic score; calibrate or train it before treating numbers as paper-level performance.
 - **IPAD**: uses the authors' three released LoRA adapters on `microsoft/Phi-3-medium-128k-instruct`; our contribution is the ensemble integration.
 - **WaRPAD**: exact algorithm (2-level Haar HF + self-supervised-embedding cosine sensitivity + non-overlapping 224² patches over an 896² rescale, α = 0.1), hyperparameters as in the paper. The paper's backbone is DINOv2 ViT-L/14; the code defaults to the newer DINOv3 ViT-L/16 (`facebook/dinov3-vitl16-pretrain-lvd1689m`), same parameter scale, current SOTA self-supervised encoder. Pass `backbone=` to switch back.
 - **DenoisingTrajectoryDetector**: DTAD-style metric; since DTAD itself has no public code, the implementation is grounded in the released LATTE pipeline (Vasilcoiu et al.).
@@ -374,21 +412,4 @@ A short list of where each component sits relative to the original paper, so rev
 
 ## Key references
 
-**Detection**
-- Hans et al., *Spotting LLMs With Binoculars* (ICML 2024)
-- Bao et al., *Fast-DetectGPT* (ICLR 2024)
-- Basani & Chen, *Diversity Boosts AI-Generated Text Detection* (TMLR 2026)
-- Chen et al., *IPAD: Inverse Prompt for AI Detection* (NeurIPS 2025)
-- Choi et al., *WaRPAD: Training-free Detection via Cropping Robustness* (NeurIPS 2025)
-- Liu et al., *Denoising Trajectory Biases for Zero-Shot AI-Generated Image Detection* (NeurIPS 2025)
-- Krishna et al., *Paraphrasing evades detectors of AI-generated text, but retrieval is an effective defense*, DIPPER (NeurIPS 2023)
-- Hu et al., *RADAR* (NeurIPS 2023)
-
-**Evasion**
-- Chen et al., *Self-Play Fine-Tuning Converts Weak LMs to Strong LMs*, SPIN (ICML 2024)
-- Wang et al., *Humanizing the Machine: Proxy Attacks to Mislead LLM Detectors*, HUMPA (ICLR 2025)
-- Chen et al., *Adversarial Paraphrasing: A Universal Attack for Humanizing AI-Generated Text* (NeurIPS 2025)
-- Saberi et al., *Robustness of AI-Image Detectors: Fundamental Limits and Practical Attacks*, Diffusion Purification (ICML 2025)
-- Black et al., *Training Diffusion Models with RL*, DDPO (NeurIPS 2023)
-- DeepSeekMath team, *GRPO* (2024)
-- Finn et al., *Model-Agnostic Meta-Learning* (ICML 2017)
+The canonical BibTeX entries live in [`references.bib`](references.bib). 

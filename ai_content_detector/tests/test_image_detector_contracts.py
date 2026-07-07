@@ -16,6 +16,7 @@ from ai_content_detector.detectors import (
     CLIPImageDetector,
     DINOv2Detector,
     FrequencyDetector,
+    MLEPDetector,
     PatchBasedClassifier,
     SigLIPDetector,
     WaRPADDetector,
@@ -28,6 +29,7 @@ IMAGE_DETECTORS = [
     DINOv2Detector,
     SigLIPDetector,
     FrequencyDetector,
+    MLEPDetector,
     WaRPADDetector,
     DenoisingTrajectoryDetector,
 ]

@@ -67,6 +67,7 @@ def load_text_detectors():
         BinocularsDetector,
         FastDetectGPTDetector,
         DivEyeDetector,
+        DisruptRecoverDetector,
         InversionDetector,
         IPADDetector,
     )
@@ -77,6 +78,7 @@ def load_text_detectors():
         BinocularsDetector(),
         FastDetectGPTDetector(),
         DivEyeDetector(),
+        DisruptRecoverDetector(),
         InversionDetector(),
         IPADDetector(),
     ]
@@ -102,6 +104,7 @@ def load_image_detectors():
         DINOv2Detector,
         SigLIPDetector,
         FrequencyDetector,
+        MLEPDetector,
         PatchBasedClassifier,
         WaRPADDetector,
         DenoisingTrajectoryDetector,
@@ -113,6 +116,7 @@ def load_image_detectors():
         DINOv2Detector(),
         SigLIPDetector(),
         FrequencyDetector(),
+        MLEPDetector(),
         WaRPADDetector(),
         DenoisingTrajectoryDetector(),
     ]
@@ -311,8 +315,14 @@ def about_tab():
   of two reference LMs. >90% TPR at 0.01% FPR.
 - **Fast-DetectGPT** (ICLR 2024) — Zero-shot via conditional probability curvature.
   340x faster than original DetectGPT.
-- **DivEye** (TMLR 2026) — Zero-shot using surprisal diversity features.
+- **DivEye** (TMLR 2025) — Zero-shot using surprisal diversity features.
   Outperforms prior zero-shot detectors by up to 33.2%.
+- **Disrupt-and-Recover** (ICLR 2026) — Optional black-box recovery detector.
+  Loaded only when an OpenAI-compatible recovery model is configured.
+- **Markov-Calibrated Detector** (ICLR 2026) — Programmatic wrapper that
+  smooths local detector scores across neighboring text windows.
+- **IPAD** (NeurIPS 2025) — Inverse-prompt consistency detector using released
+  LoRA adapters on Phi-3-medium.
 
 **Image Detectors:**
 - **EfficientNet-B4-NS** — Trained on ArtiFact (25 generators, 200x200).
@@ -321,6 +331,11 @@ def about_tab():
 - **DINOv2 ViT-B** — Self-supervised ViT pretrained on diverse data.
 - **SigLIP-2 Detector** — HuggingFace pipeline for deepfake detection
   using Google's SigLIP-2 vision transformer.
+- **WaRPAD** and **Denoising Trajectory** (NeurIPS 2025) — Zero-shot image
+  detectors based on high-frequency perturbation robustness and diffusion
+  recovery trajectories.
+- **MLEP Entropy Patterns** (NeurIPS 2025) — CPU-friendly multi-scale shuffled
+  local entropy maps, with an optional trained classifier hook.
 
 ### Methodology
 
@@ -332,7 +347,9 @@ represents the estimated probability that the content is AI-generated.
 
 - Hans et al., *Spotting LLMs With Binoculars* (ICML 2024)
 - Bao et al., *Fast-DetectGPT* (ICLR 2024)
-- Basani & Chen, *Diversity Boosts AI-Generated Text Detection* (TMLR 2026)
+- Basani & Chen, *Diversity Boosts AI-Generated Text Detection* (TMLR 2025)
+- Sun et al., *D&R* (ICLR 2026)
+- Chen et al., *IPAD* (NeurIPS 2025)
 - Li et al., *MAGE* (ACL 2024)
 - ArtiFact Dataset (25 generators)
     """)

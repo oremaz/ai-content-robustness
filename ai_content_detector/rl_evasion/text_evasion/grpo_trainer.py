@@ -1,12 +1,10 @@
 """GRPO-based text evasion trainer.
 
-Implements the AuthorMist/StealthRL recipe: GRPO + LoRA on an open LLM,
-using detector scores as reward signals. This is the core text-evasion
-training loop.
+Implements GRPO + LoRA on an open LLM, using detector scores as reward
+signals. This is the core text-evasion training loop.
 
 References:
-    - David & Gervais, AuthorMist (arXiv:2503.08716)
-    - StealthRL (arXiv:2602.08934)
+    - Shao et al., DeepSeekMath (arXiv:2402.03300), which introduces GRPO.
 """
 
 from __future__ import annotations

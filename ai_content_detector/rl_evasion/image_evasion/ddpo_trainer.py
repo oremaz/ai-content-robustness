@@ -1,6 +1,6 @@
 """DDPO-based image evasion trainer with full multi-step trajectory tracking.
 
-Implements the full DDPO algorithm (Black et al., 2023) for RL fine-tuning of
+Implements the full DDPO algorithm (Black et al., ICLR 2024) for RL fine-tuning of
 diffusion models to evade AI-image detectors. Each denoising step is treated
 as an action in a multi-step MDP, with per-step log-probabilities enabling
 proper policy gradient updates via a PPO-style clipped objective.
@@ -18,7 +18,7 @@ DDPO-IS objective (PPO-style clipping):
     ratio_t = exp(log_p_theta - log_p_theta_old)
 
 References:
-    - Black et al., "Training Diffusion Models with Reinforcement Learning" (2023)
+    - Black et al., "Training Diffusion Models with Reinforcement Learning" (ICLR 2024)
     - Fan et al., DPOK (NeurIPS 2023)
     - kvablack/ddpo-pytorch reference implementation
 """
@@ -310,7 +310,7 @@ class DDPOImageEvasionTrainer:
        recompute current log_prob, compute importance ratio and clipped
        PPO loss, backprop through UNet.
 
-    This is the full DDPO-IS algorithm (Black et al., 2023), not the
+    This is the full DDPO-IS algorithm (Black et al., ICLR 2024), not the
     simplified version that was here before.
     """
 
@@ -606,7 +606,7 @@ class DDPOImageEvasionTrainer:
     def evaluate(self, num_samples: int = 50) -> Dict[str, float]:
         """Evaluate the trained model's evasion capability.
 
-        Diffusion Purification (Saberi et al., ICML 2025) is evaluated with a
+        Diffusion Purification (Saberi et al., ICLR 2024) is evaluated with a
         SEPARATE, pretrained `StableDiffusionImg2ImgPipeline` loaded from
         ``cfg.diffusion_model``. Reusing the trained attacker pipeline as the
         purifier would be circular — the attacker could "unlearn" its own
@@ -638,7 +638,7 @@ class DDPOImageEvasionTrainer:
             )
             purifier_pipe = None
 
-        # Schedule is documented: forward-noise level strength=0.15 (Saberi et al., ICML 2025)
+        # Schedule is documented: forward-noise level strength=0.15 (Saberi et al., ICLR 2024)
         # with 50 reverse DDIM steps over the same schedule as the attacker.
         purification_strength = 0.15
         purification_steps = 50

@@ -18,7 +18,8 @@ References:
 from __future__ import annotations
 
 import logging
-import os
+import subprocess
+import sys
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -53,8 +54,22 @@ class StylometricExtractor:
         try:
             self._nlp = spacy.load("en_core_web_sm", disable=["ner", "parser"])
         except OSError:
-            os.system("python -m spacy download en_core_web_sm")
-            self._nlp = spacy.load("en_core_web_sm", disable=["ner", "parser"])
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                self._nlp = spacy.load("en_core_web_sm", disable=["ner", "parser"])
+            except Exception:
+                logger.warning(
+                    "spaCy model en_core_web_sm is unavailable; falling back to blank English tokenizer. "
+                    "POS-entropy features will be zero until the model is installed."
+                )
+                self._nlp = spacy.blank("en")
+                if "sentencizer" not in self._nlp.pipe_names:
+                    self._nlp.add_pipe("sentencizer")
 
     def extract(self, text: str) -> np.ndarray:
         """Extract stylometric feature vector."""
