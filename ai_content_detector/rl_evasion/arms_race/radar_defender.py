@@ -1,10 +1,11 @@
-"""RADAR-style adversarial detector training.
+"""Adaptive classifier retraining for arms-race experiments.
 
 Implements the defender side of the arms race: retrain a RoBERTa-based
 detector on the latest attacker outputs so it can detect the new
 attack distribution.
 
-Reference: Hu, Chen, Ho. RADAR (NeurIPS 2023, arXiv:2307.03838)
+This is not the alternating paraphraser/detector algorithm from RADAR. It is a
+plain adaptive classifier baseline trained on the latest attacker outputs.
 """
 
 from __future__ import annotations
@@ -19,8 +20,8 @@ import torch
 logger = logging.getLogger(__name__)
 
 
-class RADARDefender:
-    """RADAR-style adversarial detector that retrains on attacker outputs.
+class AdaptiveClassifierDefender:
+    """Adaptive detector that retrains on current attacker outputs.
 
     Each round:
     1. Receive fresh AI-generated texts from the current attacker.
@@ -37,6 +38,7 @@ class RADARDefender:
         epochs: int = 3,
         lr: float = 2e-5,
         max_length: int = 512,
+        seed: int = 42,
     ):
         self.model_name = model_name
         self.output_dir = output_dir
@@ -44,6 +46,7 @@ class RADARDefender:
         self.epochs = epochs
         self.lr = lr
         self.max_length = max_length
+        self.seed = seed
         self.model = None
         self.tokenizer = None
         self._round = 0
@@ -61,7 +64,7 @@ class RADARDefender:
             self.model = self.model.cuda()
 
         os.makedirs(self.output_dir, exist_ok=True)
-        logger.info("RADAR defender initialized with %s", self.model_name)
+        logger.info("Adaptive classifier defender initialized with %s", self.model_name)
 
     def retrain(
         self,
@@ -78,7 +81,7 @@ class RADARDefender:
             Dict with training metrics (accuracy, auroc, loss).
         """
         self._round += 1
-        logger.info("RADAR defender retrain — round %d", self._round)
+        logger.info("Adaptive defender retrain, round %d", self._round)
 
         from transformers import Trainer, TrainingArguments
         from datasets import Dataset
@@ -89,7 +92,10 @@ class RADARDefender:
         labels = [1] * n + [0] * n  # 1 = AI, 0 = human
 
         # Shuffle
-        indices = np.random.permutation(len(texts))
+        if n < 2:
+            raise ValueError("At least two AI and two human samples are required for retraining")
+        rng = np.random.default_rng(self.seed + self._round)
+        indices = rng.permutation(len(texts))
         texts = [texts[i] for i in indices]
         labels = [labels[i] for i in indices]
 
@@ -126,7 +132,7 @@ class RADARDefender:
             load_best_model_at_end=True,
             metric_for_best_model="eval_loss",
             logging_steps=50,
-            seed=42,
+            seed=self.seed + self._round,
             report_to="none",
         )
 
@@ -199,3 +205,7 @@ class RADARDefender:
     def predict_batch(self, texts: List[str]) -> List[float]:
         """Predict AI probability for a batch of texts."""
         return [self.predict(t) for t in texts]
+
+
+# Backward-compatible import only. New code should use the accurate name.
+RADARDefender = AdaptiveClassifierDefender

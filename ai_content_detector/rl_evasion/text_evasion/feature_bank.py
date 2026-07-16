@@ -70,6 +70,7 @@ class FeatureBank:
         human_texts: List[str],
         stylo_extractor=None,
         emb_extractor=None,
+        groups: Optional[np.ndarray] = None,
     ) -> Dict[str, float]:
         """Train probes on current round's data and add discriminative ones.
 
@@ -80,25 +81,35 @@ class FeatureBank:
 
         # Prepare labels
         n_gen = len(generated_texts)
-        n_hum = min(len(human_texts), n_gen)
+        n_hum = len(human_texts)
+        if n_gen != n_hum or n_gen < 5:
+            raise ValueError(
+                "FeatureBank.update requires at least five aligned generated/human pairs"
+            )
         labels = np.array([0] * n_gen + [1] * n_hum)  # 0=generated, 1=human
+        if groups is None:
+            groups = np.concatenate([np.arange(n_gen), np.arange(n_hum)])
+        elif len(groups) == n_gen:
+            groups = np.concatenate([groups, groups])
+        elif len(groups) != len(labels):
+            raise ValueError("groups must align with pairs or with the full feature matrix")
 
         # Extract features for each family
         families = {}
 
         if stylo_extractor is not None:
             gen_stylo = stylo_extractor.extract_batch(generated_texts)
-            hum_stylo = stylo_extractor.extract_batch(human_texts[:n_hum])
+            hum_stylo = stylo_extractor.extract_batch(human_texts)
             families["stylometric"] = np.vstack([gen_stylo, hum_stylo])
 
         if emb_extractor is not None:
             gen_emb = emb_extractor.extract_batch(generated_texts)
-            hum_emb = emb_extractor.extract_batch(human_texts[:n_hum])
+            hum_emb = emb_extractor.extract_batch(human_texts)
             families["embedding"] = np.vstack([gen_emb, hum_emb])
 
         # Train a probe per family
         for family_name, X in families.items():
-            probe, scaler, acc, auroc, importance = self._train_probe(X, labels)
+            probe, scaler, acc, auroc, importance = self._train_probe(X, labels, groups)
 
             metrics[f"{family_name}_probe_accuracy"] = acc
             metrics[f"{family_name}_probe_auroc"] = auroc
@@ -140,22 +151,44 @@ class FeatureBank:
         self,
         X: np.ndarray,
         y: np.ndarray,
+        groups: Optional[np.ndarray] = None,
     ) -> Tuple[LogisticRegression, StandardScaler, float, float, np.ndarray]:
         """Train a linear probe classifier and return metrics."""
+        if len(X) != len(y) or len(set(y.tolist())) < 2:
+            raise ValueError("Probe features and labels must be aligned and contain both classes")
+        if groups is not None:
+            unique_groups = np.unique(groups)
+            if len(unique_groups) < 5:
+                raise ValueError("At least five independent groups are required for probe validation")
+            rng = np.random.default_rng(42)
+            shuffled = rng.permutation(unique_groups)
+            n_validation = max(1, int(round(0.2 * len(unique_groups))))
+            validation_groups = set(shuffled[:n_validation].tolist())
+            validation_mask = np.asarray([group in validation_groups for group in groups])
+            train_indices = np.flatnonzero(~validation_mask)
+            validation_indices = np.flatnonzero(validation_mask)
+        else:
+            from sklearn.model_selection import train_test_split
+            indices = np.arange(len(y))
+            train_indices, validation_indices = train_test_split(
+                indices, test_size=0.2, random_state=42, stratify=y,
+            )
+
+        if len(set(y[train_indices].tolist())) < 2 or len(set(y[validation_indices].tolist())) < 2:
+            raise ValueError("Probe train and validation partitions must both contain both classes")
+
         scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
+        X_train = scaler.fit_transform(X[train_indices])
+        X_validation = scaler.transform(X[validation_indices])
 
         probe = LogisticRegression(max_iter=500, C=1.0, random_state=42)
-        probe.fit(X_scaled, y)
+        probe.fit(X_train, y[train_indices])
 
-        y_pred = probe.predict(X_scaled)
-        y_prob = probe.predict_proba(X_scaled)[:, 1]
+        y_pred = probe.predict(X_validation)
+        y_prob = probe.predict_proba(X_validation)[:, 1]
 
-        acc = accuracy_score(y, y_pred)
-        try:
-            auroc = roc_auc_score(y, y_prob)
-        except ValueError:
-            auroc = 0.5
+        acc = accuracy_score(y[validation_indices], y_pred)
+        auroc = roc_auc_score(y[validation_indices], y_prob)
 
         # Feature importance: absolute coefficients
         importance = np.abs(probe.coef_).flatten()

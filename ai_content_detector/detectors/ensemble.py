@@ -45,7 +45,8 @@ class BaseDetector(ABC):
     # (models, tokenizers, pipelines). unload() clears any that are present.
     _RESOURCE_ATTRS = (
         "_model", "_tokenizer", "_vectorizer", "_predictor", "_processor",
-        "_pipe", "_pipeline", "_observer", "_performer",
+        "_pipe", "_pipeline", "_observer", "_performer", "_reference_model",
+        "_clip_model", "_clip_processor", "_uncond_embed",
     )
 
     def unload(self) -> None:
@@ -115,6 +116,8 @@ class EnsembleAggregator:
         method: str = "weighted_average",
     ):
         self.detectors = [d for d in detectors if d.is_available()]
+        if not self.detectors:
+            raise ValueError("EnsembleAggregator requires at least one available detector")
         self.weights = weights or {d.name: 1.0 for d in self.detectors}
         self.method = method
         self._meta_classifier = None
@@ -124,35 +127,30 @@ class EnsembleAggregator:
         
         Learns optimal weights using Logistic Regression on a calibration dataset.
         """
-        try:
-            from sklearn.linear_model import LogisticRegression
-            
-            # Gather scores from all detectors for all samples
-            X = []
-            for text in val_texts:
-                scores = []
-                for det in self.detectors:
-                    try:
-                        res = det.detect(text)
-                        # Handle batch results if detector returns list
-                        score = res[0].score if isinstance(res, list) else res.score
-                    except Exception:
-                        score = 0.5
-                    scores.append(score)
-                X.append(scores)
+        from sklearn.linear_model import LogisticRegression
+        if len(val_texts) != len(val_labels) or not val_texts:
+            raise ValueError("Calibration texts and labels must be nonempty and aligned")
+        if len(set(val_labels)) < 2:
+            raise ValueError("Ensemble calibration requires both human and AI labels")
+        X = []
+        for text in val_texts:
+            scores = []
+            for det in self.detectors:
+                try:
+                    res = det.detect(text)
+                    score = res[0].score if isinstance(res, list) else res.score
+                except Exception as error:
+                    raise RuntimeError(
+                        f"Detector {det.name} failed during ensemble calibration"
+                    ) from error
+                scores.append(score)
+            X.append(scores)
                 
-            self._meta_classifier = LogisticRegression(class_weight="balanced")
-            self._meta_classifier.fit(X, val_labels)
-            
-            # Update weights based on learned coefficients
-            coeffs = self._meta_classifier.coef_[0]
-            # Ensure non-negative weights
-            coeffs = np.maximum(coeffs, 0.01)
-            self.weights = {det.name: float(w) for det, w in zip(self.detectors, coeffs)}
-            self.method = "learned_weights"
-            
-        except ImportError:
-            pass
+        self._meta_classifier = LogisticRegression(class_weight="balanced", random_state=42)
+        self._meta_classifier.fit(X, val_labels)
+        coeffs = self._meta_classifier.coef_[0]
+        self.weights = {det.name: float(w) for det, w in zip(self.detectors, coeffs)}
+        self.method = "learned_weights"
 
     def detect(self, content: Any) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         # Handle batch inputs
@@ -180,18 +178,27 @@ class EnsembleAggregator:
                 )
 
         aggregate_score = self._aggregate(results)
-        aggregate_label = DetectionResult.label_from_score(aggregate_score)
+        valid = [result for result in results if result.label != "error"]
+        if self.method == "learned_weights":
+            aggregate_label = DetectionResult.label_from_score(aggregate_score, 0.5, 0.5)
+            semantics = "calibrated_probability"
+        else:
+            ai_votes = sum(result.label == "ai" for result in valid)
+            human_votes = sum(result.label == "human" for result in valid)
+            aggregate_label = "ai" if ai_votes > human_votes else "human" if human_votes > ai_votes else "uncertain"
+            semantics = "uncalibrated_ensemble_score"
 
         return {
             "aggregate_score": aggregate_score,
             "aggregate_label": aggregate_label,
+            "aggregate_score_semantics": semantics,
             "per_detector": results,
         }
 
     def _aggregate(self, results: List[DetectionResult]) -> float:
         valid = [r for r in results if r.label != "error"]
         if not valid:
-            return 0.5
+            raise RuntimeError("Every detector failed; no aggregate score is available")
 
         if self.method == "majority_vote":
             votes = [1.0 if r.label == "ai" else 0.0 for r in valid]

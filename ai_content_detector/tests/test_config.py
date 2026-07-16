@@ -59,7 +59,7 @@ class TestMultiSPINConfig:
         assert cfg.lambda_spin == 1.0
         assert cfg.num_iterations == 5
         assert cfg.steps_per_iteration == 1000
-        assert cfg.lambda_style == 0.2
+        assert cfg.monitor_style_embeddings is True
 
     def test_stylometric_features_list(self):
         cfg = MultiSPINConfig()
@@ -67,10 +67,10 @@ class TestMultiSPINConfig:
         assert "burstiness" in cfg.stylometric_features
         assert "ttr" in cfg.stylometric_features
 
-    def test_override_lambdas(self):
-        cfg = MultiSPINConfig(lambda_spin=2.0, lambda_stylo=0.1)
+    def test_override_spin_and_monitoring(self):
+        cfg = MultiSPINConfig(lambda_spin=2.0, monitor_style_embeddings=False)
         assert cfg.lambda_spin == 2.0
-        assert cfg.lambda_stylo == 0.1
+        assert cfg.monitor_style_embeddings is False
 
 
 class TestImageEvasionConfig:

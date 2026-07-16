@@ -1,9 +1,8 @@
-"""Multi-round adversarial arms race equilibrium experiments.
+"""Multi-round adversarial attacker/defender experiments.
 
-The most important experiment in the project: alternate between attacker
-(fine-tuning the generator to evade detectors) and defender (retraining
-detectors on the new attacker outputs), measuring where the equilibrium
-sits and how much each round costs.
+Alternates between an attacker update and adaptive detector retraining. Metrics
+measure both updates on a fixed, untouched evaluation split. No Nash-equilibrium
+claim is made because the experiment does not compute exact best responses.
 
 Reference: todo/rl_evasion_research_directions_v2.md §Thread 2 —
 "The equilibrium experiment (most important experiment in the project)"
@@ -12,9 +11,9 @@ Protocol:
     Round 0: initial generator + initial detector ensemble
     Round r → r+1:
         1. Attacker: fine-tune generator against current detectors (GRPO/MultiSPIN)
-        2. Defender: retrain detectors on new generator outputs (RADAR-style)
+        2. Defender: retrain a classifier on new generator outputs
         3. Evaluate: TPR@1%FPR, AUROC, attack success rate
-    Run for N=10 rounds. Report equilibrium curve.
+    Run for N rounds and report paired adaptation curves.
 """
 
 from __future__ import annotations
@@ -22,12 +21,11 @@ from __future__ import annotations
 import json
 import logging
 import os
-from dataclasses import asdict
 from typing import Dict, List, Optional
 
 import numpy as np
 
-from ..config import ArmsRaceConfig, TextEvasionConfig, ImageEvasionConfig
+from ..config import ArmsRaceConfig, TextEvasionConfig
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +38,10 @@ class ArmsRaceExperiment:
         self.history: List[Dict] = []  # per-round metrics
         self.attacker = None
         self.defender = None
-        # Disjoint prompt splits for fair attacker/defender evaluation
-        # (set in _split_prompts after attacker.setup()).
-        self.train_prompt_idx: List[int] = []
-        self.eval_prompt_idx: List[int] = []
+        self.train_prompts: List[str] = []
+        self.train_references: List[str] = []
+        self.eval_prompts: List[str] = []
+        self.eval_references: List[str] = []
 
     def setup(self):
         """Initialize attacker and defender."""
@@ -60,9 +58,9 @@ class ArmsRaceExperiment:
         logger.info("Arms race experiment setup complete. Modality: %s, rounds: %d", cfg.modality, cfg.num_rounds)
 
     def _setup_text(self):
-        """Set up text attacker (GRPO) and defender (RADAR-style)."""
+        """Set up the text attacker and adaptive classifier defender."""
         from ..text_evasion.grpo_trainer import GRPOTextEvasionTrainer
-        from .radar_defender import RADARDefender
+        from .radar_defender import AdaptiveClassifierDefender
 
         attacker_config = self.config.attacker_config or TextEvasionConfig(
             num_train_epochs=1,
@@ -72,54 +70,113 @@ class ArmsRaceExperiment:
 
         self.attacker = GRPOTextEvasionTrainer(config=attacker_config)
         self.attacker.setup()
+        self._partition_prompts()
 
-        self.defender = RADARDefender(
+        self.defender = AdaptiveClassifierDefender(
             model_name=self.config.defender_model,
             output_dir=os.path.join(self.config.output_dir, "defender"),
             retrain_samples=self.config.defender_retrain_samples,
             epochs=self.config.defender_epochs,
             lr=self.config.defender_lr,
+            seed=self.config.seed,
         )
         self.defender.setup()
-        self._split_prompts()
 
-    def _split_prompts(self, eval_frac: float = 0.2) -> None:
-        """Split attacker.prompts into disjoint train/eval index lists.
-
-        All attacker generation during training uses ``train_prompt_idx`` and all
-        round-level evaluation uses ``eval_prompt_idx`` — this prevents the
-        defender from being retrained on prompts that the attacker is later
-        evaluated on.
-        """
-        if self.attacker is None or not getattr(self.attacker, "prompts", None):
-            return
+    def _partition_prompts(self, eval_frac: float = 0.2) -> None:
+        """Create an immutable split and remove evaluation prompts from training."""
         n = len(self.attacker.prompts)
+        if n < 5:
+            raise ValueError("Arms-race evaluation requires at least five prompt/reference pairs")
+        prompts = list(self.attacker.prompts)
+        references = list(self.attacker.references)
         rng = np.random.default_rng(self.config.seed)
         perm = rng.permutation(n)
         n_eval = max(1, int(eval_frac * n))
-        self.eval_prompt_idx = sorted(perm[:n_eval].tolist())
-        self.train_prompt_idx = sorted(perm[n_eval:].tolist())
-        # Enforce disjointness
-        assert not (set(self.train_prompt_idx) & set(self.eval_prompt_idx))
+        eval_idx = sorted(perm[:n_eval].tolist())
+        train_idx = sorted(perm[n_eval:].tolist())
+        self.train_prompts = [prompts[i] for i in train_idx]
+        self.train_references = [references[i] for i in train_idx]
+        self.eval_prompts = [prompts[i] for i in eval_idx]
+        self.eval_references = [references[i] for i in eval_idx]
+        self.attacker.prompts = self.train_prompts
+        self.attacker.references = self.train_references
         logger.info(
-            "Arms-race prompt split: %d train / %d eval (disjoint)",
-            len(self.train_prompt_idx), len(self.eval_prompt_idx),
+            "Arms-race prompt split: %d train / %d immutable eval",
+            len(self.train_prompts), len(self.eval_prompts),
         )
 
     def _setup_image(self):
-        """Set up image attacker (DDPO) and defender."""
-        from ..image_evasion.ddpo_trainer import DDPOImageEvasionTrainer
-
-        image_config = self.config.attacker_image_config or ImageEvasionConfig(
-            num_train_epochs=5,
-            output_dir=os.path.join(self.config.output_dir, "attacker"),
+        raise NotImplementedError(
+            "Image arms-race mode requires an adaptive image defender and a common "
+            "held-out payoff evaluation; neither is implemented yet"
         )
-        image_config.output_dir = os.path.join(self.config.output_dir, "attacker")
 
-        self.attacker = DDPOImageEvasionTrainer(config=image_config)
-        self.attacker.setup()
-        # Image defender not implemented yet — would use adversarial retraining of image classifiers
-        self.defender = None
+    def _generate(self, prompts: List[str], seed: int) -> List[str]:
+        import torch
+
+        device = next(self.attacker.model.parameters()).device
+        self.attacker.model.eval()
+        generator = torch.Generator(device=device).manual_seed(seed)
+        texts = []
+        for prompt in prompts:
+            inputs = self.attacker.tokenizer(
+                prompt,
+                return_tensors="pt",
+                truncation=True,
+                max_length=self.attacker.config.max_seq_length,
+            ).to(device)
+            with torch.no_grad():
+                generated = self.attacker.model.generate(
+                    **inputs,
+                    max_new_tokens=self.attacker.config.max_new_tokens,
+                    temperature=self.attacker.config.temperature,
+                    top_p=self.attacker.config.top_p,
+                    do_sample=True,
+                    generator=generator,
+                )
+            texts.append(self.attacker.tokenizer.decode(
+                generated[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
+            ))
+        return texts
+
+    def _evaluate_defender(self, ai_texts: List[str]) -> Dict[str, float]:
+        from ..text_evasion.evaluate import compute_auroc
+
+        human_texts = self.eval_references[:len(ai_texts)]
+        if len(human_texts) != len(ai_texts):
+            raise ValueError("Held-out AI and human evaluation samples must be aligned")
+        ai_scores = np.asarray(self.defender.predict_batch(ai_texts), dtype=np.float64)
+        human_scores = np.asarray(self.defender.predict_batch(human_texts), dtype=np.float64)
+        scores = np.concatenate([ai_scores, human_scores])
+        labels = [1] * len(ai_scores) + [0] * len(human_scores)
+        predictions = scores >= 0.5
+        return {
+            "accuracy": float(np.mean(predictions == np.asarray(labels))),
+            "auroc": compute_auroc(scores.tolist(), labels),
+            "ai_detection_rate": float(np.mean(ai_scores >= 0.5)),
+            "attack_success_rate": float(np.mean(ai_scores < 0.5)),
+            "num_ai": len(ai_scores),
+            "num_human": len(human_scores),
+        }
+
+    @staticmethod
+    def _compute_update_effects(
+        before_attack: Dict[str, float],
+        after_attack: Dict[str, float],
+        after_defense: Dict[str, float],
+    ) -> Dict[str, float]:
+        """Compute paired update effects from one held-out evaluation protocol."""
+        return {
+            "attacker_success_change": float(
+                after_attack["attack_success_rate"] - before_attack["attack_success_rate"]
+            ),
+            "defender_accuracy_change": float(
+                after_defense["accuracy"] - after_attack["accuracy"]
+            ),
+            "defender_auroc_change": float(
+                after_defense["auroc"] - after_attack["auroc"]
+            ),
+        }
 
     def run(self):
         """Execute the full arms race experiment."""
@@ -131,61 +188,44 @@ class ArmsRaceExperiment:
                 "=" * 60, round_idx + 1, cfg.num_rounds, "=" * 60,
             )
 
-            round_metrics = {"round": round_idx + 1}
+            round_metrics = {"round": round_idx + 1, "eval_samples": len(self.eval_prompts)}
+
+            eval_prompts = self.eval_prompts[:min(cfg.eval_prompts, len(self.eval_prompts))]
+            pre_attack_texts = self._generate(
+                eval_prompts, seed=cfg.seed + 10_000 * round_idx,
+            )
+            before_attack = self._evaluate_defender(pre_attack_texts)
 
             # === Attacker phase ===
             logger.info("--- Attacker phase ---")
-            self.attacker.train()
-
-            # Evaluate the attacker. For text mode we evaluate strictly on the
-            # held-out prompt split (disjoint from the prompts the defender is
-            # retrained on below) so the Nash gap is not inflated by leakage.
-            if self.eval_prompt_idx:
-                attacker_eval = self.attacker.evaluate(
-                    num_samples=min(cfg.eval_prompts, 200),
-                    prompt_indices=self.eval_prompt_idx,
-                )
-            else:
-                attacker_eval = self.attacker.evaluate(num_samples=min(cfg.eval_prompts, 200))
-            round_metrics["attacker"] = attacker_eval
+            self.attacker.train(max_steps=cfg.attacker_steps_per_round)
+            post_attack_texts = self._generate(
+                eval_prompts, seed=cfg.seed + 10_000 * round_idx,
+            )
+            after_attack = self._evaluate_defender(post_attack_texts)
+            round_metrics["before_attacker_update"] = before_attack
+            round_metrics["after_attacker_update"] = after_attack
 
             logger.info(
-                "Attacker: evasion=%.3f, semantic=%.3f, attack_success=%.1f%%",
-                attacker_eval.get("mean_evasion", 0),
-                attacker_eval.get("mean_semantic_similarity", 0),
-                attacker_eval.get("attack_success_rate", 0) * 100,
+                "Attacker update: held-out attack success=%.1f%%, detector accuracy=%.3f",
+                after_attack.get("attack_success_rate", 0) * 100,
+                after_attack.get("accuracy", 0),
             )
 
             # === Defender phase ===
             if self.defender is not None:
                 logger.info("--- Defender phase ---")
 
-                # Generate fresh samples from the attacker on the TRAINING prompts
-                # (disjoint from the eval set) for defender retraining.
-                import torch
-
-                device = next(self.attacker.model.parameters()).device
-                train_idx = self.train_prompt_idx or list(range(len(self.attacker.prompts)))
-                sample_ids = train_idx[: cfg.defender_retrain_samples]
-                attacker_texts = []
-                for i in sample_ids:
-                    prompt = self.attacker.prompts[i]
-                    inputs = self.attacker.tokenizer(
-                        prompt, return_tensors="pt", truncation=True, max_length=256
-                    ).to(device)
-                    with torch.no_grad():
-                        gen = self.attacker.model.generate(**inputs, max_new_tokens=200, do_sample=True)
-                    text = self.attacker.tokenizer.decode(
-                        gen[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
-                    )
-                    attacker_texts.append(text)
-
-                human_refs = [self.attacker.references[i] for i in sample_ids]
+                n_train = min(cfg.defender_retrain_samples // 2, len(self.train_prompts))
+                attacker_texts = self._generate(
+                    self.train_prompts[:n_train], seed=cfg.seed + 10_000 * round_idx + 2,
+                )
+                human_refs = self.train_references[:n_train]
                 defender_metrics = self.defender.retrain(
                     ai_texts=attacker_texts,
                     human_texts=human_refs,
                 )
-                round_metrics["defender"] = defender_metrics
+                round_metrics["defender_training"] = defender_metrics
 
                 logger.info(
                     "Defender retrained: accuracy=%.3f, auroc=%.3f",
@@ -196,42 +236,25 @@ class ArmsRaceExperiment:
                 # Update attacker's detector ensemble with the retrained defender
                 # (this closes the adversarial loop).
                 self._update_attacker_detectors()
-            else:
-                round_metrics["defender"] = {"note": "No defender configured"}
-
-            # === Compute Nash-style equilibrium gap on the disjoint eval set ===
-            round_metrics["nash_gap"] = self._compute_nash_gap(round_metrics)
+            after_defense = self._evaluate_defender(post_attack_texts)
+            round_metrics["after_defender_update"] = after_defense
+            round_metrics["update_effects"] = self._compute_update_effects(
+                before_attack, after_attack, after_defense,
+            )
 
             # === Record metrics ===
             self.history.append(round_metrics)
             self._save_history()
 
             logger.info(
-                "Round %d complete. Nash gap = %.4f",
-                round_idx + 1, round_metrics["nash_gap"],
+                "Round %d complete. Attacker change = %+.4f, defender accuracy change = %+.4f",
+                round_idx + 1,
+                round_metrics["update_effects"]["attacker_success_change"],
+                round_metrics["update_effects"]["defender_accuracy_change"],
             )
 
         logger.info("\n%s\n  ARMS RACE COMPLETE\n%s", "=" * 60, "=" * 60)
         self._print_summary()
-
-    @staticmethod
-    def _compute_nash_gap(round_metrics: Dict) -> float:
-        """Return the best-response deficit ∈ [0, 1].
-
-        Interpretation: the fraction of AI samples correctly flagged by the
-        defender that the attacker did NOT already bypass. A gap of 0 means the
-        attacker has already defeated every improvement the defender could make
-        on this round (equilibrium); a gap of 1 means the defender fully catches
-        an attacker that didn't evade anything. Bounded, nonnegative, and
-        game-theoretically meaningful (best-response deficit under the zero-sum
-        detector/attacker formulation).
-        """
-        atk = round_metrics.get("attacker", {}) or {}
-        defn = round_metrics.get("defender", {}) or {}
-        attacker_success = float(atk.get("attack_success_rate", 0.0))  # in [0,1]
-        defender_acc = float(defn.get("accuracy", 0.0))                # in [0,1]
-        gap = defender_acc - (1.0 - attacker_success)
-        return float(max(0.0, min(1.0, gap)))
 
     def _update_attacker_detectors(self):
         """Replace one of the attacker's detector rewards with the retrained defender."""
@@ -243,12 +266,11 @@ class ArmsRaceExperiment:
         def defender_detect(text: str) -> float:
             return self.defender.predict(text)
 
-        # Replace or add the RADAR defender reward
-        new_reward = DetectorReward(defender_detect, name="radar_defender")
+        new_reward = DetectorReward(defender_detect, name="adaptive_defender")
 
         # Find and replace existing radar reward, or append
         for i, dr in enumerate(self.attacker.reward_fn.detector_rewards):
-            if dr.name == "radar_defender":
+            if dr.name == "adaptive_defender":
                 self.attacker.reward_fn.detector_rewards[i] = new_reward
                 return
         self.attacker.reward_fn.detector_rewards.append(new_reward)
@@ -260,41 +282,23 @@ class ArmsRaceExperiment:
             json.dump(self.history, f, indent=2, default=str)
 
     def _print_summary(self):
-        """Print a summary table of the arms race.
-
-        The ``Nash Gap`` column is the best-response deficit on the disjoint eval
-        prompt set: defender_accuracy − (1 − attacker_success_rate), clipped to
-        [0, 1]. Zero means equilibrium (defender has nothing to gain over
-        attacker's current policy); one means maximal detectability.
-        """
+        """Print paired attacker and defender update effects."""
         print(f"\n{'=' * 95}")
-        print("  ARMS RACE EQUILIBRIUM SUMMARY")
+        print("  ARMS RACE UPDATE SUMMARY")
         print(f"{'=' * 95}")
-        print(f"  {'Round':>5}  {'Attack Evasion':>15}  {'Attack Success':>15}  {'Defender AUROC':>15}  {'Nash Gap':>10}")
+        print(f"  {'Round':>5}  {'Attack Success':>15}  {'Attacker Delta':>15}  {'Defender AUROC':>15}  {'Defender Delta':>15}")
         print(f"  {'-'*5}  {'-'*15}  {'-'*15}  {'-'*15}  {'-'*10}")
 
         for entry in self.history:
             r = entry["round"]
-            atk = entry.get("attacker", {}) or {}
-            defn = entry.get("defender", {}) or {}
-            evasion = float(atk.get('mean_evasion', 0.0))
-            auroc = float(defn.get('auroc', 0.0))
-            gap = float(entry.get('nash_gap', self._compute_nash_gap(entry)))
+            after_attack = entry["after_attacker_update"]
+            after_defense = entry["after_defender_update"]
+            effects = entry["update_effects"]
             print(
-                f"  {r:>5}  {evasion:>15.4f}  "
-                f"{atk.get('attack_success_rate', 0):>14.1%}  "
-                f"{auroc:>15.4f}  "
-                f"{gap:>10.4f}"
+                f"  {r:>5}  {after_attack['attack_success_rate']:>14.1%}  "
+                f"{effects['attacker_success_change']:>+15.4f}  "
+                f"{after_defense['auroc']:>15.4f}  "
+                f"{effects['defender_accuracy_change']:>+15.4f}"
             )
 
         print(f"{'=' * 95}")
-
-        # Convergence analysis on the Nash gap
-        if len(self.history) >= 3:
-            gaps = [float(h.get("nash_gap", self._compute_nash_gap(h))) for h in self.history]
-            last_3 = gaps[-3:]
-            if max(last_3) - min(last_3) < 0.02:
-                print(f"\n  Nash equilibrium reached. Gap stationary at {np.mean(last_3):.3f}")
-            else:
-                trend = "closing" if gaps[-1] < gaps[0] else "widening"
-                print(f"\n  Gap is still {trend} after {len(self.history)} rounds (Δ={gaps[-1] - gaps[0]:+.3f}).")

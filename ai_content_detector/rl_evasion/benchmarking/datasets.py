@@ -32,6 +32,28 @@ class BenchmarkDataset:
     ai_texts: List[str]
     human_references: List[str] = field(default_factory=list)
     ai_texts_available: bool = True
+    sample_ids: List[str] = field(default_factory=list)
+    source_revision: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        n = len(self.prompts)
+        if n == 0:
+            raise ValueError("BenchmarkDataset must contain at least one sample")
+        if len(self.ai_texts) != n:
+            raise ValueError(
+                f"prompts and ai_texts must have equal lengths, got {n} and {len(self.ai_texts)}"
+            )
+        if self.human_references and len(self.human_references) != n:
+            raise ValueError(
+                "human_references must be empty or aligned one-to-one with prompts, "
+                f"got {len(self.human_references)} and {n}"
+            )
+        if self.sample_ids and len(self.sample_ids) != n:
+            raise ValueError("sample_ids must be empty or aligned with prompts")
+        if not self.sample_ids:
+            self.sample_ids = [f"{self.name}:{index}" for index in range(n)]
+        if self.ai_texts_available and any(not text.strip() for text in self.ai_texts):
+            raise ValueError("ai_texts_available=True requires a nonempty AI text for every sample")
 
     def __len__(self) -> int:
         return len(self.prompts)
@@ -43,6 +65,8 @@ class BenchmarkDataset:
             ai_texts=self.ai_texts[:n],
             human_references=self.human_references[:n] if self.human_references else [],
             ai_texts_available=self.ai_texts_available,
+            sample_ids=self.sample_ids[:n],
+            source_revision=self.source_revision,
         )
 
 
@@ -89,6 +113,7 @@ def load_hc3(
         prompts=prompts,
         ai_texts=ai_texts,
         human_references=human_refs,
+        source_revision=str(getattr(ds.info, "version", "unknown")),
     )
 
 
@@ -135,6 +160,7 @@ def load_cnn_dailymail(
         human_references=human_refs,
         # No pre-generated AI samples — post-hoc methods should be skipped.
         ai_texts_available=False,
+        source_revision=str(getattr(ds.info, "version", "unknown")),
     )
 
 
@@ -159,6 +185,15 @@ def load_from_files(
     ai_texts = read_lines(ai_file)
     human_refs = read_lines(human_file) if human_file else []
     prompts = read_lines(prompts_file) if prompts_file else ai_texts
+
+    if prompts_file and len(prompts) != len(ai_texts):
+        raise ValueError(
+            f"Prompt and AI files have different nonempty line counts: {len(prompts)} != {len(ai_texts)}"
+        )
+    if human_file and len(human_refs) != len(ai_texts):
+        raise ValueError(
+            f"Human and AI files have different nonempty line counts: {len(human_refs)} != {len(ai_texts)}"
+        )
 
     return BenchmarkDataset(
         name=f"custom({os.path.basename(ai_file)})",

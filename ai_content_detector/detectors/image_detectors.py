@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import numpy as np
 from PIL import Image
@@ -16,6 +16,16 @@ from PIL import Image
 from .ensemble import BaseDetector, DetectionResult
 
 logger = logging.getLogger(__name__)
+
+
+def _check_hf_image_config(instance, model_name: str) -> bool:
+    try:
+        from transformers import AutoConfig
+        AutoConfig.from_pretrained(model_name)
+        return True
+    except Exception as error:
+        instance._availability_error = str(error)
+        return False
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 _ML_PIPELINE = _REPO_ROOT / "ml_pipeline"
@@ -328,12 +338,7 @@ class SigLIPDetector(BaseDetector):
 
     def is_available(self) -> bool:
         if self._available is None:
-            # Lightweight check — don't download model yet
-            try:
-                from transformers import pipeline  # noqa: F401
-                self._available = True
-            except ImportError:
-                self._available = False
+            self._available = _check_hf_image_config(self, self._model_id)
         return bool(self._available)
 
     def detect(self, content: Union[Image.Image, np.ndarray]) -> DetectionResult:
@@ -452,50 +457,71 @@ class FrequencyDetector(BaseDetector):
 
 
 class MLEPDetector(BaseDetector):
-    """Multi-granularity Local Entropy Patterns for AI-image detection.
-
-    Yuan et al. (NeurIPS 2025) propose MLEP feature maps: compute Shannon
-    entropy on shuffled small patches at multiple scales, disrupting semantic
-    content while preserving local pixel-dependency cues. Their best detector is
-    a CNN trained on these maps. This class implements the MLEP feature
-    extraction path and a lightweight heuristic scorer; pass ``classifier_path``
-    to use a trained sklearn-style classifier on the extracted feature vector.
-    """
+    """Multi-granularity Local Entropy Patterns with a CNN classifier."""
 
     name = "MLEP Entropy Patterns"
     modality = "image"
 
     def __init__(
         self,
-        patch_sizes: Sequence[int] = (8, 16, 32),
-        bins: int = 16,
-        threshold: float = 0.32,
+        patch_size: int = 2,
+        scales: Sequence[float] = (1.0, 0.5, 0.25),
         classifier_path: Optional[str] = None,
+        classifier: Any = None,
         image_size: int = 256,
         seed: int = 0,
+        device: str = "auto",
     ):
-        self.patch_sizes = tuple(int(p) for p in patch_sizes)
-        self.bins = int(bins)
-        self.threshold = float(threshold)
+        self.patch_size = int(patch_size)
+        self.scales = tuple(float(scale) for scale in scales)
+        if self.patch_size < 1:
+            raise ValueError("patch_size must be positive")
+        if not self.scales or any(not 0.0 < scale <= 1.0 for scale in self.scales):
+            raise ValueError("scales must be a nonempty sequence in (0, 1]")
         self.classifier_path = classifier_path
         self.image_size = int(image_size)
         self.seed = int(seed)
-        self._classifier = None
+        self._device_spec = device
+        self._classifier = classifier
         self._available: Optional[bool] = None
 
     def is_available(self) -> bool:
         if self._available is None:
-            if self.classifier_path is None:
-                self._available = True
-            else:
-                self._available = Path(self.classifier_path).exists()
+            self._available = self._classifier is not None or bool(
+                self.classifier_path and Path(self.classifier_path).exists()
+            )
         return bool(self._available)
 
     def _load_classifier(self):
-        if self.classifier_path is None or self._classifier is not None:
+        if self._classifier is not None:
             return
-        import joblib
-        self._classifier = joblib.load(self.classifier_path)
+        if not self.classifier_path:
+            raise RuntimeError("MLEP requires a trained CNN classifier checkpoint")
+        import torch
+
+        device = self._device_spec
+        if device == "auto":
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._device = device
+        channels = 3 * len(self.scales)
+        self._classifier = self.build_resnet50(channels)
+        state = torch.load(self.classifier_path, map_location=device, weights_only=True)
+        if isinstance(state, dict) and "state_dict" in state:
+            state = state["state_dict"]
+        self._classifier.load_state_dict(state)
+        self._classifier.to(device).eval()
+
+    @staticmethod
+    def build_resnet50(input_channels: int):
+        import torch.nn as nn
+        from torchvision.models import resnet50
+
+        model = resnet50(weights=None)
+        model.conv1 = nn.Conv2d(
+            input_channels, 64, kernel_size=7, stride=2, padding=3, bias=False,
+        )
+        model.fc = nn.Linear(model.fc.in_features, 1)
+        return model
 
     @staticmethod
     def _to_rgb_float(content: Union[Image.Image, np.ndarray], size: int) -> np.ndarray:
@@ -513,107 +539,76 @@ class MLEPDetector(BaseDetector):
             arr = arr / 255.0 if arr.max() > 1.5 else arr
             image = Image.fromarray(np.clip(arr * 255.0, 0, 255).astype(np.uint8))
         image = image.resize((size, size), Image.BILINEAR)
-        return np.asarray(image, dtype=np.float32) / 255.0
+        return np.asarray(image, dtype=np.uint8)
 
     @staticmethod
-    def _patch_entropy(patch: np.ndarray, bins: int) -> float:
-        hist, _ = np.histogram(patch, bins=bins, range=(0.0, 1.0), density=False)
-        probs = hist.astype(np.float64)
-        total = probs.sum()
-        if total <= 0:
-            return 0.0
-        probs = probs[probs > 0] / total
-        return float(-(probs * np.log2(probs)).sum())
+    def _shuffle_patches(image: np.ndarray, patch_size: int, seed: int) -> np.ndarray:
+        """Spatially permute L by L patches independently for each channel."""
+        h, w, channels = image.shape
+        h_use = h - h % patch_size
+        w_use = w - w % patch_size
+        image = image[:h_use, :w_use]
+        n_y, n_x = h_use // patch_size, w_use // patch_size
+        output = np.empty_like(image)
+        for channel in range(channels):
+            plane = image[..., channel]
+            patches = plane.reshape(n_y, patch_size, n_x, patch_size).transpose(0, 2, 1, 3)
+            flat = patches.reshape(n_y * n_x, patch_size, patch_size)
+            permutation = np.random.default_rng(seed + channel).permutation(len(flat))
+            shuffled = flat[permutation].reshape(n_y, n_x, patch_size, patch_size)
+            output[..., channel] = shuffled.transpose(0, 2, 1, 3).reshape(h_use, w_use)
+        return output
 
-    def _entropy_map(self, gray: np.ndarray, patch_size: int) -> np.ndarray:
-        rng = np.random.default_rng(self.seed + patch_size)
-        h, w = gray.shape
-        n_y = h // patch_size
-        n_x = w // patch_size
-        if n_y == 0 or n_x == 0:
-            raise ValueError(f"patch_size={patch_size} is larger than image size {gray.shape}")
+    @staticmethod
+    def _resample(image: np.ndarray, scale: float) -> np.ndarray:
+        h, w = image.shape[:2]
+        pil = Image.fromarray(image)
+        down = pil.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.BILINEAR)
+        return np.asarray(down.resize((w, h), Image.BILINEAR), dtype=np.uint8)
 
-        out = np.zeros((n_y, n_x), dtype=np.float32)
-        for y in range(n_y):
-            for x in range(n_x):
-                patch = gray[
-                    y * patch_size : (y + 1) * patch_size,
-                    x * patch_size : (x + 1) * patch_size,
-                ].reshape(-1)
-                shuffled = rng.permutation(patch)
-                out[y, x] = self._patch_entropy(shuffled, self.bins)
-        return out
-
-    def extract_features(self, content: Union[Image.Image, np.ndarray]) -> Dict[str, float]:
-        img = self._to_rgb_float(content, self.image_size)
-        gray = img.mean(axis=-1)
-        max_entropy = float(np.log2(max(self.bins, 2)))
-
-        features: Dict[str, float] = {}
-        scale_means = []
-        scale_stds = []
-        for patch_size in self.patch_sizes:
-            emap = self._entropy_map(gray, patch_size)
-            norm = emap / max_entropy if max_entropy > 0 else emap
-            gy, gx = np.gradient(norm.astype(np.float32))
-            features[f"mlep_mean_p{patch_size}"] = float(np.mean(norm))
-            features[f"mlep_std_p{patch_size}"] = float(np.std(norm))
-            features[f"mlep_grad_p{patch_size}"] = float(np.mean(np.sqrt(gx ** 2 + gy ** 2)))
-            scale_means.append(features[f"mlep_mean_p{patch_size}"])
-            scale_stds.append(features[f"mlep_std_p{patch_size}"])
-
-        features["mlep_mean_entropy"] = float(np.mean(scale_means))
-        features["mlep_entropy_std"] = float(np.mean(scale_stds))
-        features["mlep_cross_scale_delta"] = float(max(scale_means) - min(scale_means))
-        # Heuristic artifact statistic: semantic content is mostly disrupted, so
-        # unstable entropy across local positions/scales is treated as evidence.
-        features["mlep_artifact_index"] = float(
-            0.45 * features["mlep_entropy_std"]
-            + 0.35 * features["mlep_cross_scale_delta"]
-            + 0.20 * abs(features["mlep_mean_entropy"] - 0.55)
+    @staticmethod
+    def _local_entropy_patterns(image: np.ndarray) -> np.ndarray:
+        """Compute exact categorical entropy in every stride-1 2 by 2 window."""
+        values = np.stack(
+            [image[:-1, :-1], image[1:, :-1], image[:-1, 1:], image[1:, 1:]],
+            axis=-1,
         )
-        return features
+        counts = (values[..., :, None] == values[..., None, :]).sum(axis=-1)
+        return (-np.log2(counts.astype(np.float32) / 4.0)).mean(axis=-1)
 
-    def _feature_vector(self, features: Dict[str, float]) -> np.ndarray:
-        keys = []
-        for patch_size in self.patch_sizes:
-            keys.extend([
-                f"mlep_mean_p{patch_size}",
-                f"mlep_std_p{patch_size}",
-                f"mlep_grad_p{patch_size}",
-            ])
-        keys.extend(["mlep_mean_entropy", "mlep_entropy_std", "mlep_cross_scale_delta", "mlep_artifact_index"])
-        return np.array([features[k] for k in keys], dtype=np.float32)
+    def extract_mlep_map(self, content: Union[Image.Image, np.ndarray]) -> np.ndarray:
+        image = self._to_rgb_float(content, self.image_size)
+        shuffled = self._shuffle_patches(image, self.patch_size, self.seed)
+        pyramid = np.concatenate(
+            [self._resample(shuffled, scale) for scale in self.scales], axis=-1,
+        )
+        return self._local_entropy_patterns(pyramid).astype(np.float32)
 
     def detect(self, content: Union[Image.Image, np.ndarray]) -> DetectionResult:
         if not self.is_available():
             raise RuntimeError("MLEP classifier path is not available")
 
-        features = self.extract_features(content)
-        vector = self._feature_vector(features)
-        if self.classifier_path is not None:
-            self._load_classifier()
-            if hasattr(self._classifier, "predict_proba"):
-                ai_score = float(self._classifier.predict_proba([vector])[0][1])
-            else:
-                raw = float(self._classifier.decision_function([vector])[0])
-                ai_score = float(1.0 / (1.0 + np.exp(-raw)))
-        else:
-            ai_score = float(
-                1.0 / (1.0 + np.exp(-10.0 * (features["mlep_artifact_index"] - self.threshold)))
-            )
+        import torch
 
-        ai_score = float(np.clip(ai_score, 0.0, 1.0))
+        self._load_classifier()
+        device = next(self._classifier.parameters()).device
+        feature_map = self.extract_mlep_map(content)
+        tensor = torch.from_numpy(feature_map.transpose(2, 0, 1)).unsqueeze(0).to(device)
+        tensor = tensor / 2.0
+        self._classifier.eval()
+        with torch.no_grad():
+            logit = self._classifier(tensor).reshape(-1)[0]
+        ai_score = float(torch.sigmoid(logit).item())
         return DetectionResult(
             score=ai_score,
             label=DetectionResult.label_from_score(ai_score),
             detector_name=self.name,
             details={
-                **features,
-                "patch_sizes": list(self.patch_sizes),
-                "bins": self.bins,
-                "threshold": self.threshold,
+                "mlep_shape": list(feature_map.shape),
+                "patch_size": self.patch_size,
+                "scales": list(self.scales),
                 "classifier_path": self.classifier_path,
+                "score_semantics": "classifier_probability",
             },
         )
 
@@ -717,17 +712,11 @@ class WaRPADDetector(BaseDetector):
     HFwav(x)  = cos( f(x), f(x − α · HF_haar2(x)) )         α = 0.1
     WaRPAD(x) = (1/n_patch) · Σ_p HFwav(x_p)
 
-    where ``f`` is a self-supervised vision encoder (default: DINOv3 ViT-L/16,
-    `facebook/dinov3-vitl16-pretrain-lvd1689m`, CLS token, L2-normalized),
+    where ``f`` is the paper's DINOv2 ViT-L/14 encoder, CLS token, L2-normalized,
     ``HF_haar2`` extracts the high-frequency content via a 2-level Haar DWT
     (zero out LL2 and reconstruct), and the image is rescaled to ``d_rescale``
     (default 896) and tiled into non-overlapping ``d_patch`` × ``d_patch``
-    patches (default 224 — DINOv3 ViT-L/16 native input size).
-
-    The paper used DINOv2 ViT-L/14; we default to DINOv3 ViT-L/16 (released
-    Aug 2025) which uses the same parameter scale (~300 M) but is the current
-    state-of-the-art self-supervised backbone — note that DINOv3 weights are
-    gated on HuggingFace; authenticate with ``huggingface-cli login`` first.
+    patches (default 224).
 
     Generated images yield embeddings that are NOT robust to HF perturbations,
     so HFwav is small for AI and close to 1 for real photos. The reported AI
@@ -739,17 +728,21 @@ class WaRPADDetector(BaseDetector):
 
     def __init__(
         self,
-        backbone: str = "facebook/dinov3-vitl16-pretrain-lvd1689m",
+        backbone: str = "facebook/dinov2-large",
         d_rescale: int = 896,
         d_patch: int = 224,
         alpha: float = 0.1,
         device: str = "auto",
+        threshold: Optional[float] = None,
+        calibrator: Optional[Callable[[float], float]] = None,
     ):
         self._backbone_name = backbone
         self._d_rescale = int(d_rescale)
         self._d_patch = int(d_patch)
         self._alpha = float(alpha)
         self._device_spec = device
+        self._threshold = threshold
+        self._calibrator = calibrator
         self._model = None
         self._processor = None
         self._available: Optional[bool] = None
@@ -779,8 +772,9 @@ class WaRPADDetector(BaseDetector):
             try:
                 import pywt  # noqa: F401
                 from transformers import AutoModel  # noqa: F401
-                self._available = True
-            except ImportError:
+                self._available = _check_hf_image_config(self, self._backbone_name)
+            except Exception as error:
+                self._availability_error = str(error)
                 self._available = False
         return bool(self._available)
 
@@ -873,17 +867,30 @@ class WaRPADDetector(BaseDetector):
         hfwav_avg = float(np.mean(hfwav_per_patch))
 
         # Generated images are non-robust → low cosine → high AI score.
-        ai_score = float(np.clip(1.0 - hfwav_avg, 0.0, 1.0))
+        raw_ai_score = float(np.clip(1.0 - hfwav_avg, 0.0, 1.0))
+        if self._calibrator is not None:
+            ai_score = float(self._calibrator(raw_ai_score))
+            label = DetectionResult.label_from_score(ai_score, 0.5, 0.5)
+            semantics = "calibrated_probability"
+        else:
+            ai_score = raw_ai_score
+            label = "uncertain" if self._threshold is None else (
+                "ai" if raw_ai_score >= self._threshold else "human"
+            )
+            semantics = "raw_warpad_anomaly_score"
 
         return DetectionResult(
             score=ai_score,
-            label=DetectionResult.label_from_score(ai_score),
+            label=label,
             detector_name=self.name,
             details={
                 "hfwav_avg": hfwav_avg,
                 "n_patch": int(len(orig_patches)),
                 "alpha": self._alpha,
                 "backbone": self._backbone_name,
+                "raw_warpad_score": raw_ai_score,
+                "threshold": self._threshold,
+                "score_semantics": semantics,
             },
         )
 
@@ -894,31 +901,7 @@ class WaRPADDetector(BaseDetector):
 
 
 class DenoisingTrajectoryDetector(BaseDetector):
-    """Zero-shot AI-image detector using denoising-trajectory biases.
-
-    Faithful to the framing of DTAD (Liang et al., NeurIPS 2025: "Denoising
-    Trajectory Biases for Zero-Shot AI-Generated Image Detection") and built on
-    the public LATTE pipeline (Vasilcoiu et al.,
-    https://github.com/AnaMVasilcoiu/LATTE-Diffusion-Detector). At each of a
-    selected set of timesteps t we add Gaussian noise to the VAE latent of the
-    input image and run a single-step DDIM denoise; we then measure the cosine
-    similarity between the recovered latent and the original. Empirically,
-    diffusion-generated images converge faster along this trajectory (their
-    latents lie closer to the model's own manifold), so high mean similarity →
-    AI-generated.
-
-    Parameters
-    ----------
-    sd_model_id
-        Pretrained Stable Diffusion identifier (must expose UNet, VAE,
-        scheduler — any v1.x checkpoint works).
-    timesteps
-        Trajectory points to sample. Defaults to a 5-point grid covering
-        early/mid/late denoising.
-    seed
-        RNG seed for the per-timestep noise (kept fixed so the metric is
-        deterministic per image).
-    """
+    """DTAD using DDIM inversion and intermediate CLIP image features."""
 
     name = "Denoising Trajectory"
     modality = "image"
@@ -926,62 +909,68 @@ class DenoisingTrajectoryDetector(BaseDetector):
     def __init__(
         self,
         sd_model_id: str = "stable-diffusion-v1-5/stable-diffusion-v1-5",
-        timesteps: tuple = (50, 250, 500, 750, 950),
-        seed: int = 0,
+        clip_model_id: str = "openai/clip-vit-large-patch14",
+        num_inference_steps: int = 50,
+        trajectory_indices: Optional[Sequence[int]] = None,
+        clip_layer: int = 15,
         device: str = "auto",
     ):
         self._sd_model_id = sd_model_id
-        self._timesteps = tuple(int(t) for t in timesteps)
-        self._seed = int(seed)
+        self._clip_model_id = clip_model_id
+        self._num_inference_steps = int(num_inference_steps)
+        self._trajectory_indices = None if trajectory_indices is None else tuple(trajectory_indices)
+        self._clip_layer = int(clip_layer)
         self._device_spec = device
         self._pipeline = None
+        self._clip_model = None
+        self._clip_processor = None
         self._available: Optional[bool] = None
 
     def _load(self):
-        if self._pipeline is not None:
+        if self._pipeline is not None and self._clip_model is not None:
             return
         try:
             import torch
-            from diffusers import StableDiffusionPipeline, DDIMScheduler
+            from diffusers import DDIMScheduler, StableDiffusionPipeline
+            from transformers import AutoProcessor, CLIPVisionModel
 
             device = self._device_spec
             if device == "auto":
                 device = "cuda" if torch.cuda.is_available() else "cpu"
             self._device = device
-
             dtype = torch.float16 if device == "cuda" else torch.float32
             pipe = StableDiffusionPipeline.from_pretrained(
                 self._sd_model_id, torch_dtype=dtype, safety_checker=None,
             ).to(device)
-            # DDIM gives the deterministic single-step prediction we need.
             pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
             pipe.set_progress_bar_config(disable=True)
             pipe.unet.eval()
             pipe.vae.eval()
             self._pipeline = pipe
-
-            # Pre-compute the unconditional text embedding once (we use it as
-            # the "no prompt" condition for every step).
+            self._clip_processor = AutoProcessor.from_pretrained(self._clip_model_id)
+            self._clip_model = CLIPVisionModel.from_pretrained(
+                self._clip_model_id, torch_dtype=dtype,
+            ).to(device).eval()
             with torch.no_grad():
                 tokens = pipe.tokenizer(
-                    "", padding="max_length",
-                    max_length=pipe.tokenizer.model_max_length,
+                    "", padding="max_length", max_length=pipe.tokenizer.model_max_length,
                     return_tensors="pt",
                 ).to(device)
                 self._uncond_embed = pipe.text_encoder(**tokens).last_hidden_state
-
             self._available = True
-        except Exception as e:
-            logger.warning("DenoisingTrajectoryDetector unavailable: %s", e)
+        except Exception as error:
+            logger.warning("DenoisingTrajectoryDetector unavailable: %s", error)
             self._available = False
 
     def is_available(self) -> bool:
         if self._available is None:
             try:
-                import torch  # noqa: F401
-                from diffusers import StableDiffusionPipeline  # noqa: F401
-                self._available = True
-            except ImportError:
+                from diffusers import StableDiffusionPipeline
+                from transformers import CLIPVisionModel  # noqa: F401
+                StableDiffusionPipeline.load_config(self._sd_model_id)
+                self._available = _check_hf_image_config(self, self._clip_model_id)
+            except Exception as error:
+                self._availability_error = str(error)
                 self._available = False
         return bool(self._available)
 
@@ -989,85 +978,122 @@ class DenoisingTrajectoryDetector(BaseDetector):
         import torch
         from torchvision import transforms
 
-        # Stable Diffusion v1.x expects 512×512 inputs to its VAE.
-        tf = transforms.Compose([
-            transforms.Resize((512, 512)),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5] * 3, [0.5] * 3),  # to [-1, 1]
+        transform = transforms.Compose([
+            transforms.Resize((512, 512)), transforms.ToTensor(),
+            transforms.Normalize([0.5] * 3, [0.5] * 3),
         ])
-        x = tf(image.convert("RGB")).unsqueeze(0).to(self._device)
+        tensor = transform(image.convert("RGB")).unsqueeze(0).to(self._device)
         with torch.no_grad():
-            dist = self._pipeline.vae.encode(
-                x.to(dtype=self._pipeline.vae.dtype)
+            distribution = self._pipeline.vae.encode(
+                tensor.to(dtype=self._pipeline.vae.dtype),
             ).latent_dist
-            latent = dist.mean * 0.18215  # SD scaling factor
-        return latent
+        return distribution.mean * self._pipeline.vae.config.scaling_factor
+
+    @staticmethod
+    def _ddim_inversion_update(latent, predicted_noise, alpha_current, alpha_next):
+        predicted_clean = (
+            latent - (1.0 - alpha_current).sqrt() * predicted_noise
+        ) / alpha_current.sqrt().clamp(min=1e-8)
+        next_latent = (
+            alpha_next.sqrt() * predicted_clean
+            + (1.0 - alpha_next).sqrt() * predicted_noise
+        )
+        return next_latent, predicted_clean
+
+    def _decode_latents(self, latents: List["torch.Tensor"]) -> List[Image.Image]:
+        import torch
+
+        images = []
+        scaling = self._pipeline.vae.config.scaling_factor
+        for latent in latents:
+            with torch.no_grad():
+                decoded = self._pipeline.vae.decode(latent / scaling).sample
+            array = decoded[0].float().cpu().permute(1, 2, 0).numpy()
+            images.append(Image.fromarray(
+                np.clip((array / 2.0 + 0.5) * 255.0, 0, 255).astype(np.uint8),
+            ))
+        return images
+
+    def _clip_embeddings(self, images: List[Image.Image]) -> np.ndarray:
+        import torch
+
+        inputs = self._clip_processor(images=images, return_tensors="pt")
+        pixels = inputs["pixel_values"].to(
+            self._device, dtype=next(self._clip_model.parameters()).dtype,
+        )
+        with torch.no_grad():
+            outputs = self._clip_model(pixel_values=pixels, output_hidden_states=True)
+        if self._clip_layer >= len(outputs.hidden_states):
+            raise ValueError(
+                f"CLIP layer {self._clip_layer} unavailable; model has {len(outputs.hidden_states)} states"
+            )
+        embeddings = outputs.hidden_states[self._clip_layer][:, 0].float()
+        embeddings = torch.nn.functional.normalize(embeddings, dim=-1)
+        return embeddings.cpu().numpy()
 
     def detect(self, content: Union[Image.Image, np.ndarray]) -> DetectionResult:
         import torch
-        import torch.nn.functional as F
 
         self._load()
         if not self._available:
             raise RuntimeError("Denoising trajectory pipeline not available")
-
-        # Normalize input
         if isinstance(content, np.ndarray):
-            arr = content
-            if arr.ndim == 4:
-                arr = arr[0]
-            if arr.ndim == 3 and arr.shape[0] == 3 and arr.shape[-1] != 3:
-                arr = np.transpose(arr, (1, 2, 0))
-            if arr.dtype != np.uint8:
-                arr = np.clip(arr * 255.0 if arr.max() <= 1.0 else arr, 0, 255).astype(np.uint8)
-            image = Image.fromarray(arr)
+            array = np.asarray(content)
+            if array.ndim == 4:
+                array = array[0]
+            if array.ndim == 3 and array.shape[0] == 3 and array.shape[-1] != 3:
+                array = np.transpose(array, (1, 2, 0))
+            if array.dtype != np.uint8:
+                array = np.clip(array * 255.0 if array.max() <= 1.0 else array, 0, 255).astype(np.uint8)
+            image = Image.fromarray(array).convert("RGB")
         else:
-            image = content
+            image = content.convert("RGB")
 
-        latent = self._to_latent(image)            # (1, 4, 64, 64)
+        latent = self._to_latent(image)
         scheduler = self._pipeline.scheduler
-        scheduler.set_timesteps(1000, device=self._device)
-        all_t = scheduler.timesteps                # descending order
+        scheduler.set_timesteps(self._num_inference_steps, device=self._device)
+        timesteps = list(reversed(scheduler.timesteps))
+        selected = set(range(len(timesteps)) if self._trajectory_indices is None else self._trajectory_indices)
+        if any(index < 0 or index >= len(timesteps) for index in selected):
+            raise ValueError("trajectory_indices contains an out-of-range inversion step")
 
-        gen = torch.Generator(device=self._device).manual_seed(self._seed)
-        sims: List[float] = []
-        for t_idx in self._timesteps:
-            # Map our trajectory index (0..999) to the actual scheduler timestep tensor.
-            t = all_t[max(0, min(len(all_t) - 1, len(all_t) - 1 - t_idx))]
-
-            noise = torch.randn(
-                latent.shape, generator=gen, device=self._device, dtype=latent.dtype,
-            )
-            noisy = scheduler.add_noise(latent, noise, t.unsqueeze(0))
-
+        alphas = scheduler.alphas_cumprod.to(self._device, dtype=latent.dtype)
+        current = latent
+        denoising_outputs = []
+        selected_timesteps = []
+        for index, timestep in enumerate(timesteps):
             with torch.no_grad():
-                pred_noise = self._pipeline.unet(
-                    noisy, t,
+                predicted_noise = self._pipeline.unet(
+                    current, timestep,
                     encoder_hidden_states=self._uncond_embed.to(latent.dtype),
                 ).sample
-                # Single-step DDIM update: predicted x0 from epsilon-prediction.
-                alpha_bar = scheduler.alphas_cumprod.to(self._device)[t]
-                sqrt_ab = alpha_bar.sqrt()
-                sqrt_1mab = (1 - alpha_bar).sqrt()
-                x0_pred = (noisy - sqrt_1mab * pred_noise) / sqrt_ab.clamp(min=1e-6)
+            alpha_current = alphas[timestep]
+            alpha_next = alphas[timesteps[index + 1]] if index + 1 < len(timesteps) else alpha_current
+            current, predicted_clean = self._ddim_inversion_update(
+                current, predicted_noise, alpha_current, alpha_next,
+            )
+            if index in selected:
+                denoising_outputs.append(predicted_clean.detach())
+                selected_timesteps.append(int(timestep.item()))
 
-            sim = F.cosine_similarity(
-                x0_pred.flatten(1), latent.flatten(1), dim=-1,
-            ).item()
-            sims.append(float(sim))
-
-        mean_sim = float(np.mean(sims))
-        # Generated images converge faster → high cosine similarity → high AI score.
-        ai_score = float(np.clip((mean_sim + 1.0) / 2.0, 0.0, 1.0))
-
+        trajectory_images = self._decode_latents(denoising_outputs)
+        original = image.resize((512, 512), Image.BILINEAR)
+        embeddings = self._clip_embeddings([original] + trajectory_images)
+        similarities = embeddings[1:] @ embeddings[0]
+        mean_similarity = float(similarities.mean())
+        ai_score = float(np.clip((mean_similarity + 1.0) / 2.0, 0.0, 1.0))
         return DetectionResult(
             score=ai_score,
             label=DetectionResult.label_from_score(ai_score),
             detector_name=self.name,
             details={
-                "mean_cosine": mean_sim,
-                "per_step_cosine": sims,
-                "timesteps": list(self._timesteps),
+                "mean_clip_similarity": mean_similarity,
+                "summed_clip_similarity": float(similarities.sum()),
+                "per_step_clip_similarity": similarities.tolist(),
+                "timesteps": selected_timesteps,
                 "sd_model_id": self._sd_model_id,
+                "clip_model_id": self._clip_model_id,
+                "clip_layer": self._clip_layer,
+                "score_semantics": "uncalibrated_similarity_transform",
             },
         )

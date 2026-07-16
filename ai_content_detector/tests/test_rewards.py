@@ -10,6 +10,11 @@ from ai_content_detector.rl_evasion.text_evasion.rewards import (
 )
 
 
+def test_composite_reward_rejects_empty_detector_ensemble():
+    with pytest.raises(ValueError, match="at least one detector"):
+        CompositeReward(detector_rewards=[])
+
+
 class TestDetectorReward:
     def test_basic_reward(self):
         dr = DetectorReward(lambda t: 0.8, name="test")
@@ -146,9 +151,8 @@ class TestCompositeReward:
         assert "det_1" in result["per_detector"]
 
     def test_no_detectors(self):
-        cr = self._make_composite([])
-        result = cr(_LONG_SRC, _LONG_GEN)
-        assert result["evasion"] == pytest.approx(0.5)
+        with pytest.raises(ValueError, match="at least one detector"):
+            self._make_composite([])
 
     def test_short_output_rejected(self):
         cr = self._make_composite([0.2], min_output_tokens=20)

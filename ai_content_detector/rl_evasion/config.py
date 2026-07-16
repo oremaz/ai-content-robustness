@@ -6,6 +6,18 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 
+def seed_everything(seed: int) -> None:
+    import random
+    import numpy as np
+    import torch
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
 @dataclass
 class TextEvasionConfig:
     """Configuration for text-modality RL evasion training."""
@@ -35,6 +47,7 @@ class TextEvasionConfig:
     grpo_num_generations: int = 4  # number of completions per prompt
     grpo_kl_coeff: float = 0.05  # KL penalty coefficient (manual loop only)
     grpo_max_grad_norm: float = 1.0
+    allow_reinforce_fallback: bool = False
     grpo_min_output_tokens: int = 20  # reject generations shorter than this
 
     # Reward weights
@@ -67,19 +80,15 @@ class TextEvasionConfig:
 
 @dataclass
 class MultiSPINConfig:
-    """Configuration for MultiSPIN distribution matching."""
+    """Configuration for SPIN with out-of-graph feature monitoring."""
 
     # Base SPIN config
     base_model: str = "Qwen/Qwen3.5-9B-Base"
     lora_rank: int = 16
     lora_alpha: int = 32
 
-    # MultiSPIN loss weights
+    # SPIN loss
     lambda_spin: float = 1.0
-    lambda_stylo: float = 0.5
-    lambda_emb: float = 0.3
-    lambda_auth: float = 0.2
-    lambda_task: float = 0.1
 
     # Feature matching
     embedding_model: str = "intfloat/e5-base-v2"
@@ -104,9 +113,10 @@ class MultiSPINConfig:
     # Reference corpus
     reference_dataset: str = "cnn_dailymail"
     reference_max_samples: int = 5000
+    evaluation_fraction: float = 0.2
 
-    # Style embedding matching (Rivera Soto et al., 2024)
-    lambda_style: float = 0.2
+    # Optional, out-of-graph feature monitoring
+    monitor_style_embeddings: bool = True
     style_embedding_model: str = "rrivera1849/LUAR-MUD"
 
     # Persistent feature bank
@@ -132,7 +142,7 @@ class ImageEvasionConfig:
     sample_batch_size: int = 8
     num_inference_steps: int = 50
     learning_rate: float = 1e-5
-    kl_coeff: float = 0.1
+    kl_coeff: float = 0.0
 
     # DDPO-IS (PPO-style) parameters
     clip_range: float = 1e-4  # PPO clip epsilon
@@ -141,9 +151,9 @@ class ImageEvasionConfig:
     stat_tracking_buffer_size: int = 32  # buffer size for running stats
 
     # Reward weights
-    reward_evasion_weight: float = 0.5
+    reward_evasion_weight: float = 0.7
     reward_clip_weight: float = 0.3
-    reward_aesthetic_weight: float = 0.2
+    reward_aesthetic_weight: float = 0.0
 
     # Detector ensemble
     detector_names: List[str] = field(
@@ -153,6 +163,7 @@ class ImageEvasionConfig:
     # Prompts
     prompt_dataset: str = "Gustavosta/Stable-Diffusion-Prompts"
     num_prompts: int = 200
+    evaluation_fraction: float = 0.2
 
     output_dir: str = "results/image_evasion"
     seed: int = 42
@@ -171,7 +182,7 @@ class ArmsRaceConfig:
     attacker_config: Optional[TextEvasionConfig] = None
     attacker_image_config: Optional[ImageEvasionConfig] = None
 
-    # Defender config (RADAR-style)
+    # Adaptive classifier defender
     defender_model: str = "roberta-base"
     defender_retrain_samples: int = 2000
     defender_epochs: int = 3

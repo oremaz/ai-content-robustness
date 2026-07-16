@@ -45,6 +45,8 @@ class GRPOTextEvasionTrainer:
 
     def setup(self):
         """Load model, tokenizer, LoRA, and reward functions."""
+        from ..config import seed_everything
+        seed_everything(self.config.seed)
         logger.info("Setting up GRPO text evasion trainer...")
         self._setup_model()
         self._setup_rewards()
@@ -74,7 +76,10 @@ class GRPOTextEvasionTrainer:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
         # Load in BF16/FP16 for efficiency
-        dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8 else torch.float16
+        if torch.cuda.is_available():
+            dtype = torch.bfloat16 if torch.cuda.get_device_capability()[0] >= 8 else torch.float16
+        else:
+            dtype = torch.float32
 
         self.model = AutoModelForCausalLM.from_pretrained(
             cfg.generator_model,
@@ -125,6 +130,10 @@ class GRPOTextEvasionTrainer:
                 logger.info("Loaded detector reward: %s", name)
             except Exception as e:
                 logger.warning("Could not load detector %s: %s", name, e)
+        if not detector_rewards:
+            raise RuntimeError(
+                f"No requested text detector could be loaded: {cfg.detector_names}"
+            )
 
         semantic_reward = SemanticSimilarityReward(
             model_name=cfg.embedding_model,
@@ -165,27 +174,46 @@ class GRPOTextEvasionTrainer:
         self.references = []
         for text in texts:
             words = text.split()
-            if len(words) < 30:
+            if len(words) < 70:
                 continue
             prompt = " ".join(words[:50])
             reference = " ".join(words[50:])
             self.prompts.append(prompt)
             self.references.append(reference)
 
+        if len(self.prompts) < 5:
+            raise ValueError("GRPO requires at least five prompt/reference pairs")
+        rng = np.random.default_rng(cfg.seed)
+        permutation = rng.permutation(len(self.prompts))
+        n_eval = max(1, int(round(cfg.evaluation_fraction * len(permutation))))
+        eval_indices = permutation[:n_eval]
+        train_indices = permutation[n_eval:]
+        all_prompts, all_references = self.prompts, self.references
+        self.eval_prompts = [all_prompts[index] for index in eval_indices]
+        self.eval_references = [all_references[index] for index in eval_indices]
+        self.prompts = [all_prompts[index] for index in train_indices]
+        self.references = [all_references[index] for index in train_indices]
+
         logger.info("Prepared %d prompt-reference pairs.", len(self.prompts))
 
-    def compute_reward(self, prompts: List[str], completions: List[str]) -> List[float]:
+    def compute_reward(
+        self,
+        prompts: List[str],
+        completions: List[str],
+        references: Optional[List[str]] = None,
+    ) -> List[float]:
         """Compute rewards for a batch of completions.
 
         For GRPO, this is called on each group of generations per prompt.
         """
         rewards = []
-        for prompt, completion in zip(prompts, completions):
-            result = self.reward_fn(prompt, completion)
+        sources = references if references is not None else prompts
+        for source, completion in zip(sources, completions):
+            result = self.reward_fn(source, completion)
             rewards.append(result["total"])
         return rewards
 
-    def train(self):
+    def train(self, max_steps: Optional[int] = None):
         """Run GRPO training loop.
 
         Uses TRL's GRPOTrainer if available, otherwise falls back to a
@@ -193,29 +221,43 @@ class GRPOTextEvasionTrainer:
         """
         cfg = self.config
         os.makedirs(cfg.output_dir, exist_ok=True)
+        with open(os.path.join(cfg.output_dir, "training_metadata.json"), "w") as metadata_file:
+            json.dump({
+                "method": "grpo" if not cfg.allow_reinforce_fallback else "grpo_or_reinforce_fallback",
+                "detector_names": cfg.detector_names,
+                "seed": cfg.seed,
+                "training_samples": len(self.prompts),
+                "evaluation_samples": len(self.eval_prompts),
+            }, metadata_file, indent=2)
 
         try:
-            self._train_with_trl()
-        except ImportError:
-            logger.warning("TRL not available, using manual GRPO training loop.")
-            self._train_manual()
+            self._train_with_trl(max_steps=max_steps)
+        except ImportError as error:
+            if not cfg.allow_reinforce_fallback:
+                raise RuntimeError(
+                    "TRL is required for GRPO. Set allow_reinforce_fallback=True only "
+                    "to run the separately named group-normalized REINFORCE baseline."
+                ) from error
+            logger.warning("TRL unavailable; running group-normalized REINFORCE baseline")
+            self._train_group_normalized_reinforce(max_steps=max_steps)
 
-    def _train_with_trl(self):
+    def _train_with_trl(self, max_steps: Optional[int] = None):
         """Train using HuggingFace TRL's GRPOTrainer."""
         from trl import GRPOConfig, GRPOTrainer
 
         cfg = self.config
 
         # Prepare dataset as HF Dataset
-        train_dataset = Dataset.from_dict({"prompt": self.prompts})
+        train_dataset = Dataset.from_dict({"prompt": self.prompts, "reference": self.references})
 
         # Reward function for TRL
         def reward_fn(completions: list, **kwargs) -> list:
             prompts_batch = kwargs.get("prompts", [""] * len(completions))
+            references_batch = kwargs.get("reference", prompts_batch)
             rewards = []
-            for prompt, completion in zip(prompts_batch, completions):
+            for reference, completion in zip(references_batch, completions):
                 text = completion[0]["content"] if isinstance(completion, list) else str(completion)
-                result = self.reward_fn(prompt, text)
+                result = self.reward_fn(reference, text)
                 rewards.append(torch.tensor(result["total"]))
             return rewards
 
@@ -230,6 +272,7 @@ class GRPOTextEvasionTrainer:
             num_generations=cfg.grpo_num_generations,
             max_completion_length=cfg.max_new_tokens,
             seed=cfg.seed,
+            max_steps=max_steps if max_steps is not None else -1,
         )
 
         # TRL renamed ``tokenizer`` → ``processing_class`` around 0.14. Pass both if
@@ -254,10 +297,11 @@ class GRPOTextEvasionTrainer:
         trainer.train()
         trainer.save_model(os.path.join(cfg.output_dir, "final"))
         self.tokenizer.save_pretrained(os.path.join(cfg.output_dir, "final"))
+        self._copy_training_metadata(os.path.join(cfg.output_dir, "final"))
         logger.info("TRL GRPO training complete. Model saved to %s", cfg.output_dir)
 
-    def _train_manual(self):
-        """Fallback: manual GRPO training loop without TRL.
+    def _train_group_normalized_reinforce(self, max_steps: Optional[int] = None):
+        """Manual group-normalized REINFORCE baseline without PPO clipping.
 
         Reference-faithful GRPO (DeepSeekMath 2024):
             1. For each prompt, sample K completions under the current policy.
@@ -273,6 +317,8 @@ class GRPOTextEvasionTrainer:
         """
         cfg = self.config
         device = next(self.model.parameters()).device
+        np.random.seed(cfg.seed)
+        torch.manual_seed(cfg.seed)
 
         optimizer = torch.optim.AdamW(
             filter(lambda p: p.requires_grad, self.model.parameters()),
@@ -306,6 +352,8 @@ class GRPOTextEvasionTrainer:
             indices = np.random.permutation(len(self.prompts))
 
             for idx in indices:
+                if max_steps is not None and step >= max_steps:
+                    break
                 prompt = self.prompts[idx]
                 inputs = self.tokenizer(
                     prompt, return_tensors="pt",
@@ -334,7 +382,7 @@ class GRPOTextEvasionTrainer:
 
                 # --- Score completions ---------------------------------------
                 rewards_np = np.array([
-                    self.reward_fn(prompt, comp)["total"] for comp in completions
+                    self.reward_fn(self.references[idx], comp)["total"] for comp in completions
                 ], dtype=np.float32)
                 all_rewards.extend(rewards_np.tolist())
 
@@ -384,13 +432,13 @@ class GRPOTextEvasionTrainer:
                     batch_loss = batch_loss + pg + cfg.grpo_kl_coeff * kl
 
                 batch_loss = batch_loss / float(keep_mask.sum())
-                batch_loss.backward()
-                torch.nn.utils.clip_grad_norm_(
-                    [p for p in self.model.parameters() if p.requires_grad],
-                    cfg.grpo_max_grad_norm,
-                )
+                (batch_loss / cfg.gradient_accumulation_steps).backward()
 
                 if (step + 1) % cfg.gradient_accumulation_steps == 0:
+                    torch.nn.utils.clip_grad_norm_(
+                        [p for p in self.model.parameters() if p.requires_grad],
+                        cfg.grpo_max_grad_norm,
+                    )
                     optimizer.step()
                     optimizer.zero_grad()
 
@@ -409,11 +457,29 @@ class GRPOTextEvasionTrainer:
                     self.model.save_pretrained(ckpt_dir)
                     self.tokenizer.save_pretrained(ckpt_dir)
 
+            if max_steps is not None and step >= max_steps:
+                break
+
+        if step % cfg.gradient_accumulation_steps:
+            torch.nn.utils.clip_grad_norm_(
+                [p for p in self.model.parameters() if p.requires_grad],
+                cfg.grpo_max_grad_norm,
+            )
+            optimizer.step()
+            optimizer.zero_grad()
+
         # Save final
         final_dir = os.path.join(cfg.output_dir, "final")
         self.model.save_pretrained(final_dir)
         self.tokenizer.save_pretrained(final_dir)
+        self._copy_training_metadata(final_dir)
         logger.info("Manual GRPO training complete. Model saved to %s", final_dir)
+
+    def _copy_training_metadata(self, destination: str) -> None:
+        import shutil
+        source = os.path.join(self.config.output_dir, "training_metadata.json")
+        if os.path.exists(source):
+            shutil.copy2(source, os.path.join(destination, "training_metadata.json"))
 
     def evaluate(
         self,
@@ -437,11 +503,15 @@ class GRPOTextEvasionTrainer:
 
         if prompt_indices:
             eval_indices = list(prompt_indices)[:num_samples]
+            eval_prompts = self.prompts
+            eval_references = self.references
         else:
-            eval_indices = list(range(min(num_samples, len(self.prompts))))
+            eval_prompts = getattr(self, "eval_prompts", self.prompts)
+            eval_references = getattr(self, "eval_references", self.references)
+            eval_indices = list(range(min(num_samples, len(eval_prompts))))
 
         for i in eval_indices:
-            prompt = self.prompts[i]
+            prompt = eval_prompts[i]
             inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=self.config.max_seq_length).to(device)
 
             with torch.no_grad():
@@ -454,7 +524,7 @@ class GRPOTextEvasionTrainer:
                 )
             gen_text = self.tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
             generated_texts.append(gen_text)
-            source_texts.append(prompt)
+            source_texts.append(eval_references[i] or prompt)
 
         return evaluate_text_evasion(
             generated_texts,

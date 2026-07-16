@@ -18,6 +18,7 @@ import inspect
 import math
 
 import pytest
+import torch
 
 
 @pytest.fixture
@@ -79,3 +80,40 @@ class TestSPINLossSign:
         # As the human-vs-gen log-prob gap → +infinity, loss → 0.
         loss = self._spin_loss(curr_h=10.0, ref_h=0.0, curr_g=-10.0, ref_g=0.0, beta=1.0)
         assert loss < 1e-6
+
+
+def test_conditional_logprob_excludes_prompt_tokens():
+    from ai_content_detector.rl_evasion.config import MultiSPINConfig
+    from ai_content_detector.rl_evasion.text_evasion.multispin import MultiSPINTrainer
+
+    class Encoded:
+        def __init__(self, ids):
+            self.input_ids = ids
+
+    class Tokenizer:
+        pad_token_id = 0
+
+        def __call__(self, text, add_special_tokens, **kwargs):
+            ids = [1] if add_special_tokens else []
+            ids.extend([2] * len(text.strip().split()))
+            return Encoded(ids)
+
+    class UniformModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.anchor = torch.nn.Parameter(torch.zeros(()))
+
+        def forward(self, input_ids, attention_mask):
+            batch, length = input_ids.shape
+            return type("Output", (), {
+                "logits": torch.zeros((batch, length, 4)) + self.anchor,
+            })()
+
+    trainer = MultiSPINTrainer(MultiSPINConfig(max_seq_length=32))
+    trainer.tokenizer = Tokenizer()
+    model = UniformModel()
+    result = trainer._conditional_logprob(
+        model, ["short", "a much longer prompt"], ["two words", "two words"],
+    )
+    assert result[0].item() == pytest.approx(result[1].item())
+    assert result[0].item() == pytest.approx(-2 * math.log(4))

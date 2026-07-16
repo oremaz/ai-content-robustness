@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from ai_content_detector.detectors import MarkovCalibratedTextDetector
+from ai_content_detector.detectors import WindowSmoothedTextDetector
 
 
 def test_markov_calibration_smooths_isolated_low_score():
     raw = [0.9, 0.1, 0.9]
 
-    calibrated = MarkovCalibratedTextDetector.calibrate_scores(
+    calibrated = WindowSmoothedTextDetector.calibrate_scores(
         raw,
         neighbor_weight=1.8,
         initial_discount=1.0,
@@ -23,13 +23,13 @@ def test_markov_calibration_smooths_isolated_low_score():
 def test_initial_discount_reduces_first_window_instability():
     raw = [0.99, 0.4, 0.4, 0.4]
 
-    discounted = MarkovCalibratedTextDetector.calibrate_scores(
+    discounted = WindowSmoothedTextDetector.calibrate_scores(
         raw,
         neighbor_weight=0.5,
         initial_discount=0.2,
         iterations=4,
     )
-    undiscounted = MarkovCalibratedTextDetector.calibrate_scores(
+    undiscounted = WindowSmoothedTextDetector.calibrate_scores(
         raw,
         neighbor_weight=0.5,
         initial_discount=1.0,
@@ -46,7 +46,7 @@ def test_detector_wraps_window_scores_and_returns_details():
         calls.append(window)
         return 0.8 if "machine" in window else 0.2
 
-    det = MarkovCalibratedTextDetector(
+    det = WindowSmoothedTextDetector(
         score_fn=score_fn,
         window_size=8,
         stride=4,

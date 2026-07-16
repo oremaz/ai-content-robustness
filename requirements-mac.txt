@@ -54,6 +54,8 @@ babel==2.18.0
     # via jupyterlab-server
 beautifulsoup4==4.15.0
     # via nbconvert
+bert-score==0.3.13
+    # via -r requirements.in
 bleach==6.4.0
     # via
     #   kaggle

@@ -20,18 +20,32 @@ import logging
 import os
 import random
 import re
-from abc import ABC, abstractmethod
+from abc import ABC
+from enum import Enum
 from typing import List, Optional
 
 logger = logging.getLogger(__name__)
+
+
+class EvasionCapability(str, Enum):
+    REWRITE = "rewrite_existing_text"
+    GENERATE = "generate_from_prompt"
 
 
 class BaseEvasionMethod(ABC):
     """Common interface for all evasion methods."""
 
     name: str = "base"
+    capabilities: frozenset[EvasionCapability] = frozenset()
+    optimized_detector_names: frozenset[str] = frozenset()
 
-    @abstractmethod
+    def provenance(self) -> dict:
+        return {
+            "method_class": type(self).__name__,
+            "capabilities": sorted(capability.value for capability in self.capabilities),
+            "optimized_detector_names": sorted(self.optimized_detector_names),
+        }
+
     def evade(self, text: str) -> str:
         """Transform AI-generated text to evade detection.
 
@@ -41,7 +55,7 @@ class BaseEvasionMethod(ABC):
         Returns:
             Transformed text intended to evade detectors.
         """
-        ...
+        raise NotImplementedError(f"{self.name} does not support rewriting existing text")
 
     def evade_batch(self, texts: List[str]) -> List[str]:
         return [self.evade(t) for t in texts]
@@ -64,6 +78,7 @@ class VanillaBaseline(BaseEvasionMethod):
     """No evasion — returns text as-is. The detection lower bound."""
 
     name = "vanilla"
+    capabilities = frozenset({EvasionCapability.REWRITE})
 
     def evade(self, text: str) -> str:
         return text
@@ -82,6 +97,7 @@ class ParaphrasingBaseline(BaseEvasionMethod):
     """
 
     name = "paraphrase"
+    capabilities = frozenset({EvasionCapability.REWRITE})
 
     def __init__(
         self,
@@ -155,6 +171,7 @@ class SynonymSubstitutionBaseline(BaseEvasionMethod):
     """
 
     name = "synonym_sub"
+    capabilities = frozenset({EvasionCapability.REWRITE})
 
     def __init__(self, replacement_rate: float = 0.3, seed: int = 42):
         self._rate = replacement_rate
@@ -172,8 +189,7 @@ class SynonymSubstitutionBaseline(BaseEvasionMethod):
             nltk.download("averaged_perceptron_tagger_eng", quiet=True)
             self._wordnet = wordnet
         except ImportError:
-            logger.warning("NLTK not installed — synonym substitution will be a no-op")
-            self._wordnet = None
+            raise RuntimeError("NLTK and WordNet are required for synonym substitution")
 
     def _get_synonym(self, word: str) -> Optional[str]:
         if self._wordnet is None:
@@ -194,7 +210,7 @@ class SynonymSubstitutionBaseline(BaseEvasionMethod):
     def evade(self, text: str) -> str:
         self._load_wordnet()
         if self._wordnet is None:
-            return text
+            raise RuntimeError("WordNet is unavailable")
 
         words = text.split()
         result = []
@@ -226,6 +242,7 @@ class PromptEngineeringBaseline(BaseEvasionMethod):
     """
 
     name = "prompt_eng"
+    capabilities = frozenset({EvasionCapability.GENERATE})
 
     EVASION_SYSTEM_PROMPT = (
         "You are a casual human writer. Write naturally with varied sentence lengths. "
@@ -241,10 +258,12 @@ class PromptEngineeringBaseline(BaseEvasionMethod):
         model_name: str = "Qwen/Qwen3.5-9B-Base",
         device: str = "auto",
         max_new_tokens: int = 256,
+        seed: int = 42,
     ):
         self._model_name = model_name
         self._device = device
         self._max_new_tokens = max_new_tokens
+        self._seed = int(seed)
         self._model = None
         self._tokenizer = None
 
@@ -268,10 +287,6 @@ class PromptEngineeringBaseline(BaseEvasionMethod):
         )
         self._model.eval()
 
-    def evade(self, text: str) -> str:
-        """Not applicable — use generate() instead."""
-        return text
-
     def generate(self, prompt: str) -> str:
         self._load()
         import torch
@@ -282,12 +297,14 @@ class PromptEngineeringBaseline(BaseEvasionMethod):
         ).to(self._device)
 
         with torch.no_grad():
+            generator = torch.Generator(device=inputs["input_ids"].device).manual_seed(self._seed)
             out = self._model.generate(
                 **inputs,
                 max_new_tokens=self._max_new_tokens,
                 do_sample=True,
                 temperature=0.9,
                 top_p=0.95,
+                generator=generator,
             )
         return self._tokenizer.decode(
             out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
@@ -307,6 +324,7 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
     """
 
     name = "sampling_perturb"
+    capabilities = frozenset({EvasionCapability.GENERATE})
 
     def __init__(
         self,
@@ -316,6 +334,7 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
         top_p: float = 0.98,
         top_k: int = 100,
         max_new_tokens: int = 256,
+        seed: int = 42,
     ):
         self._model_name = model_name
         self._device = device
@@ -323,6 +342,7 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
         self._top_p = top_p
         self._top_k = top_k
         self._max_new_tokens = max_new_tokens
+        self._seed = int(seed)
         self._model = None
         self._tokenizer = None
 
@@ -346,10 +366,6 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
         )
         self._model.eval()
 
-    def evade(self, text: str) -> str:
-        """Not applicable — use generate() instead."""
-        return text
-
     def generate(self, prompt: str) -> str:
         self._load()
         import torch
@@ -359,6 +375,7 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
         ).to(self._device)
 
         with torch.no_grad():
+            generator = torch.Generator(device=inputs["input_ids"].device).manual_seed(self._seed)
             out = self._model.generate(
                 **inputs,
                 max_new_tokens=self._max_new_tokens,
@@ -366,6 +383,7 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
                 temperature=self._temperature,
                 top_p=self._top_p,
                 top_k=self._top_k,
+                generator=generator,
             )
         return self._tokenizer.decode(
             out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
@@ -386,6 +404,7 @@ class OpenRouterBaseline(BaseEvasionMethod):
     """
 
     name = "openrouter"
+    capabilities = frozenset({EvasionCapability.REWRITE, EvasionCapability.GENERATE})
 
     def __init__(
         self,
@@ -437,8 +456,7 @@ class OpenRouterBaseline(BaseEvasionMethod):
                 data = json.loads(resp.read())
             return data["choices"][0]["message"]["content"]
         except (urllib.error.URLError, KeyError, IndexError) as e:
-            logger.warning("OpenRouter API call failed: %s", e)
-            return prompt  # fallback to echo
+            raise RuntimeError("OpenRouter API call failed") from e
 
     def evade(self, text: str) -> str:
         return self._call_api(
@@ -456,41 +474,15 @@ class OpenRouterBaseline(BaseEvasionMethod):
 
 
 # ---------------------------------------------------------------------------
-# 7. Adversarial Paraphrasing (Chen et al., NeurIPS 2025)
+# 7. Adversarial Paraphrasing (Cheng et al., NeurIPS 2025)
 # ---------------------------------------------------------------------------
 
 
 class AdversarialParaphrasingBaseline(BaseEvasionMethod):
-    """Iterative detector-guided paraphrasing — faithful port of the published
-    algorithm (Chen et al., *Adversarial Paraphrasing*, NeurIPS 2025;
-    https://github.com/chengez/Adversarial-Paraphrasing).
-
-    Algorithm (per input text T):
-
-        best ← T
-        for k in 1..K:
-            candidates ← paraphraser.generate(T, n=N)
-            scores     ← [guidance_detector(c) for c in candidates]
-            best       ← candidates[argmin(scores)]    # lowest AI-prob wins
-            T          ← best
-            if guidance_detector(T) < tau:
-                break
-        return best
-
-    The original implementation uses an off-the-shelf instruction-tuned LLM as
-    the paraphraser; we default to ``Qwen/Qwen3.5-9B`` (the Instruct variant)
-    so the paraphraser shares its base model family with the rest of the
-    project's defaults. The caller can swap it via ``paraphraser_id=``. The
-    guidance detector is any callable that maps text to an AI probability in
-    [0, 1] — passing one of our own detectors makes this a strict baseline
-    against which our RL attack should be measured.
-
-    This is *the* strongest training-free 2025 humanizing attack and the right
-    yardstick for the paper's headline comparison ("our RL attack vs. the best
-    peer-reviewed training-free baseline").
-    """
+    """Detector-guided token decoding from Cheng et al. (NeurIPS 2025)."""
 
     name = "adversarial_paraphrasing"
+    capabilities = frozenset({EvasionCapability.REWRITE})
 
     DEFAULT_INSTRUCTION = (
         "Paraphrase the following text. Preserve all factual content and the "
@@ -507,11 +499,10 @@ class AdversarialParaphrasingBaseline(BaseEvasionMethod):
         guidance_detector: Optional[callable] = None,
         paraphraser_id: str = "Qwen/Qwen3.5-9B",
         device: str = "auto",
-        max_iterations: int = 5,
-        candidates_per_iter: int = 4,
-        tau: float = 0.3,
         max_new_tokens: int = 512,
         temperature: float = 0.9,
+        top_p: float = 0.99,
+        top_k: int = 50,
         instruction: Optional[str] = None,
     ):
         if guidance_detector is None:
@@ -523,11 +514,12 @@ class AdversarialParaphrasingBaseline(BaseEvasionMethod):
         self.guidance_detector = guidance_detector
         self._paraphraser_id = paraphraser_id
         self._device = device
-        self.max_iterations = int(max_iterations)
-        self.candidates_per_iter = int(candidates_per_iter)
-        self.tau = float(tau)
         self._max_new_tokens = int(max_new_tokens)
         self._temperature = float(temperature)
+        self._top_p = float(top_p)
+        self._top_k = int(top_k)
+        if not 0.0 < self._top_p <= 1.0 or self._top_k < 1:
+            raise ValueError("top_p must be in (0,1] and top_k must be positive")
         self._instruction = instruction or self.DEFAULT_INSTRUCTION
         self._model = None
         self._tokenizer = None
@@ -557,97 +549,74 @@ class AdversarialParaphrasingBaseline(BaseEvasionMethod):
         )
         self._model.eval()
 
-    def _paraphrase_candidates(self, text: str) -> List[str]:
+    @staticmethod
+    def _candidate_token_ids(logits, top_p: float, top_k: int):
         import torch
 
+        probabilities = torch.softmax(logits, dim=-1)
+        sorted_probabilities, sorted_ids = torch.sort(probabilities, descending=True)
+        cumulative = torch.cumsum(sorted_probabilities, dim=-1)
+        keep = cumulative <= top_p
+        keep[0] = True
+        crossing = int(keep.sum().item())
+        if crossing < len(keep):
+            keep[crossing] = True
+        candidate_ids = sorted_ids[keep]
+        return candidate_ids[:top_k]
+
+    def _prepare_prompt(self, text: str):
         prompt = self._instruction.format(text=text)
-        # Use chat template if available — both Llama-3 Instruct and most modern
-        # instruct models expect it; falling back to raw prompt for older models.
         try:
-            chat = self._tokenizer.apply_chat_template(
+            return self._tokenizer.apply_chat_template(
                 [{"role": "user", "content": prompt}],
                 tokenize=False, add_generation_prompt=True,
             )
         except Exception:
-            chat = prompt
+            return prompt
 
+    def evade(self, text: str) -> str:
+        import torch
+
+        if not text or not text.strip():
+            return text
+        self._load()
+
+        chat = self._prepare_prompt(text)
         inputs = self._tokenizer(
             chat, return_tensors="pt", truncation=True, max_length=4096,
         ).to(self._device)
-
-        with torch.no_grad():
-            out = self._model.generate(
-                **inputs,
-                max_new_tokens=self._max_new_tokens,
-                do_sample=True,
-                temperature=self._temperature,
-                top_p=0.95,
-                num_return_sequences=self.candidates_per_iter,
-                pad_token_id=self._tokenizer.pad_token_id,
-            )
-        # out: (N, prompt_len + new_tokens). Drop the prompt prefix per row.
         prompt_len = inputs["input_ids"].shape[1]
-        candidates = [
-            self._tokenizer.decode(seq[prompt_len:], skip_special_tokens=True).strip()
-            for seq in out
-        ]
-        # Drop empties — they're useless guidance candidates.
-        return [c for c in candidates if c]
-
-    def evade(self, text: str) -> str:
-        if not text or not text.strip():
-            return text
-
-        self._load()
-        best = text
-        try:
-            best_score = float(self.guidance_detector(best))
-        except Exception as e:
-            logger.error("AdversarialParaphrasing: guidance_detector failed: %s", e)
-            return text
-
-        for it in range(self.max_iterations):
-            try:
-                candidates = self._paraphrase_candidates(best)
-            except Exception as e:
-                logger.error("AdversarialParaphrasing: paraphraser failed: %s", e)
-                break
-            if not candidates:
-                break
-
+        sequence = inputs["input_ids"]
+        attention = inputs.get("attention_mask")
+        for _ in range(self._max_new_tokens):
+            with torch.no_grad():
+                outputs = self._model(input_ids=sequence, attention_mask=attention)
+            logits = outputs.logits[0, -1] / self._temperature
+            candidate_ids = self._candidate_token_ids(logits, self._top_p, self._top_k)
             scored = []
-            for c in candidates:
-                try:
-                    s = float(self.guidance_detector(c))
-                except Exception as e:
-                    logger.warning("AdversarialParaphrasing: detector error on candidate: %s", e)
-                    continue
-                scored.append((s, c))
+            for token_id in candidate_ids.tolist():
+                candidate_output = torch.cat([
+                    sequence[0, prompt_len:],
+                    torch.tensor([token_id], device=sequence.device),
+                ])
+                candidate_text = self._tokenizer.decode(
+                    candidate_output, skip_special_tokens=True,
+                )
+                score = float(self.guidance_detector(candidate_text))
+                if not 0.0 <= score <= 1.0:
+                    raise ValueError(f"Guidance detector returned invalid score {score}")
+                scored.append((score, token_id))
             if not scored:
                 break
-
-            scored.sort(key=lambda sc: sc[0])  # ascending by AI score
-            cand_score, cand_text = scored[0]
-
-            # Greedy improvement: only accept candidates that improve on the
-            # current best to avoid oscillation.
-            if cand_score < best_score:
-                best, best_score = cand_text, cand_score
-            else:
-                # Even when no candidate improves, accept the best one to keep
-                # exploring (the paper allows non-monotonic moves to escape
-                # local optima).
-                best = cand_text
-                best_score = cand_score
-
-            if best_score < self.tau:
-                logger.info(
-                    "AdversarialParaphrasing: converged at iter %d (score=%.3f < tau=%.3f)",
-                    it + 1, best_score, self.tau,
-                )
+            _, selected_id = min(scored, key=lambda pair: pair[0])
+            selected = torch.tensor([[selected_id]], device=sequence.device)
+            sequence = torch.cat([sequence, selected], dim=1)
+            attention = torch.ones_like(sequence)
+            if selected_id == self._tokenizer.eos_token_id:
                 break
-
-        return best
+        return self._tokenizer.decode(
+            sequence[0, prompt_len:], skip_special_tokens=True,
+        ).strip()
 
 
 def get_all_baselines(device: str = "auto", model_name: str = "Qwen/Qwen3.5-9B-Base") -> List[BaseEvasionMethod]:

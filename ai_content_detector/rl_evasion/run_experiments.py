@@ -4,7 +4,7 @@ Usage:
     # Text evasion with GRPO
     python -m ai_content_detector.rl_evasion.run_experiments --experiment grpo_text
 
-    # MultiSPIN distribution matching
+    # SPIN with feature monitoring
     python -m ai_content_detector.rl_evasion.run_experiments --experiment multispin
 
     # Image evasion with DDPO
@@ -55,7 +55,7 @@ def run_grpo_text(args):
 
 
 def run_multispin(args):
-    """Run MultiSPIN distribution matching."""
+    """Run SPIN with feature monitoring."""
     from .config import MultiSPINConfig
     from .text_evasion.multispin import MultiSPINTrainer
 
@@ -150,6 +150,13 @@ def run_meta_adapt(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     zoo = DetectorZoo.build_default(device=device)
     logger.info("Detector zoo has %d detectors", len(zoo.detectors))
+    if len(zoo.detectors) < 2:
+        raise RuntimeError(
+            "Meta-adaptation requires at least two functioning detectors so one can be held out"
+        )
+    held_out_name = sorted(zoo.detectors)[-1]
+    held_out_fn = zoo.detectors.pop(held_out_name)
+    logger.info("Reserved detector before meta-training: %s", held_out_name)
 
     # Load prompts
     ds = load_dataset("cnn_dailymail", "3.0.0", split="train")
@@ -170,15 +177,9 @@ def run_meta_adapt(args):
     )
     maml.train(prompts)
 
-    # Measure adaptation cost if we have a held-out detector
-    all_detectors = zoo.get_all()
-    if len(all_detectors) >= 2:
-        names = list(all_detectors.keys())
-        held_out_name = names[-1]
-        held_out_fn = all_detectors[held_out_name]
-        logger.info("Measuring adaptation cost to held-out detector: %s", held_out_name)
-        comparison = maml.compare_with_scratch(held_out_fn, held_out_name, prompts[:100])
-        logger.info("Speedup: %.2fx", comparison["speedup"])
+    logger.info("Measuring adaptation cost to held-out detector: %s", held_out_name)
+    comparison = maml.compare_with_pre_meta(held_out_fn, held_out_name, prompts[:100])
+    logger.info("Speedup: %.2fx", comparison["speedup"])
 
 
 def run_benchmark(args):
@@ -240,8 +241,8 @@ def run_smoke_test(args):
 
     try:
         from ..detectors.text_detectors import DivEyeDetector
-        det = DivEyeDetector(scoring_model="gpt2", device="cpu")
-        print("   DivEye detector (GPT-2, CPU): OK")
+        DivEyeDetector(scoring_model="gpt2", device="cpu")
+        print("   DivEye constructor: OK (inference still requires a fitted classifier)")
     except Exception as e:
         print(f"   DivEye detector: FAILED ({e})")
 
@@ -273,13 +274,13 @@ def run_smoke_test(args):
     except Exception as e:
         print(f"   FeatureBank: FAILED ({e})")
 
-    # 5. Test RADAR defender
-    print("\n5. Testing RADAR defender...")
+    # 5. Test adaptive classifier defender
+    print("\n5. Testing adaptive classifier defender...")
     try:
-        from .arms_race.radar_defender import RADARDefender
-        print("   RADARDefender import: OK")
+        from .arms_race.radar_defender import AdaptiveClassifierDefender
+        print("   AdaptiveClassifierDefender import: OK")
     except Exception as e:
-        print(f"   RADARDefender: FAILED ({e})")
+        print(f"   AdaptiveClassifierDefender: FAILED ({e})")
 
     # 6. Test style embedding detector
     print("\n6. Testing style embedding detector...")

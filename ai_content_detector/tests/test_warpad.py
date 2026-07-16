@@ -67,3 +67,26 @@ class TestWaRPADHaarHF:
         # Total HF energy must dwarf any single far-away column's energy.
         far_col = np.sum(out[:, 0:1, :] ** 2)
         assert float(np.sum(out ** 2)) > 10.0 * far_col
+
+
+def test_paper_backbone_is_default():
+    detector = WaRPADDetector()
+    assert detector._backbone_name == "facebook/dinov2-large"
+    assert detector._d_rescale == 896
+    assert detector._d_patch == 224
+
+
+def test_raw_score_has_no_forced_classification(monkeypatch):
+    detector = WaRPADDetector(d_rescale=4, d_patch=4)
+    detector._available = True
+    monkeypatch.setattr(detector, "_load", lambda: None)
+    monkeypatch.setattr(
+        detector,
+        "_embed_batch",
+        lambda patches: np.asarray([[1.0, 0.0]]) if len(patches) == 1 else None,
+    )
+
+    result = detector.detect(np.zeros((4, 4, 3), dtype=np.float32))
+
+    assert result.label == "uncertain"
+    assert result.details["score_semantics"] == "raw_warpad_anomaly_score"

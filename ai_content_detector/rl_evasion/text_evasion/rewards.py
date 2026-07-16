@@ -111,6 +111,8 @@ class CompositeReward:
         min_output_tokens: int = 20,
     ):
         self.detector_rewards = detector_rewards
+        if not detector_rewards:
+            raise ValueError("CompositeReward requires at least one detector reward")
         self.semantic_reward = semantic_reward or SemanticSimilarityReward()
         self.weights = weights or {
             "evasion": 0.6,
@@ -189,7 +191,7 @@ def build_detector_reward_from_name(name: str, device: str = "auto") -> Detector
         return DetectorReward(lambda text, d=det: d.detect(text).score, name="disrupt_recover")
 
     elif name == "roberta_classifier":
-        # Use a pretrained RoBERTa-based detector (e.g., from RADAR)
+        # Use a pretrained RoBERTa-based detector.
         return _build_roberta_detector_reward(device)
 
     elif name == "style_embedding":
@@ -204,7 +206,7 @@ def build_detector_reward_from_name(name: str, device: str = "auto") -> Detector
 def _build_roberta_detector_reward(device: str) -> DetectorReward:
     """Build a RoBERTa-based detector reward.
 
-    Uses the RADAR-style RoBERTa classifier if available,
+    Uses a configured RoBERTa classifier if available,
     otherwise falls back to a HuggingFace pipeline.
     """
     try:

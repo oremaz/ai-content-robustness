@@ -44,6 +44,18 @@ class TestFeatureBank:
         assert acc > 0.9
         assert auroc > 0.9
 
+    def test_grouped_probe_validation_keeps_pairs_together(self):
+        bank = FeatureBank()
+        rng = np.random.RandomState(1)
+        generated = rng.normal(2, 0.2, (10, 3))
+        human = rng.normal(-2, 0.2, (10, 3))
+        X = np.vstack([generated, human])
+        y = np.array([0] * 10 + [1] * 10)
+        groups = np.concatenate([np.arange(10), np.arange(10)])
+        _, _, accuracy, auroc, _ = bank._train_probe(X, y, groups)
+        assert accuracy > 0.9
+        assert auroc > 0.9
+
     def test_update_adds_discriminative_probe(self):
         bank = FeatureBank(auroc_threshold=0.5)
         rng = np.random.RandomState(42)

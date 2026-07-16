@@ -88,7 +88,8 @@ def load_text_detectors():
         if d.is_available():
             available.append(d)
         else:
-            unavailable.append(d.name)
+            error = getattr(d, "_availability_error", "checkpoint or dependency unavailable")
+            unavailable.append(f"{d.name}: {error}")
     # The availability scan loads every model; free them so they don't sit
     # idle in GPU memory. They reload lazily when actually used.
     _unload_detectors(candidates)
@@ -133,7 +134,8 @@ def load_image_detectors():
         if d.is_available():
             available.append(d)
         else:
-            unavailable.append(d.name)
+            error = getattr(d, "_availability_error", "checkpoint or dependency unavailable")
+            unavailable.append(f"{d.name}: {error}")
     # Free models loaded during the availability scan; they reload lazily.
     _unload_detectors(candidates)
     return available, unavailable
@@ -161,13 +163,19 @@ def display_results(results: dict):
     """Render detection results."""
     agg = results["aggregate_score"]
     agg_label = results["aggregate_label"]
+    semantics = results.get("aggregate_score_semantics", "uncalibrated_ensemble_score")
+    calibrated = semantics == "calibrated_probability"
 
     col1, col2 = st.columns([1, 2])
     with col1:
         st.metric(
-            label="Overall Confidence",
-            value=f"{agg:.1%}",
-            help="0% = certainly human, 100% = certainly AI",
+            label="Calibrated AI Probability" if calibrated else "Ensemble Score",
+            value=f"{agg:.1%}" if calibrated else f"{agg:.3f}",
+            help=(
+                "Out-of-sample calibrated probability of AI authorship"
+                if calibrated else
+                "Normalized detector score. This is not a probability or confidence estimate."
+            ),
         )
         color = _score_color(agg)
         st.markdown(f"### {color} {_label_text(agg_label)}")
@@ -176,7 +184,8 @@ def display_results(results: dict):
         st.subheader("Per-Detector Scores")
         for r in results["per_detector"]:
             icon = _score_color(r.score)
-            label = f"{icon} **{r.detector_name}**: {r.score:.1%}"
+            score_semantics = r.details.get("score_semantics", "detector_score")
+            label = f"{icon} **{r.detector_name}**: {r.score:.3f} ({score_semantics})"
             if r.label == "error":
                 label += f" (error: {r.details.get('error', 'unknown')})"
 
@@ -184,7 +193,7 @@ def display_results(results: dict):
                 st.json(r.details)
 
             # Progress bar visualization
-            st.progress(r.score, text=f"{r.detector_name}: {r.score:.1%}")
+            st.progress(r.score, text=f"{r.detector_name}: {r.score:.3f}")
 
 
 # ---------------------------------------------------------------------------
@@ -214,6 +223,8 @@ def text_tab():
         default=[d.name for d in detectors],
     )
     active_detectors = [d for d in detectors if d.name in selected]
+    if not active_detectors:
+        st.warning("Select at least one detector before running analysis.")
 
     # Input
     input_method = st.radio("Input method", ["Paste text", "Upload file"], horizontal=True)
@@ -231,7 +242,7 @@ def text_tab():
             text = uploaded.read().decode("utf-8", errors="replace")
             st.text_area("Uploaded text", text, height=200, disabled=True)
 
-    if st.button("Analyze Text", type="primary", disabled=not text.strip()):
+    if st.button("Analyze Text", type="primary", disabled=not text.strip() or not active_detectors):
         if len(text.strip()) < 50:
             st.warning("Please provide at least 50 characters for reliable detection.")
             return
@@ -240,6 +251,9 @@ def text_tab():
             ensemble = EnsembleAggregator(active_detectors)
             try:
                 results = ensemble.detect(text)
+            except Exception as error:
+                st.error(f"Analysis failed: {error}")
+                return
             finally:
                 # Free model memory after each analysis so repeated runs
                 # don't accumulate GPU memory and trigger OOM.
@@ -275,6 +289,8 @@ def image_tab():
         key="img_det_select",
     )
     active_detectors = [d for d in detectors if d.name in selected]
+    if not active_detectors:
+        st.warning("Select at least one detector before running analysis.")
 
     uploaded = st.file_uploader(
         "Upload an image",
@@ -287,11 +303,14 @@ def image_tab():
         image = Image.open(uploaded).convert("RGB")
         st.image(image, caption="Uploaded image", use_container_width=True)
 
-        if st.button("Analyze Image", type="primary"):
+        if st.button("Analyze Image", type="primary", disabled=not active_detectors):
             with st.spinner("Running detectors..."):
                 ensemble = EnsembleAggregator(active_detectors)
                 try:
                     results = ensemble.detect(image)
+                except Exception as error:
+                    st.error(f"Analysis failed: {error}")
+                    return
                 finally:
                     _unload_detectors(detectors)
 
@@ -319,8 +338,8 @@ def about_tab():
   Outperforms prior zero-shot detectors by up to 33.2%.
 - **Disrupt-and-Recover** (ICLR 2026) — Optional black-box recovery detector.
   Loaded only when an OpenAI-compatible recovery model is configured.
-- **Markov-Calibrated Detector** (ICLR 2026) — Programmatic wrapper that
-  smooths local detector scores across neighboring text windows.
+- **Window-Smoothed Detector** - Practical wrapper that smooths local detector
+  scores across neighboring text windows. It is not the paper's token-level MRF.
 - **IPAD** (NeurIPS 2025) — Inverse-prompt consistency detector using released
   LoRA adapters on Phi-3-medium.
 
@@ -331,17 +350,18 @@ def about_tab():
 - **DINOv2 ViT-B** — Self-supervised ViT pretrained on diverse data.
 - **SigLIP-2 Detector** — HuggingFace pipeline for deepfake detection
   using Google's SigLIP-2 vision transformer.
-- **WaRPAD** and **Denoising Trajectory** (NeurIPS 2025) — Zero-shot image
+- **WaRPAD** and **Denoising Trajectory** (NeurIPS 2025) - Image
   detectors based on high-frequency perturbation robustness and diffusion
   recovery trajectories.
-- **MLEP Entropy Patterns** (NeurIPS 2025) — CPU-friendly multi-scale shuffled
-  local entropy maps, with an optional trained classifier hook.
+- **MLEP Entropy Patterns** (NeurIPS 2025) - Multi-scale shuffled local entropy
+  maps scored by a required trained CNN checkpoint.
 
 ### Methodology
 
 Each detector independently scores the input. The **ensemble aggregator**
-combines scores via configurable weighted averaging. The displayed confidence
-represents the estimated probability that the content is AI-generated.
+combines scores via configurable weighted averaging. Unless an ensemble
+calibrator was fitted, the displayed value is a normalized detector score and
+not an estimated probability or confidence.
 
 ### References
 

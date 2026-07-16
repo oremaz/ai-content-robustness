@@ -16,13 +16,19 @@ import json
 import logging
 import os
 import time
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 import numpy as np
 
 from ..text_evasion.evaluate import evaluate_text_evasion
-from ..text_evasion.rewards import CompositeReward, DetectorReward, build_detector_reward_from_name
-from .baselines import BaseEvasionMethod, get_all_baselines, get_lightweight_baselines
+from ..text_evasion.rewards import CompositeReward, build_detector_reward_from_name
+from .baselines import (
+    BaseEvasionMethod,
+    EvasionCapability,
+    get_all_baselines,
+    get_lightweight_baselines,
+)
 from .datasets import BenchmarkDataset, load_dataset_by_name
 
 logger = logging.getLogger(__name__)
@@ -37,6 +43,7 @@ class GRPOEvasionMethod(BaseEvasionMethod):
     """Wrapper around a trained GRPO model for benchmarking."""
 
     name = "grpo_rl"
+    capabilities = frozenset({EvasionCapability.GENERATE})
 
     def __init__(self, checkpoint_dir: str, device: str = "auto", max_new_tokens: int = 256):
         self._checkpoint_dir = checkpoint_dir
@@ -44,6 +51,18 @@ class GRPOEvasionMethod(BaseEvasionMethod):
         self._max_new_tokens = max_new_tokens
         self._model = None
         self._tokenizer = None
+        self.optimized_detector_names = self._load_training_detectors()
+
+    def _load_training_detectors(self) -> frozenset[str]:
+        metadata_path = os.path.join(self._checkpoint_dir, "training_metadata.json")
+        if not os.path.exists(metadata_path):
+            return frozenset()
+        with open(metadata_path) as metadata_file:
+            metadata = json.load(metadata_file)
+        return frozenset(metadata.get("detector_names", []))
+
+    def provenance(self) -> dict:
+        return {**super().provenance(), "checkpoint_dir": self._checkpoint_dir}
 
     def _load(self):
         if self._model is not None:
@@ -72,9 +91,6 @@ class GRPOEvasionMethod(BaseEvasionMethod):
         self._model.eval()
         logger.info("GRPO model loaded from %s", self._checkpoint_dir)
 
-    def evade(self, text: str) -> str:
-        return text
-
     def generate(self, prompt: str) -> str:
         self._load()
         import torch
@@ -94,6 +110,7 @@ class MultiSPINEvasionMethod(BaseEvasionMethod):
     """Wrapper around a trained MultiSPIN model for benchmarking."""
 
     name = "multispin"
+    capabilities = frozenset({EvasionCapability.GENERATE})
 
     def __init__(self, checkpoint_dir: str, device: str = "auto", max_new_tokens: int = 256):
         self._checkpoint_dir = checkpoint_dir
@@ -101,6 +118,18 @@ class MultiSPINEvasionMethod(BaseEvasionMethod):
         self._max_new_tokens = max_new_tokens
         self._model = None
         self._tokenizer = None
+        self.optimized_detector_names = self._load_training_detectors()
+
+    def _load_training_detectors(self) -> frozenset[str]:
+        metadata_path = os.path.join(self._checkpoint_dir, "training_metadata.json")
+        if not os.path.exists(metadata_path):
+            return frozenset()
+        with open(metadata_path) as metadata_file:
+            metadata = json.load(metadata_file)
+        return frozenset(metadata.get("detector_names", []))
+
+    def provenance(self) -> dict:
+        return {**super().provenance(), "checkpoint_dir": self._checkpoint_dir}
 
     def _load(self):
         if self._model is not None:
@@ -128,9 +157,6 @@ class MultiSPINEvasionMethod(BaseEvasionMethod):
         self._model.eval()
         logger.info("MultiSPIN model loaded from %s", self._checkpoint_dir)
 
-    def evade(self, text: str) -> str:
-        return text
-
     def generate(self, prompt: str) -> str:
         self._load()
         import torch
@@ -149,6 +175,17 @@ class MultiSPINEvasionMethod(BaseEvasionMethod):
 # ---------------------------------------------------------------------------
 # Benchmark runner
 # ---------------------------------------------------------------------------
+
+
+@dataclass
+class MethodApplication:
+    status: str
+    track: str
+    generated_texts: List[str] = field(default_factory=list)
+    source_texts: List[str] = field(default_factory=list)
+    sample_indices: List[int] = field(default_factory=list)
+    errors: List[Dict[str, object]] = field(default_factory=list)
+    attempted: int = 0
 
 
 class BenchmarkRunner:
@@ -198,8 +235,9 @@ class BenchmarkRunner:
                 except Exception as e:
                     logger.warning("Could not load %s detector %s: %s", label, name, e)
             if not rewards:
-                logger.warning("%s ensemble is empty — falling back to dummy detector", label)
-                rewards = [DetectorReward(lambda t: 0.5, name="dummy", silent_fallback=True)]
+                raise RuntimeError(
+                    f"No {label} detector could be loaded from requested names: {names}"
+                )
             return CompositeReward(
                 detector_rewards=rewards,
                 semantic_reward=SemanticSimilarityReward(device=self.device),
@@ -219,29 +257,46 @@ class BenchmarkRunner:
         for method in self.methods:
             logger.info("=== Evaluating: %s ===", method.name)
             t0 = time.time()
+            overlap = set(method.optimized_detector_names) & set(self.heldout_detectors)
+            if overlap:
+                raise ValueError(
+                    f"Method {method.name} was optimized against held-out detectors: {sorted(overlap)}"
+                )
 
-            generated_texts = self._apply_method(method)
-            # Semantic preservation must be measured against whatever the method
-            # transformed. Post-hoc methods (paraphrase, synonym sub) rewrite the
-            # dataset's AI text, so the original AI text is the reference; on
-            # prompt-only datasets there is no such text, so the prompt is used.
-            if getattr(self.dataset, "ai_texts_available", True):
-                source_texts = [
-                    ai or prompt
-                    for ai, prompt in zip(self.dataset.ai_texts, self.dataset.prompts)
-                ][:len(generated_texts)]
-            else:
-                source_texts = self.dataset.prompts[:len(generated_texts)]
+            application = self._apply_method(method)
+            if application.status == "skipped":
+                self.results[method.name] = {
+                    "status": "skipped",
+                    "track": application.track,
+                    "reason": application.errors[0]["error"],
+                    "num_attempted": 0,
+                    "num_succeeded": 0,
+                    "num_failed": 0,
+                }
+                logger.warning("Skipping %s: %s", method.name, application.errors[0]["error"])
+                continue
+            if not application.generated_texts:
+                self.results[method.name] = {
+                    "status": "failed",
+                    "track": application.track,
+                    "num_attempted": application.attempted,
+                    "num_succeeded": 0,
+                    "num_failed": len(application.errors),
+                    "errors": application.errors,
+                    "wall_time_sec": time.time() - t0,
+                }
+                logger.error("Method %s failed on every attempted sample", method.name)
+                continue
 
             metrics = evaluate_text_evasion(
-                generated_texts=generated_texts,
-                source_texts=source_texts,
+                generated_texts=application.generated_texts,
+                source_texts=application.source_texts,
                 reward_fn=self.reward_fn,
             )
             if self.heldout_reward_fn is not None:
                 heldout_metrics = evaluate_text_evasion(
-                    generated_texts=generated_texts,
-                    source_texts=source_texts,
+                    generated_texts=application.generated_texts,
+                    source_texts=application.source_texts,
                     reward_fn=self.heldout_reward_fn,
                 )
                 metrics["heldout_mean_evasion"] = heldout_metrics["mean_evasion"]
@@ -250,6 +305,15 @@ class BenchmarkRunner:
                     if k.startswith("evasion_"):
                         metrics[f"heldout_{k}"] = v
             metrics["wall_time_sec"] = time.time() - t0
+            metrics.update({
+                "status": "completed" if not application.errors else "partial",
+                "track": application.track,
+                "num_attempted": application.attempted,
+                "num_succeeded": len(application.generated_texts),
+                "num_failed": len(application.errors),
+                "sample_indices": application.sample_indices,
+                "errors": application.errors,
+            })
             self.results[method.name] = metrics
 
             logger.info(
@@ -262,7 +326,7 @@ class BenchmarkRunner:
 
         return self.results
 
-    def _apply_method(self, method: BaseEvasionMethod) -> List[str]:
+    def _apply_method(self, method: BaseEvasionMethod) -> MethodApplication:
         """Apply an evasion method to the dataset.
 
         Contract:
@@ -272,31 +336,48 @@ class BenchmarkRunner:
           prompts; methods that only implement ``evade`` are skipped and a warning
           is logged instead of being fed empty strings.
         """
-        generated = []
         ai_available = getattr(self.dataset, "ai_texts_available", True)
+        capability = EvasionCapability.REWRITE if ai_available else EvasionCapability.GENERATE
+        track = capability.value
+        if capability not in method.capabilities:
+            return MethodApplication(
+                status="skipped",
+                track=track,
+                errors=[{
+                    "sample_index": None,
+                    "error": f"method does not support {track}",
+                }],
+            )
+
+        application = MethodApplication(status="completed", track=track)
         for i, (prompt, ai_text) in enumerate(zip(self.dataset.prompts, self.dataset.ai_texts)):
+            application.attempted += 1
             try:
-                if ai_available and ai_text:
-                    # Post-hoc evasion: transform existing AI text
+                if ai_available:
                     evaded = method.evade(ai_text)
+                    source = ai_text
                 else:
-                    # Generation-based: generate from prompt
-                    try:
-                        evaded = method.generate(prompt)
-                    except NotImplementedError:
-                        if not ai_available:
-                            raise RuntimeError(
-                                f"Method '{method.name}' only supports post-hoc evasion "
-                                f"but dataset '{self.dataset.name}' has no AI texts. "
-                                "Skip this method or switch to a generation-based one."
-                            )
-                        evaded = prompt
-                generated.append(evaded)
+                    evaded = method.generate(prompt)
+                    source = (
+                        self.dataset.human_references[i]
+                        if self.dataset.human_references else prompt
+                    )
+                if not isinstance(evaded, str) or not evaded.strip():
+                    raise ValueError("method returned an empty or non-string output")
+                application.generated_texts.append(evaded)
+                application.source_texts.append(source)
+                application.sample_indices.append(i)
             except Exception as e:
                 logger.warning("Method %s failed on sample %d: %s", method.name, i, e)
-                generated.append(ai_text or prompt)
+                application.errors.append({
+                    "sample_index": i,
+                    "error_type": type(e).__name__,
+                    "error": str(e),
+                })
 
-        return generated
+        if application.errors:
+            application.status = "partial" if application.generated_texts else "failed"
+        return application
 
     def print_comparison(self):
         """Print a formatted comparison table."""
@@ -314,6 +395,9 @@ class BenchmarkRunner:
         print(f"  {'-'*20}  {'-'*8}  {'-'*9}  {'-'*10}  {'-'*10}  {'-'*9}")
 
         for name, m in self.results.items():
+            if m.get("status") in {"skipped", "failed"}:
+                print(f"  {name:<20s}  {m['status']:>8s}  {m.get('reason', '')}")
+                continue
             print(
                 f"  {name:<20s}  {m['mean_evasion']:>8.4f}  "
                 f"{m['mean_semantic_similarity']:>9.4f}  "
@@ -348,8 +432,14 @@ class BenchmarkRunner:
             json.dump(
                 {
                     "dataset": self.dataset.name,
+                    "dataset_revision": self.dataset.source_revision,
+                    "sample_ids": self.dataset.sample_ids,
                     "num_samples": len(self.dataset),
                     "detectors": self.detector_names,
+                    "heldout_detectors": self.heldout_detectors,
+                    "method_provenance": {
+                        method.name: method.provenance() for method in self.methods
+                    },
                     "results": self.results,
                 },
                 f,

@@ -56,6 +56,17 @@ class TestDetectionResult:
         assert r.details == {}
         assert r.detector_name == ""
 
+    def test_unload_clears_extended_heavy_resources(self):
+        detector = DummyDetector(0.5, "resource")
+        detector._reference_model = object()
+        detector._clip_model = object()
+        detector._uncond_embed = object()
+        detector._available = True
+        detector.unload()
+        assert detector._reference_model is None
+        assert detector._clip_model is None
+        assert detector._uncond_embed is None
+
 
 # ---------------------------------------------------------------------------
 # EnsembleAggregator
@@ -117,9 +128,8 @@ class TestEnsembleAggregator:
         assert result["aggregate_score"] == pytest.approx(0.8, abs=1e-6)
 
     def test_empty_detectors(self):
-        ens = EnsembleAggregator([])
-        result = ens.detect("test")
-        assert result["aggregate_score"] == pytest.approx(0.5, abs=1e-6)
+        with pytest.raises(ValueError, match="at least one"):
+            EnsembleAggregator([])
 
     def test_per_detector_results(self):
         detectors = [DummyDetector(0.9, "a"), DummyDetector(0.1, "b")]
@@ -135,6 +145,7 @@ class TestEnsembleAggregator:
         ens = EnsembleAggregator(detectors)
         result = ens.detect("test")
         assert result["aggregate_label"] == "ai"
+        assert result["aggregate_score_semantics"] == "uncalibrated_ensemble_score"
 
     def test_single_detector(self):
         ens = EnsembleAggregator([DummyDetector(0.3, "solo")])

@@ -1,53 +1,50 @@
-"""Math guards for the MLEP-style entropy-pattern detector."""
-
 from __future__ import annotations
 
 import numpy as np
+import pytest
+import torch
 
-from ai_content_detector.detectors import MLEPDetector, DetectionResult
-
-
-def test_entropy_map_shape_and_constant_entropy():
-    det = MLEPDetector(patch_sizes=(8,), image_size=32)
-    gray = np.full((32, 32), 0.5, dtype=np.float32)
-
-    emap = det._entropy_map(gray, patch_size=8)
-
-    assert emap.shape == (4, 4)
-    assert float(np.max(np.abs(emap))) < 1e-6
+from ai_content_detector.detectors import DetectionResult, MLEPDetector
 
 
-def test_noise_has_higher_entropy_than_constant():
-    det = MLEPDetector(patch_sizes=(8,), image_size=32)
-    rng = np.random.default_rng(0)
-    noise = rng.random((32, 32), dtype=np.float32)
-    constant = np.full((32, 32), 0.5, dtype=np.float32)
-
-    noise_entropy = det._entropy_map(noise, patch_size=8).mean()
-    constant_entropy = det._entropy_map(constant, patch_size=8).mean()
-
-    assert float(noise_entropy) > float(constant_entropy) + 1.0
-
-
-def test_extract_features_contains_artifact_index():
-    det = MLEPDetector(patch_sizes=(8, 16), image_size=32)
-    rng = np.random.default_rng(1)
-    image = rng.random((32, 32, 3), dtype=np.float32)
-
-    features = det.extract_features(image)
-
-    assert "mlep_artifact_index" in features
-    assert "mlep_mean_p8" in features
-    assert "mlep_grad_p16" in features
-    assert features["mlep_artifact_index"] >= 0.0
+def test_patch_shuffle_moves_whole_patches_and_is_deterministic():
+    image = np.arange(4 * 4 * 3, dtype=np.uint8).reshape(4, 4, 3)
+    first = MLEPDetector._shuffle_patches(image, patch_size=2, seed=7)
+    second = MLEPDetector._shuffle_patches(image, patch_size=2, seed=7)
+    assert np.array_equal(first, second)
+    for channel in range(3):
+        original_patches = {
+            tuple(image[y:y + 2, x:x + 2, channel].reshape(-1))
+            for y in (0, 2) for x in (0, 2)
+        }
+        shuffled_patches = {
+            tuple(first[y:y + 2, x:x + 2, channel].reshape(-1))
+            for y in (0, 2) for x in (0, 2)
+        }
+        assert shuffled_patches == original_patches
 
 
-def test_detect_returns_detection_result():
-    det = MLEPDetector(patch_sizes=(8, 16), image_size=32)
-    image = np.zeros((32, 32, 3), dtype=np.float32)
+@pytest.mark.parametrize(
+    ("values", "expected"),
+    [([1, 1, 1, 1], 0.0), ([1, 1, 1, 2], 0.811278), ([1, 1, 2, 2], 1.0),
+     ([1, 1, 2, 3], 1.5), ([1, 2, 3, 4], 2.0)],
+)
+def test_local_entropy_has_the_five_paper_levels(values, expected):
+    image = np.asarray(values, dtype=np.uint8).reshape(2, 2, 1)
+    result = MLEPDetector._local_entropy_patterns(image)
+    assert result.shape == (1, 1, 1)
+    assert result.item() == pytest.approx(expected, abs=1e-5)
 
-    result = det.detect(image)
 
+def test_multiscale_map_has_channel_concatenation():
+    detector = MLEPDetector(patch_size=2, scales=(1.0, 0.5, 0.25), image_size=8)
+    result = detector.extract_mlep_map(np.arange(8 * 8 * 3, dtype=np.uint8).reshape(8, 8, 3))
+    assert result.shape == (7, 7, 9)
+
+
+def test_detect_requires_and_uses_cnn_classifier():
+    classifier = torch.nn.Sequential(torch.nn.AdaptiveAvgPool2d(1), torch.nn.Flatten(), torch.nn.Linear(9, 1))
+    detector = MLEPDetector(classifier=classifier, image_size=8)
+    result = detector.detect(np.zeros((8, 8, 3), dtype=np.uint8))
     assert isinstance(result, DetectionResult)
     assert 0.0 <= result.score <= 1.0
-    assert result.detector_name == det.name

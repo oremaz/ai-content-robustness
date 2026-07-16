@@ -18,6 +18,16 @@ from .ensemble import BaseDetector, DetectionResult
 
 logger = logging.getLogger(__name__)
 
+
+def _check_hf_config(instance, model_name: str, trust_remote_code: bool = False) -> bool:
+    try:
+        from transformers import AutoConfig
+        AutoConfig.from_pretrained(model_name, trust_remote_code=trust_remote_code)
+        return True
+    except Exception as error:
+        instance._availability_error = str(error)
+        return False
+
 # ---------------------------------------------------------------------------
 # Path setup — allow imports from ml_pipeline/
 # ---------------------------------------------------------------------------
@@ -211,12 +221,18 @@ class BinocularsDetector(BaseDetector):
         max_length: int = 512,
         device: str = "auto",
         threshold: float = 0.9015,
+        calibration_scale: float = 0.05,
+        calibrator: Optional[Callable[[float], float]] = None,
     ):
         self._observer_name = observer_name
         self._performer_name = performer_name
         self._max_length = max_length
         self._device_spec = device
         self._threshold = threshold
+        self._calibration_scale = float(calibration_scale)
+        self._calibrator = calibrator
+        if self._calibration_scale <= 0:
+            raise ValueError("calibration_scale must be positive")
         self._observer = None
         self._performer = None
         self._tokenizer = None
@@ -262,8 +278,9 @@ class BinocularsDetector(BaseDetector):
                 if not torch.cuda.is_available():
                     self._available = False
                     return False
-                # Don't load models just for checking — assume available if GPU present
-                self._available = True
+                self._available = _check_hf_config(self, self._observer_name) and _check_hf_config(
+                    self, self._performer_name,
+                )
             except ImportError:
                 self._available = False
         return bool(self._available)
@@ -324,29 +341,31 @@ class BinocularsDetector(BaseDetector):
         is_single = isinstance(content, str)
         texts = [content] if is_single else content
         raw_scores = self._compute_score(texts)
-        if is_single:
-            raw_scores = [raw_scores]
 
         results = []
-        for text, raw_score in zip(texts, raw_scores):
-            # Apply dynamic threshold based on length
-            length = len(text.split())
-            dynamic_thresh = self._dynamic_threshold(length, self._threshold)
-            
-            # Convert to AI probability: score < threshold → AI
-            # Normalize to [0, 1] range around threshold
-            ai_score = 1.0 - min(max(raw_score / (dynamic_thresh * 1.5), 0.0), 1.0)
-            
-            # Apply ESL bias penalty
-            ai_score = self._complexity_penalty(text, ai_score)
+        for raw_score in raw_scores:
+            paper_decision = raw_score < self._threshold
+            if self._calibrator is not None:
+                ai_score = float(self._calibrator(raw_score))
+                score_semantics = "calibrated_probability"
+            else:
+                ai_score = float(
+                    1.0 / (1.0 + np.exp((raw_score - self._threshold) / self._calibration_scale))
+                )
+                score_semantics = "uncalibrated_monotonic_transform"
+            if not 0.0 <= ai_score <= 1.0:
+                raise ValueError(f"Binoculars calibrator returned invalid probability: {ai_score}")
 
             results.append(DetectionResult(
                 score=ai_score,
-                label=DetectionResult.label_from_score(ai_score),
+                label="ai" if paper_decision else "human",
+                detector_name=self.name,
                 details={
                     "raw_binoculars_score": raw_score,
-                    "threshold_used": dynamic_thresh,
-                    "below_threshold": raw_score < dynamic_thresh,
+                    "threshold_used": self._threshold,
+                    "below_threshold": paper_decision,
+                    "paper_decision": "ai" if paper_decision else "human",
+                    "score_semantics": score_semantics,
                 },
             ))
 
@@ -371,13 +390,18 @@ class FastDetectGPTDetector(BaseDetector):
     def __init__(
         self,
         scoring_model: str = "tiiuae/falcon-7b",
+        reference_model: Optional[str] = None,
         max_length: int = 512,
         device: str = "auto",
+        threshold: float = 0.0,
     ):
         self._scoring_model_name = scoring_model
+        self._reference_model_name = reference_model or scoring_model
         self._max_length = max_length
         self._device_spec = device
+        self._threshold = float(threshold)
         self._model = None
+        self._reference_model = None
         self._tokenizer = None
         self._available: Optional[bool] = None
 
@@ -401,6 +425,18 @@ class FastDetectGPTDetector(BaseDetector):
             self._model = AutoModelForCausalLM.from_pretrained(
                 self._scoring_model_name, torch_dtype=dtype, device_map=device
             )
+            if self._reference_model_name == self._scoring_model_name:
+                self._reference_model = self._model
+            else:
+                reference_tokenizer = AutoTokenizer.from_pretrained(self._reference_model_name)
+                if reference_tokenizer.get_vocab() != self._tokenizer.get_vocab():
+                    raise ValueError(
+                        "Fast-DetectGPT scoring and reference models must use identical token vocabularies"
+                    )
+                self._reference_model = AutoModelForCausalLM.from_pretrained(
+                    self._reference_model_name, torch_dtype=dtype, device_map=device,
+                )
+                self._reference_model.eval()
             self._model.eval()
             self._available = True
         except Exception as e:
@@ -411,7 +447,11 @@ class FastDetectGPTDetector(BaseDetector):
         if self._available is None:
             try:
                 import torch
-                self._available = torch.cuda.is_available()
+                self._available = bool(
+                    torch.cuda.is_available()
+                    and _check_hf_config(self, self._scoring_model_name)
+                    and _check_hf_config(self, self._reference_model_name)
+                )
             except ImportError:
                 self._available = False
         return bool(self._available)
@@ -441,26 +481,32 @@ class FastDetectGPTDetector(BaseDetector):
 
         with torch.no_grad():
             outputs = self._model(**tokens)
-            logits = outputs.logits[:, :-1]  # (batch, seq_len-1, vocab)
-            log_probs = torch.log_softmax(logits, dim=-1)
-
+            reference_outputs = self._reference_model(**tokens)
+            scoring_logits = outputs.logits[:, :-1]
+            reference_logits = reference_outputs.logits[:, :-1]
             target_ids = input_ids[:, 1:]  # (batch, seq_len-1)
-
-            # Log-prob of actual next token
-            actual_log_probs = log_probs.gather(2, target_ids.unsqueeze(-1)).squeeze(-1)
-
-            # Expected log-prob under the model's distribution
-            probs = torch.softmax(logits, dim=-1)
-            expected_log_probs = (probs * log_probs).sum(dim=-1)
-
-            # Curvature: actual - expected
-            curvature = (actual_log_probs - expected_log_probs)
-
-            # Aggregate: mean curvature per sequence
-            curvature = (curvature * attention_mask).sum(dim=-1) / attention_mask.sum(dim=-1).clamp(min=1)
-            scores = curvature.cpu().numpy().tolist()
+            criterion = self._criterion_from_logits(
+                scoring_logits, reference_logits, target_ids, attention_mask,
+            )
+            scores = criterion.cpu().numpy().tolist()
 
         return scores[0] if is_single else scores
+
+    @staticmethod
+    def _criterion_from_logits(scoring_logits, reference_logits, target_ids, attention_mask):
+        """Compute the standardized Fast-DetectGPT conditional curvature."""
+        import torch
+
+        scoring_log_probs = torch.log_softmax(scoring_logits, dim=-1)
+        reference_probs = torch.softmax(reference_logits, dim=-1)
+        observed = scoring_log_probs.gather(2, target_ids.unsqueeze(-1)).squeeze(-1)
+        expected = (reference_probs * scoring_log_probs).sum(dim=-1)
+        second_moment = (reference_probs * scoring_log_probs.square()).sum(dim=-1)
+        variance = (second_moment - expected.square()).clamp(min=0.0)
+        mask = attention_mask.to(scoring_log_probs.dtype)
+        numerator = ((observed - expected) * mask).sum(dim=-1)
+        denominator = torch.sqrt((variance * mask).sum(dim=-1).clamp(min=1e-12))
+        return numerator / denominator
 
     def detect(self, content: Union[str, List[str]]) -> Union[DetectionResult, List[DetectionResult]]:
         self._load()
@@ -472,23 +518,22 @@ class FastDetectGPTDetector(BaseDetector):
         # texts is always a list, so _compute_curvature returns a list.
         raw_curvatures = self._compute_curvature(texts)
 
-        import math
         results = []
         for text, raw_curvature in zip(texts, raw_curvatures):
-            length = len(text.split())
-            # Fast-DetectGPT uses ~0.3 as a transition point.
-            dynamic_thresh = self._dynamic_threshold(length, base_threshold=0.3)
-            
-            # Map to [0, 1] using sigmoid
-            ai_score = 1.0 / (1.0 + math.exp(-5.0 * (raw_curvature - dynamic_thresh)))
-            
-            # ESL bias penalty
-            ai_score = self._complexity_penalty(text, ai_score)
+            ai_score = float(1.0 / (1.0 + np.exp(-(raw_curvature - self._threshold))))
+            label = "ai" if raw_curvature >= self._threshold else "human"
 
             results.append(DetectionResult(
                 score=ai_score,
-                label=DetectionResult.label_from_score(ai_score),
-                details={"raw_curvature": raw_curvature, "threshold_used": dynamic_thresh},
+                label=label,
+                detector_name=self.name,
+                details={
+                    "raw_curvature": raw_curvature,
+                    "threshold_used": self._threshold,
+                    "score_semantics": "uncalibrated_logistic_transform",
+                    "reference_model": self._reference_model_name,
+                    "scoring_model": self._scoring_model_name,
+                },
             ))
 
         return results[0] if is_single else results
@@ -617,10 +662,8 @@ class DisruptRecoverDetector(BaseDetector):
     concentration as the signal. AI text tends to be recovered more exactly
     than human text after the same corruption.
 
-    This implementation is deliberately a lightweight, configurable hook rather
-    than an overclaimed reproduction of the authors' still-sparse public code.
-    Pass ``recover_fn`` for experiments, or configure an OpenAI-compatible API
-    with ``OPENAI_API_KEY`` / ``OPENROUTER_API_KEY`` and a model name.
+    Word-chunk shuffling, constrained recovery, BERTScore, and word-order rank
+    correlations follow the paper protocol.
     """
 
     name = "Disrupt-and-Recover"
@@ -629,8 +672,7 @@ class DisruptRecoverDetector(BaseDetector):
     def __init__(
         self,
         recover_fn: Optional[Callable[[str], str]] = None,
-        disruption_rate: float = 0.22,
-        disruption_mode: str = "shuffle",
+        semantic_scorer: Optional[Callable[[str, str], float]] = None,
         min_words: int = 35,
         threshold: float = 0.72,
         temperature: float = 0.08,
@@ -640,8 +682,7 @@ class DisruptRecoverDetector(BaseDetector):
         api_key: Optional[str] = None,
     ):
         self._recover_fn = recover_fn
-        self._disruption_rate = float(disruption_rate)
-        self._disruption_mode = disruption_mode
+        self._semantic_scorer = semantic_scorer
         self._min_words = int(min_words)
         self._threshold = float(threshold)
         self._temperature = float(temperature)
@@ -675,28 +716,7 @@ class DisruptRecoverDetector(BaseDetector):
 
     def _disrupt(self, text: str) -> str:
         import random
-
-        if self._disruption_mode not in {"shuffle", "mask"}:
-            raise ValueError("disruption_mode must be 'shuffle' or 'mask'")
-
-        if self._disruption_mode == "shuffle":
-            return self._shuffle_within_chunks(text, random.Random(self._seed + len(text)))
-
-        # Preserve whitespace/punctuation so the recovery model only fills
-        # semantic holes, not formatting damage.
-        parts = re.findall(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*|\s+|[^\w\s]", text)
-        word_positions = [
-            i for i, part in enumerate(parts)
-            if re.fullmatch(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*", part)
-        ]
-        if not word_positions:
-            return text
-
-        n_mask = max(1, int(round(len(word_positions) * self._disruption_rate)))
-        rng = random.Random(self._seed + len(text))
-        for idx in rng.sample(word_positions, min(n_mask, len(word_positions))):
-            parts[idx] = "[MASK]"
-        return "".join(parts)
+        return self._shuffle_within_chunks(text, random.Random(self._seed))
 
     def _shuffle_within_chunks(self, text: str, rng: "random.Random") -> str:
         chunks = re.split(r"([.!?;:\n]+)", text)
@@ -715,9 +735,8 @@ class DisruptRecoverDetector(BaseDetector):
                 out.append(chunk)
                 continue
 
-            n_shuffle = max(2, int(round(len(word_positions) * self._disruption_rate)))
-            selected = rng.sample(word_positions, min(n_shuffle, len(word_positions)))
-            words = [parts[i] for i in selected]
+            selected = word_positions
+            words = [parts[index] for index in selected]
             rng.shuffle(words)
             if words == [parts[i] for i in selected] and len(words) > 1:
                 words = words[1:] + words[:1]
@@ -730,7 +749,8 @@ class DisruptRecoverDetector(BaseDetector):
     def _format_recovery_prompt(corrupted_text: str) -> str:
         return (
             "Recover the original passage from the corrupted version below. "
-            "Some words may be locally reordered or replaced by [MASK]. "
+            "Words were reordered only within punctuation-delimited chunks. "
+            "Do not add or remove any words. Restore only their original order. "
             "Return only the recovered passage, with no explanation.\n\n"
             f"Corrupted passage:\n{corrupted_text}\n\nRecovered passage:"
         )
@@ -763,18 +783,41 @@ class DisruptRecoverDetector(BaseDetector):
         )
         return response.choices[0].message.content.strip()
 
+    def _semantic_similarity(self, source: str, recovered: str) -> float:
+        if self._semantic_scorer is not None:
+            return float(self._semantic_scorer(source, recovered))
+        try:
+            from bert_score import score as bert_score
+        except ImportError as error:
+            raise RuntimeError(
+                "D&R semantic scoring requires the bert-score package or semantic_scorer"
+            ) from error
+        _, _, f1 = bert_score([recovered], [source], lang="en", verbose=False)
+        return float(f1[0].item())
+
     @staticmethod
-    def _word_edit_similarity(source: str, recovered: str) -> float:
+    def _structural_similarity(source: str, recovered: str) -> float:
+        from collections import defaultdict, deque
+        from scipy.stats import kendalltau, spearmanr
+
         source_words = DisruptRecoverDetector._word_tokens(source.lower())
         recovered_words = DisruptRecoverDetector._word_tokens(recovered.lower())
-        max_len = max(len(source_words), len(recovered_words), 1)
-        try:
-            import editdistance
-            distance = editdistance.eval(source_words, recovered_words)
-        except ImportError:
-            from difflib import SequenceMatcher
-            return float(SequenceMatcher(None, source_words, recovered_words).ratio())
-        return float(max(0.0, 1.0 - distance / max_len))
+        positions = defaultdict(deque)
+        for index, word in enumerate(recovered_words):
+            positions[word].append(index)
+        recovered_ranks = []
+        source_ranks = []
+        for index, word in enumerate(source_words):
+            if positions[word]:
+                source_ranks.append(index)
+                recovered_ranks.append(positions[word].popleft())
+        if len(source_ranks) < 2:
+            return 0.0
+        coverage = len(source_ranks) / max(len(source_words), len(recovered_words), 1)
+        kendall = float(np.nan_to_num(kendalltau(source_ranks, recovered_ranks).statistic))
+        spearman = float(np.nan_to_num(spearmanr(source_ranks, recovered_ranks).statistic))
+        correlation = ((kendall + spearman) / 2.0 + 1.0) / 2.0
+        return float(np.clip(coverage * correlation, 0.0, 1.0))
 
     def _similarity_to_ai_score(self, similarity: float) -> float:
         import math
@@ -809,20 +852,22 @@ class DisruptRecoverDetector(BaseDetector):
             try:
                 corrupted = self._disrupt(text)
                 recovered = self._recover(corrupted).strip()
-                similarity = self._word_edit_similarity(text, recovered)
+                semantic_similarity = self._semantic_similarity(text, recovered)
+                structural_similarity = self._structural_similarity(text, recovered)
+                similarity = 0.5 * semantic_similarity + 0.5 * structural_similarity
                 ai_score = self._similarity_to_ai_score(similarity)
-                ai_score = self._complexity_penalty(text, ai_score)
                 results.append(DetectionResult(
                     score=ai_score,
                     label=DetectionResult.label_from_score(ai_score),
                     detector_name=self.name,
                     details={
-                        "word_edit_similarity": similarity,
+                        "recovery_similarity": similarity,
+                        "semantic_bertscore": semantic_similarity,
+                        "structural_rank_similarity": structural_similarity,
                         "corrupted": corrupted,
                         "recovered": recovered,
                         "threshold": self._threshold,
-                        "disruption_rate": self._disruption_rate,
-                        "disruption_mode": self._disruption_mode,
+                        "disruption_mode": "word_chunk_shuffle",
                     },
                 ))
             except Exception as e:
@@ -842,8 +887,8 @@ class DisruptRecoverDetector(BaseDetector):
 # ===========================================================================
 
 
-class MarkovCalibratedTextDetector(BaseDetector):
-    """Markov-informed local-score calibration wrapper.
+class WindowSmoothedTextDetector(BaseDetector):
+    """Fixed local-window neighbor smoother for detector scores.
 
     Wu et al. (ICLR 2026) show that token-level metric-detector scores benefit
     from two structural priors: nearby scores should be similar, while initial
@@ -858,7 +903,7 @@ class MarkovCalibratedTextDetector(BaseDetector):
     not as a replacement for a paper-exact token-level MRF implementation.
     """
 
-    name = "Markov-Calibrated Detector"
+    name = "Window-Smoothed Detector"
     modality = "text"
 
     def __init__(
@@ -873,7 +918,7 @@ class MarkovCalibratedTextDetector(BaseDetector):
         iterations: int = 4,
     ):
         if base_detector is None and score_fn is None:
-            raise ValueError("MarkovCalibratedTextDetector needs base_detector or score_fn")
+            raise ValueError("WindowSmoothedTextDetector needs base_detector or score_fn")
         self.base_detector = base_detector
         self.score_fn = score_fn
         self.window_size = int(window_size)
@@ -883,7 +928,7 @@ class MarkovCalibratedTextDetector(BaseDetector):
         self.initial_discount = float(initial_discount)
         self.iterations = int(iterations)
         if base_detector is not None:
-            self.name = f"Markov-Calibrated {base_detector.name}"
+            self.name = f"Window-Smoothed {base_detector.name}"
 
     def is_available(self) -> bool:
         if self.base_detector is not None:
@@ -914,7 +959,7 @@ class MarkovCalibratedTextDetector(BaseDetector):
         if raw.size == 1:
             return np.clip(raw, 0.0, 1.0).astype(np.float32)
 
-        unary = MarkovCalibratedTextDetector._logit(raw)
+        unary = WindowSmoothedTextDetector._logit(raw)
         weights = np.ones_like(raw)
         weights[0] = float(initial_discount)
         if raw.size > 2:
@@ -929,7 +974,7 @@ class MarkovCalibratedTextDetector(BaseDetector):
             # detector's own evidence.
             neighbor_field = (prev - 0.5) + (nxt - 0.5)
             logits = float(unary_weight) * weights * unary + float(neighbor_weight) * neighbor_field
-            q = MarkovCalibratedTextDetector._sigmoid(logits)
+            q = WindowSmoothedTextDetector._sigmoid(logits)
         return np.clip(q, 0.0, 1.0).astype(np.float32)
 
     def _windows(self, text: str) -> List[str]:
@@ -1003,6 +1048,10 @@ class MarkovCalibratedTextDetector(BaseDetector):
         return results[0] if is_single else results
 
 
+# Compatibility alias. This is not the learned token-level MRF from Wu et al.
+MarkovCalibratedTextDetector = WindowSmoothedTextDetector
+
+
 # ===========================================================================
 # 8. Inverse Prompting for AI Detection (IPAD - NeurIPS 2025)
 # ===========================================================================
@@ -1015,13 +1064,11 @@ class IPADDetector(BaseDetector):
     ``microsoft/Phi-3-medium-128k-instruct``:
 
     - ``bellafc/IPAD/Prompt_Inverter`` — generates a predicted prompt p̂ from T.
-    - ``bellafc/IPAD/Distinguisher_RC`` — answers "can an LLM generate T from p̂?"
-      and we extract ``softmax(first_token_logits)[yes_token]``.
-    - ``bellafc/IPAD/Distinguisher_PTCV`` — compares T against a regeneration T'
-      conditioned on p̂ and returns ``P(yes)`` in the same way.
+    - ``bellafc/IPAD/Distinguisher_PTCV`` checks prompt/text consistency.
+    - ``bellafc/IPAD/Distinguisher_RC`` compares the input and regeneration.
 
-    The final AI score is the mean of the RC and PTCV yes-probabilities, which
-    matches the paper's published ensemble.
+    Yes/no sequence likelihoods are renormalized as a binary distribution. The
+    paper fusion weight (0.45 for PTCV) and threshold (0.54) are defaults.
 
     The base model is ~14B parameters; the detector will decline to load unless
     CUDA is available with sufficient memory, and will fall back to unavailable
@@ -1039,12 +1086,27 @@ class IPADDetector(BaseDetector):
         "ptcv": "bellafc/IPAD/Distinguisher_PTCV",
     }
 
-    def __init__(self, device: str = "auto", dtype: Optional[str] = None):
+    def __init__(
+        self,
+        device: str = "auto",
+        dtype: Optional[str] = None,
+        regenerator: Optional[Callable[[str], str]] = None,
+        regeneration_model: str = "gpt-3.5-turbo",
+        fusion_weight: float = 0.45,
+        threshold: float = 0.54,
+    ):
         self._device_spec = device
         self._dtype = dtype
         self._model = None
         self._tokenizer = None
-        self._yes_token_id: Optional[int] = None
+        self._regenerator = regenerator
+        self._regeneration_model = regeneration_model
+        self._fusion_weight = float(fusion_weight)
+        self._threshold = float(threshold)
+        if not 0.0 <= self._fusion_weight <= 1.0:
+            raise ValueError("fusion_weight must be in [0, 1]")
+        if not 0.0 <= self._threshold <= 1.0:
+            raise ValueError("threshold must be in [0, 1]")
         self._available: Optional[bool] = None
 
     def _load(self):
@@ -1087,20 +1149,6 @@ class IPADDetector(BaseDetector):
                 self._model.load_adapter(repo, adapter_name=name)
             self._model.eval()
 
-            # Cache the "Yes" token id. Phi-3 tokenizes " Yes" as a single token;
-            # fall back to "Yes" without leading space if the first lookup yields
-            # a multi-token sequence.
-            for candidate in (" Yes", "Yes"):
-                ids = self._tokenizer(candidate, add_special_tokens=False).input_ids
-                if len(ids) == 1:
-                    self._yes_token_id = int(ids[0])
-                    break
-            if self._yes_token_id is None:
-                # Take the first token of "Yes" as an approximation — still
-                # better than bigram Jaccard.
-                self._yes_token_id = int(
-                    self._tokenizer("Yes", add_special_tokens=False).input_ids[0]
-                )
             self._available = True
         except Exception as e:
             logger.warning("IPADDetector unavailable: %s", e)
@@ -1110,10 +1158,19 @@ class IPADDetector(BaseDetector):
         if self._available is None:
             try:
                 import torch
-                from transformers import AutoModelForCausalLM  # noqa: F401
-                from peft import PeftModel  # noqa: F401
-                self._available = bool(torch.cuda.is_available())
-            except ImportError:
+                from peft import PeftConfig
+                if not torch.cuda.is_available():
+                    self._availability_error = "CUDA is required for the Phi-3-medium IPAD model"
+                    self._available = False
+                else:
+                    self._available = _check_hf_config(
+                        self, self.BASE_MODEL, trust_remote_code=True,
+                    )
+                    if self._available:
+                        for repository in self.ADAPTERS.values():
+                            PeftConfig.from_pretrained(repository)
+            except Exception as error:
+                self._availability_error = str(error)
                 self._available = False
         return bool(self._available)
 
@@ -1135,18 +1192,82 @@ class IPADDetector(BaseDetector):
             out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
         ).strip()
 
-    def _yes_probability(self, adapter: str, prompt: str) -> float:
+    def _answer_log_probability(self, adapter: str, prompt: str, answer: str) -> float:
         import torch
-        import torch.nn.functional as F
 
         self._model.set_adapter(adapter)
-        inputs = self._tokenizer(
-            prompt, return_tensors="pt", truncation=True, max_length=4096,
-        ).to(self._model.device)
+        prompt_ids = self._tokenizer(
+            prompt, add_special_tokens=True, truncation=True, max_length=4088,
+        ).input_ids
+        answer_ids = self._tokenizer(
+            f" {answer}", add_special_tokens=False,
+        ).input_ids
+        if not answer_ids:
+            raise RuntimeError(f"Tokenizer produced no tokens for answer {answer!r}")
+        input_ids = torch.tensor([prompt_ids + answer_ids], device=self._model.device)
         with torch.no_grad():
-            logits = self._model(**inputs).logits[0, -1, :]  # (vocab,)
-        probs = F.softmax(logits, dim=-1)
-        return float(probs[self._yes_token_id].item())
+            logits = self._model(input_ids=input_ids).logits[:, :-1]
+        log_probs = torch.log_softmax(logits, dim=-1)
+        targets = input_ids[:, 1:]
+        selected = log_probs.gather(2, targets.unsqueeze(-1)).squeeze(-1)
+        start = len(prompt_ids) - 1
+        return float(selected[:, start:].sum().item())
+
+    def _yes_probability(self, adapter: str, prompt: str) -> float:
+        yes_logp = self._answer_log_probability(adapter, prompt, "yes")
+        no_logp = self._answer_log_probability(adapter, prompt, "no")
+        normalizer = np.logaddexp(yes_logp, no_logp)
+        return float(np.exp(yes_logp - normalizer))
+
+    def _regenerate(self, prompt: str, max_new_tokens: int = 200) -> tuple[str, str]:
+        if self._regenerator is not None:
+            return self._regenerator(prompt), "callable"
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if api_key:
+            import json
+            import urllib.request
+
+            body = json.dumps({
+                "model": self._regeneration_model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_new_tokens,
+                "temperature": 0,
+            }).encode()
+            request = urllib.request.Request(
+                "https://api.openai.com/v1/chat/completions",
+                data=body,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+            )
+            with urllib.request.urlopen(request, timeout=90) as response:
+                payload = json.loads(response.read())
+            return payload["choices"][0]["message"]["content"].strip(), self._regeneration_model
+
+        disable_adapter = getattr(self._model, "disable_adapter", None)
+        if not callable(disable_adapter):
+            raise RuntimeError(
+                "IPAD regeneration requires a regenerator callable, OPENAI_API_KEY, "
+                "or a PEFT model supporting disable_adapter()"
+            )
+        import torch
+        with disable_adapter():
+            inputs = self._tokenizer(
+                prompt, return_tensors="pt", truncation=True, max_length=4096,
+            ).to(self._model.device)
+            with torch.no_grad():
+                output = self._model.generate(
+                    **inputs,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    pad_token_id=self._tokenizer.pad_token_id or self._tokenizer.eos_token_id,
+                )
+        text = self._tokenizer.decode(
+            output[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
+        ).strip()
+        return text, "phi3_base_fallback"
 
     def detect(self, content: Union[str, List[str]]) -> Union[DetectionResult, List[DetectionResult]]:
         self._load()
@@ -1174,41 +1295,39 @@ class IPADDetector(BaseDetector):
                 )
                 predicted_prompt = self._generate("inverter", inv_prompt, max_new_tokens=80)
 
-                # Step 2: RC distinguisher — can the LLM generate T from p̂?
-                rc_prompt = (
+                # Step 2: prompt-text consistency verifier on (P, T).
+                ptcv_prompt = (
                     "You are given a candidate prompt and a text. Answer Yes if an "
                     "AI model could plausibly have generated the text from the "
                     "prompt, and No otherwise.\n\n"
                     f"Prompt: {predicted_prompt}\n\nText: {text}\n\nAnswer:"
                 )
-                p_rc = self._yes_probability("rc", rc_prompt)
+                p_ptcv = self._yes_probability("ptcv", ptcv_prompt)
 
-                # Step 3: PTCV distinguisher — regenerate T' from p̂, then
-                # ask whether T and T' come from similar prompts.
-                regen_prompt = (
-                    "Act as an AI assistant. Please fulfill the following "
-                    f"request:\n\n{predicted_prompt}\n\nResponse:"
-                )
-                regenerated = self._generate("inverter", regen_prompt, max_new_tokens=200)
+                # Step 3: regenerate from P and compare (T', T) with RC.
+                regenerated, regeneration_backend = self._regenerate(predicted_prompt)
 
-                ptcv_prompt = (
+                rc_prompt = (
                     "Text2 is generated by an LLM. Determine whether Text1 is also "
                     "generated by an LLM using a similar prompt. Answer Yes or No.\n\n"
                     f"Text1: {text}\n\nText2: {regenerated}\n\nAnswer:"
                 )
-                p_ptcv = self._yes_probability("ptcv", ptcv_prompt)
+                p_rc = self._yes_probability("rc", rc_prompt)
 
-                ai_score = 0.5 * p_rc + 0.5 * p_ptcv
+                ai_score = self._fusion_weight * p_ptcv + (1.0 - self._fusion_weight) * p_rc
                 ai_score = float(max(0.0, min(1.0, ai_score)))
                 results.append(DetectionResult(
                     score=ai_score,
-                    label=DetectionResult.label_from_score(ai_score),
+                    label="ai" if ai_score > self._threshold else "human",
                     detector_name=self.name,
                     details={
                         "predicted_prompt": predicted_prompt,
                         "rc_yes_probability": p_rc,
                         "ptcv_yes_probability": p_ptcv,
                         "regenerated": regenerated,
+                        "regeneration_backend": regeneration_backend,
+                        "fusion_weight_ptcv": self._fusion_weight,
+                        "decision_threshold": self._threshold,
                     },
                 ))
             except Exception as e:
@@ -1222,11 +1341,12 @@ class IPADDetector(BaseDetector):
 
 
 class DivEyeDetector(BaseDetector):
-    """Zero-shot detector using surprisal diversity features.
+    """DivEye surprisal features with a trained XGBoost classifier.
 
     Paper: Basani & Chen, "Diversity Boosts AI-Generated Text Detection" (TMLR 2025).
     Core idea: human text has higher variability in lexical/structural unpredictability.
-    Features: mean, std, skewness, kurtosis of token-level surprisal, plus 1st/2nd derivatives.
+    The nine features follow Equation 6. Detection requires a fitted classifier;
+    the features are zero-shot, but the paper's final classifier is supervised.
 
     Scoring model defaults to ``Qwen/Qwen3.5-9B-Base`` because DivEye reads the
     raw token-level surprisal distribution: a Base (non-RLHF'd) model gives
@@ -1240,12 +1360,20 @@ class DivEyeDetector(BaseDetector):
     def __init__(
         self,
         scoring_model: str = "Qwen/Qwen3.5-9B-Base",
-        max_length: int = 512,
+        max_length: int = 1024,
         device: str = "auto",
+        classifier_path: Optional[str] = None,
+        classifier: Any = None,
+        entropy_bins: int = 20,
     ):
         self._scoring_model_name = scoring_model
         self._max_length = max_length
         self._device_spec = device
+        self._classifier_path = classifier_path
+        self._classifier = classifier
+        self._entropy_bins = int(entropy_bins)
+        if self._entropy_bins < 2:
+            raise ValueError("entropy_bins must be at least 2")
         self._model = None
         self._tokenizer = None
         self._available: Optional[bool] = None
@@ -1282,7 +1410,12 @@ class DivEyeDetector(BaseDetector):
                 self._scoring_model_name, torch_dtype=dtype, trust_remote_code=True,
             ).to(device)
             self._model.eval()
-            self._available = True
+            if self._classifier is None and self._classifier_path:
+                import joblib
+                self._classifier = joblib.load(self._classifier_path)
+            self._available = self._classifier is not None
+            if self._classifier is None:
+                logger.warning("DivEye requires a trained XGBoost classifier")
         except Exception as e:
             logger.warning("DivEyeDetector unavailable: %s", e)
             self._available = False
@@ -1293,7 +1426,12 @@ class DivEyeDetector(BaseDetector):
             # unavailable on CPU-only machines so the ensemble degrades cleanly.
             try:
                 import torch
-                self._available = bool(torch.cuda.is_available())
+                compute_available = torch.cuda.is_available() or self._device_spec == "cpu"
+                self._available = bool(
+                    compute_available and (self._classifier is not None or (
+                        self._classifier_path and os.path.exists(self._classifier_path)
+                    ))
+                )
             except ImportError:
                 self._available = False
         return bool(self._available)
@@ -1301,7 +1439,6 @@ class DivEyeDetector(BaseDetector):
     def _extract_surprisal_features(self, text: str) -> Dict[str, float]:
         """Extract DivEye-style surprisal diversity features."""
         import torch
-        from scipy import stats as sp_stats
 
         tokens = self._tokenizer(
             text,
@@ -1313,7 +1450,7 @@ class DivEyeDetector(BaseDetector):
         input_ids = tokens["input_ids"]
         seq_len = input_ids.size(1)
         if seq_len < 5:
-            return {"mean": 0, "std": 0, "skew": 0, "kurtosis": 0, "d1_std": 0, "d2_std": 0}
+            raise ValueError("DivEye requires at least five tokens")
 
         with torch.no_grad():
             logits = self._model(**tokens).logits[:, :-1]
@@ -1325,28 +1462,103 @@ class DivEyeDetector(BaseDetector):
         surprisal = -token_log_probs.squeeze(0).cpu().float().numpy()
 
         if len(surprisal) < 3:
-            return {"mean": 0, "std": 0, "skew": 0, "kurtosis": 0, "d1_std": 0, "d2_std": 0}
+            raise ValueError("DivEye requires at least four surprisal values")
 
-        # Core statistics
+        return self._features_from_surprisal(surprisal, self._entropy_bins)
+
+    @staticmethod
+    def _features_from_surprisal(surprisal: np.ndarray, entropy_bins: int = 20) -> Dict[str, float]:
+        from scipy import stats as sp_stats
+
+        surprisal = np.asarray(surprisal, dtype=np.float64)
+        if len(surprisal) < 4:
+            raise ValueError("DivEye requires at least four surprisal values")
         mean = float(np.mean(surprisal))
-        std = float(np.std(surprisal))
-        skew = float(sp_stats.skew(surprisal))
-        kurtosis = float(sp_stats.kurtosis(surprisal))
+        variance = float(np.var(surprisal, ddof=1))
+        if variance == 0.0:
+            skew = 0.0
+            kurtosis = 0.0
+        else:
+            skew = float(np.nan_to_num(sp_stats.skew(surprisal), nan=0.0))
+            kurtosis = float(np.nan_to_num(sp_stats.kurtosis(surprisal), nan=0.0))
 
         # First and second derivatives (DivEye's key contribution)
         d1 = np.diff(surprisal)
         d2 = np.diff(d1) if len(d1) > 1 else np.array([0.0])
-        d1_std = float(np.std(d1)) if len(d1) > 0 else 0.0
-        d2_std = float(np.std(d2)) if len(d2) > 0 else 0.0
+        d1_mean = float(np.mean(d1))
+        d1_variance = float(np.var(d1, ddof=1)) if len(d1) > 1 else 0.0
+        d2_variance = float(np.var(d2, ddof=1)) if len(d2) > 1 else 0.0
+        counts, _ = np.histogram(d2, bins=entropy_bins)
+        probabilities = counts[counts > 0].astype(np.float64)
+        probabilities /= probabilities.sum()
+        d2_entropy = float(-(probabilities * np.log(probabilities)).sum())
+        if len(d2) > 1 and d2_variance > 0:
+            centered = d2 - np.mean(d2)
+            d2_autocorrelation = float(
+                np.mean(centered[:-1] * centered[1:]) / np.mean(np.square(centered))
+            )
+        else:
+            d2_autocorrelation = 0.0
 
         return {
             "mean": mean,
-            "std": std,
+            "variance": variance,
             "skew": skew,
             "kurtosis": kurtosis,
-            "d1_std": d1_std,
-            "d2_std": d2_std,
+            "d1_mean": d1_mean,
+            "d1_variance": d1_variance,
+            "d2_variance": d2_variance,
+            "d2_entropy": d2_entropy,
+            "d2_autocorrelation": d2_autocorrelation,
         }
+
+    @staticmethod
+    def _feature_vector(features: Dict[str, float]) -> np.ndarray:
+        names = (
+            "mean", "variance", "skew", "kurtosis", "d1_mean",
+            "d1_variance", "d2_variance", "d2_entropy", "d2_autocorrelation",
+        )
+        vector = np.asarray([features[name] for name in names], dtype=np.float32)
+        if not np.isfinite(vector).all():
+            raise ValueError("DivEye produced non-finite features")
+        return vector
+
+    def fit_classifier(self, texts: Sequence[str], labels: Sequence[int], save_path: Optional[str] = None):
+        """Fit the paper XGBoost model with labels 0=AI and 1=human."""
+        if len(texts) != len(labels) or len(texts) < 4 or set(labels) != {0, 1}:
+            raise ValueError("DivEye training needs aligned texts with both labels 0=AI and 1=human")
+        if self._model is None:
+            existing_classifier = self._classifier
+            self._classifier = object()
+            self._load()
+            self._classifier = existing_classifier
+        from xgboost import XGBClassifier
+
+        y = np.asarray(labels, dtype=np.int64)
+        positives = max(1, int((y == 1).sum()))
+        negatives = int((y == 0).sum())
+        classifier = XGBClassifier(
+            random_state=42,
+            scale_pos_weight=negatives / positives,
+            max_depth=12,
+            n_estimators=200,
+            colsample_bytree=0.8,
+            subsample=0.7,
+            min_child_weight=5,
+            gamma=1.0,
+            eval_metric="logloss",
+        )
+        matrix = np.vstack([
+            self._feature_vector(self._extract_surprisal_features(text)) for text in texts
+        ])
+        classifier.fit(matrix, y)
+        self._classifier = classifier
+        self._available = True
+        if save_path:
+            import joblib
+            joblib.dump(classifier, save_path)
+            self._classifier_path = save_path
+        return self
 
     def detect(self, content: str) -> DetectionResult:
         self._load()
@@ -1354,24 +1566,20 @@ class DivEyeDetector(BaseDetector):
             raise RuntimeError("DivEye scoring model not loaded")
 
         features = self._extract_surprisal_features(content)
-
-        # Decision heuristic based on DivEye findings:
-        # Human text has HIGHER std, d1_std, d2_std (more variable surprisal)
-        # AI text has LOWER variability (flatter surprisal profile)
-        # Combine features into a score using calibrated thresholds from the paper
-        diversity_score = (
-            0.3 * min(features["std"] / 5.0, 1.0)
-            + 0.25 * min(features["d1_std"] / 4.0, 1.0)
-            + 0.25 * min(features["d2_std"] / 3.0, 1.0)
-            + 0.1 * min(abs(features["skew"]) / 2.0, 1.0)
-            + 0.1 * min(abs(features["kurtosis"]) / 5.0, 1.0)
-        )
-
-        # Low diversity → AI, high diversity → human
-        ai_score = 1.0 - min(max(diversity_score, 0.0), 1.0)
+        vector = self._feature_vector(features).reshape(1, -1)
+        probabilities = self._classifier.predict_proba(vector)[0]
+        classes = list(self._classifier.classes_)
+        if 0 not in classes:
+            raise RuntimeError("DivEye classifier must use the paper labels 0=AI and 1=human")
+        ai_score = float(probabilities[classes.index(0)])
 
         return DetectionResult(
             score=ai_score,
             label=DetectionResult.label_from_score(ai_score),
-            details={"surprisal_features": features, "diversity_score": diversity_score},
+            detector_name=self.name,
+            details={
+                "surprisal_features": features,
+                "classifier_path": self._classifier_path,
+                "score_semantics": "classifier_probability",
+            },
         )

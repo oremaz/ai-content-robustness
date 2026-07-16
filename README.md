@@ -1,415 +1,803 @@
-# AI Content Detector & Evasion Research Framework
+# AI Content Detection and Evasion Research
 
-A research laboratory for studying the interaction between **AI-content detectors** and **adversarial generators**, across both text and image modalities.
+This subproject is a research workbench for three related questions:
 
-The framework lets you (a) score a piece of text or image with a configurable ensemble of state-of-the-art zero-shot and supervised detectors, (b) train a generator with reinforcement learning to evade those detectors while preserving meaning, and (c) run a multi-round *arms race* where attacker and defender update against each other and the resulting equilibrium is measured.
+1. Can a model distinguish AI-generated content from human-created content?
+2. Can a generator learn to evade that detector while preserving the requested
+   meaning or image prompt?
+3. What happens when the detector is retrained on the attacker's new outputs?
 
-The detectors and attacks implemented are drawn from the recent literature listed in [`references.bib`](references.bib). Each component is described in detail below, so you can use this README as a reference without having to read the original papers.
+It supports text and image detectors, detector ensembles, text and image evasion
+methods, repeated attacker and defender updates, leakage-aware benchmarks, and a
+Streamlit scoring application.
 
----
+AI-content detection is statistical evidence, not proof of authorship. A score
+can change with language, topic, generator, decoding settings, image processing,
+and adversarial rewriting. Use this project to run controlled experiments or to
+assist review, not as the sole basis for a consequential decision.
 
-## Background - read this first (for a newcomer)
+The bibliography is in [`references.bib`](references.bib). This README explains
+the ideas needed to understand the implementation without requiring the reader
+to first read those papers.
 
-If you are new to this topic, read this section before anything else. It explains the problem and the vocabulary so the rest of the README - and later, the papers - makes sense. You do **not** need to have done a literature review yet.
+## The problem in plain language
 
-### The problem
+AI generators leave patterns, but no single pattern is universal. A text model
+might produce unusually predictable token sequences. An image generator might
+leave frequency artifacts or react differently to denoising. A supervised
+classifier can learn such patterns from examples, while a zero-shot detector can
+derive a statistic from a pretrained model without training a new classifier.
 
-Large language models (LLMs) and diffusion image models can produce text and images that look human-made. A **detector** is a model or algorithm that takes a piece of content and outputs a probability that it was AI-generated. This project studies detectors *and* their natural adversary: a **generator** (the "attacker") that is deliberately trained to produce content the detectors miss. The interesting scientific question is what happens when the two are pitted against each other and keep adapting - does one side win, or does the system settle into an **equilibrium**?
+An adaptive attacker makes the problem harder. It observes a detector score and
+changes the generator to lower that score. A defender can then retrain on these
+new evasive samples. This repository represents that loop as:
 
-### The two sides
+```text
+prompt -> generator -> candidate content -> detector -> AI score
+             ^                              |
+             |________ evasion reward ______|
 
-- **Defender / detector side** (`detectors/`). Given text or an image, return a score in `[0, 1]` - `0` = confidently human, `1` = confidently AI. There are two broad families:
-  - **Supervised detectors** - a classifier trained on labelled human-vs-AI examples (e.g. `ModernBERTDetector`, the image checkpoint detectors). Accurate in-domain, but can fail on generators they never saw.
-  - **Zero-shot detectors** - no training on labelled data; instead they exploit a statistical signature of machine text/images (e.g. `Binoculars`, `Fast-DetectGPT`, `DivEye`, `WaRPAD`). More robust across generators, usually heavier to run.
-  An **ensemble** simply runs several detectors and combines their scores.
+fixed evaluation set -> measure attacker -> retrain defender -> measure again
+```
 
-- **Attacker / generator side** (`rl_evasion/`). Take a generator and fine-tune it so its output still means the same thing but no longer trips the detectors. This is done with **reinforcement learning (RL)**: the generator produces samples, each sample is scored, and the score is used as a **reward** to nudge the generator's weights. Here the reward is mostly "1 − detector score" (evade the detector) plus terms that keep the meaning and quality intact.
+The key experimental question is therefore not only "does the detector work on
+today's samples?" It is also "does it continue to work on samples optimized
+against it, including samples from prompts and detectors that training never
+saw?"
 
-### The arms race
+## Essential vocabulary
 
-The headline experiment alternates the two sides for several rounds: the attacker trains against the current detectors, the detector then retrains on the attacker's new output, and so on. After each round we measure the **Nash gap** - a number in `[0, 1]` that is small when neither side can easily improve (an equilibrium) and large when one side is clearly winning.
-
-### Glossary
-
-| Term | Plain meaning |
+| Term | Meaning in this project |
 |---|---|
-| **Zero-shot detector** | Detects AI content using a statistical signal, with no labelled training data. |
-| **Supervised detector** | A classifier trained on labelled human/AI examples. |
-| **Perplexity** | How "surprised" a language model is by a text - low perplexity ≈ predictable text. |
-| **LoRA / QLoRA** | Cheap fine-tuning: train a few small added weights instead of the whole model (QLoRA also quantizes the frozen base to save memory). |
-| **RL (reinforcement learning)** | Training by trial-and-reward instead of labelled targets. |
-| **GRPO** | An RL algorithm: sample several outputs per prompt, reward each, push the model toward the better-than-average ones. Used for the text attacker. |
-| **DDPO** | The same idea applied to a diffusion image model - each denoising step is an RL action. Used for the image attacker. |
-| **SPIN / MultiSPIN** | "Self-play" fine-tuning: the model is trained to prefer real human text over its own output. |
-| **MAML** | Meta-learning: learn a starting point from which the model can adapt to a *new* detector in very few steps. |
-| **Reward** | The scalar the RL attacker is trained to maximize (here: evasion + meaning preservation + quality). |
-| **Ensemble** | Several detectors whose scores are combined into one verdict. |
-| **Arms race / equilibrium** | Alternating attacker/detector updates; equilibrium = neither side gains much from another round. |
-| **Nash gap** | Our `[0, 1]` scalar measuring how far the arms race is from equilibrium. |
-| **TPR @ FPR** | True-positive rate measured at a fixed false-positive rate - the standard way to report a detector's accuracy at a chosen strictness. |
-| **AUROC** | Area under the ROC curve; a single number (0.5 = random, 1.0 = perfect) summarizing detector quality. |
-| **ESL bias** | English-as-a-Second-Language text is simpler and can be wrongly flagged as AI; detectors here try to correct for this. |
-| **MMD** | Maximum Mean Discrepancy - a distance between two *distributions* of feature vectors. |
+| **Detector** | A component that maps text or an image to an AI-oriented score and a label. |
+| **Supervised detector** | A classifier trained on labeled human and AI examples. It needs a fitted checkpoint. |
+| **Zero-shot detector** | A method that computes a statistic using pretrained models without fitting a task-specific detector classifier. It can still require large model weights and a threshold. |
+| **Raw statistic** | The detector's native measurement, such as a likelihood ratio, curvature, cosine similarity, or anomaly score. |
+| **Calibration** | Learning a mapping from scores to probabilities on a separate representative validation set. |
+| **Evasion attack** | A rewrite or generator update intended to reduce detection while retaining useful content. |
+| **Attacker** | The generator or transformation being optimized. |
+| **Defender** | The detector being evaluated or retrained. |
+| **Held-out** | Data or a detector excluded from training and used only to test generalization. |
+| **Checkpoint** | Saved trained weights or a fitted classical model. Large project checkpoints are not stored in git. |
 
-### Where to start
+## Quickstart
 
-1. Install dependencies and run the test suite (steps 1–2 below) - this confirms a healthy checkout.
-2. Run the smoke test (step 3) - it imports every component and prints what is and isn't available on your machine.
-3. Optionally train the supervised detector checkpoints (step 4) - the supervised text/image detectors stay unavailable without them.
-4. Launch the Streamlit app (step 5) and paste some text - this makes the detector side concrete.
-5. Skim "What each file does" below, then read the papers in the order of the "Key references" BibTeX keys.
+Run every command from the repository root. The project uses the root `uv`
+environment and expects `PYTHONPATH=.` for module imports.
 
----
+### 1. Create the environment
 
-## What you can do with it
-
-- **Score text or images** with an ensemble of detectors via a Streamlit UI or programmatic API.
-- **Train an evader** (text: GRPO or MultiSPIN on a LoRA adapter; image: DDPO on a Stable Diffusion UNet) that learns to bypass a chosen detector ensemble.
-- **Run an arms race**: alternate attacker training and defender retraining over N rounds, log per-round metrics, and read off whether the system converges.
-- **Measure adaptation cost** (MAML): how many gradient steps does an attacker need to defeat a brand-new, unseen detector?
-- **Compare against published baselines**: vanilla generation, paraphrasing, synonym substitution, prompt engineering, sampling perturbation, OpenRouter API, and the NeurIPS 2025 Adversarial Paraphrasing attack.
-- **Explain detector decisions** at the paragraph level using SHAP on a feature-based XGBoost model (notebook).
-
----
-
-## Repository layout
-
-```
-ai_content_detector/
-├── app.py                         # Streamlit UI: paste text / upload image, get ensemble scores
-├── detectors/                     # Defensive side: text + image detectors and the ensemble logic
-├── rl_evasion/
-│   ├── run_experiments.py         # Single CLI entry point for every experiment
-│   ├── config.py                  # Dataclasses with all hyperparameters
-│   ├── text_evasion/              # GRPO, MultiSPIN, HUMPA-style proxy, reward functions, feature bank
-│   ├── image_evasion/             # DDPO trainer + diffusion-purification evaluation
-│   ├── arms_race/                 # Multi-round attacker/defender loop, RADAR defender, MAML
-│   └── benchmarking/              # Datasets, baselines, BenchmarkRunner
-├── notebooks/explainable_detector.ipynb   # Paragraph-level XGBoost + SHAP on the MAGE dataset
-└── tests/                         # 140+ unit tests pinning the math of every critical component
-```
-
----
-
-## What each file does
-
-### Detectors (`detectors/`)
-
-The defensive side. Every detector implements the same `BaseDetector` interface:
-
-- `is_available() -> bool`: does this machine have everything (model weights, GPU memory) needed?
-- `detect(content) -> DetectionResult`: return an AI-probability score in `[0, 1]`, a label, and a per-detector `details` dict.
-
-#### `ensemble.py`
-- `BaseDetector` (abstract) and `DetectionResult` (dataclass).
-- `EnsembleAggregator` runs every available detector on the same input. It can either average their scores with manual weights or learn the weights from a small calibration set using a logistic-regression meta-classifier. The learned aggregator automatically *down-weights* a detector that is currently being bypassed by an attacker, which is useful in the arms race loop.
-
-#### `text_detectors.py`
-
-| Class | What it does | Reference |
-|---|---|---|
-| `ModernBERTDetector` | Supervised classifier: a QLoRA-fine-tuned ModernBERT trained on the MAGE corpus. Outputs the class-0 (machine) probability. | Internal |
-| `TFIDFDetector` | TF-IDF features + logistic regression. Cheap CPU-only baseline. Loads from `bench_aitextdetect`. | Internal |
-| `BinocularsDetector` | Zero-shot. Loads two reference LMs (default: Falcon-7B and Falcon-7B-Instruct). The score is the ratio of the text's *perplexity* under one model to the *cross-perplexity* between the two models - the per-token cross-entropy of one model's next-token distribution against the other's. Human writing produces a higher ratio than typical LLM samples. | Hans et al., ICML 2024 |
-| `FastDetectGPTDetector` | Zero-shot. Computes the *conditional probability curvature*: the gap between the log-probability of the actual text and the expected log-probability of nearby samples drawn from a reference LM. AI text sits in a steeper local maximum. | Bao et al., ICLR 2024 |
-| `DivEyeDetector` | Zero-shot. Scores the input under `Qwen/Qwen3.5-9B-Base`, then extracts the distribution of token-level surprisals (mean, std, skewness, kurtosis, first/second derivatives). Human writing has higher surprisal *diversity* than AI. The Base (non-RLHF'd) variant is used on purpose: instruction-tuned models have peaked logits on alignment tokens that distort the diversity signal. | Basani & Chen, TMLR 2025 |
-| `DisruptRecoverDetector` | D&R-style black-box hook. Locally shuffles words within chunks (or masks words for ablations), calls a user-supplied or OpenAI-compatible recovery model once, and scores how exactly the recovered text matches the original. High recoverability is treated as evidence of posterior concentration. Calibration is intentionally explicit (`threshold`, `disruption_rate`) because the authors' public code is still sparse. | Sun et al., ICLR 2026 |
-| `MarkovCalibratedTextDetector` | Calibration wrapper. Splits a document into overlapping local windows, scores each window with an existing detector/callable, applies mean-field-style Markov smoothing across neighboring windows, discounts unstable early windows, and aggregates the calibrated probabilities. | Wu et al., ICLR 2026 |
-| `IPADDetector` | Faithful reproduction. Uses three published LoRA adapters on `microsoft/Phi-3-medium-128k-instruct`: one *prompt inverter* that hypothesizes the prompt that could have produced the input, and two *distinguishers* (RC and PTCV) that score how well the input is consistent with that hypothesized prompt. Final score = average of the two yes-token probabilities. | Chen et al., NeurIPS 2025 |
-| `ParaphraseRoundTripDetector` | Lightweight round-trip heuristic. Asks an LLM to rewrite the input into "clear standard prose"; large normalized edit distance between the original and the rewrite suggests the input is far from the natural-language manifold. Useful as an auxiliary signal, not a stand-alone SOTA detector. The legacy alias `InversionDetector` still works. | DIPPER-inspired, Krishna et al., NeurIPS 2023 |
-
-All zero-shot detectors apply *length-aware thresholds* and a complexity normalizer to mitigate ESL bias (English-as-a-Second-Language writing has lower lexical complexity than native writing and would otherwise be flagged as AI).
-
-#### `image_detectors.py`
-
-| Class | What it does | Reference |
-|---|---|---|
-| `EfficientNetDetector` | Wraps a fine-tuned EfficientNet-B4-NS (trained on the ArtiFact dataset across 25 generators). | Internal checkpoint |
-| `CLIPImageDetector` | Wraps a CLIP-based fake/real classifier. | Internal checkpoint |
-| `DINOv2Detector` | Wraps a DINOv2 ViT-B classifier. | Internal checkpoint |
-| `SigLIPDetector` | Wraps a HuggingFace SigLIP-based image-classification pipeline that emits a `fake/ai/synthetic` label. | HF model card |
-| `PatchBasedClassifier` | Wraps any of the above. Slides a 128×128 window over the image, scores each patch, and aggregates with the 85th percentile. Forces the underlying classifier to detect *local* artifacts rather than relying on a global spurious correlation (lighting, watermark, JPEG fingerprint). | Generic best practice |
-| `FrequencyDetector` | Lightweight high-/low-frequency *energy ratio* heuristic on a single-level Haar DWT. Diffusion models leave excess HF energy from the denoising process. Useful baseline; *not* the published WaRPAD algorithm. | N/A |
-| `MLEPDetector` | Multi-granularity local entropy patterns. Computes Shannon entropy maps from deterministically shuffled local patches at multiple scales, turning semantic-heavy image content into artifact-focused entropy statistics. A trained sklearn-style classifier can be plugged in; otherwise it uses a calibration-ready heuristic score. | Yuan et al., NeurIPS 2025 |
-| `WaRPADDetector` | Faithful reproduction. For each non-overlapping 224×224 patch over the image (rescaled to 896×896): subtract α·HF(x) where HF is the 2-level Haar high-frequency content (α = 0.1), embed both the original and the perturbed patch with **DINOv3 ViT-L/16** (`facebook/dinov3-vitl16-pretrain-lvd1689m`), take the cosine similarity of their CLS tokens. Real photos give embeddings that are *robust* to HF perturbations (cosine close to 1); generated images do not. (Note: DINOv3 weights are gated on HuggingFace; run `huggingface-cli login` once.) | Choi et al., NeurIPS 2025 |
-| `DenoisingTrajectoryDetector` | DTAD-style. Encodes the input image to a Stable Diffusion VAE latent. At a grid of timesteps, adds Gaussian noise to the latent and runs a single-step DDIM denoise to predict `x_0`. Generated images converge faster along this trajectory than real photos, so the average cosine similarity between predicted `x_0` and the original latent is higher for AI images. | Liang et al., NeurIPS 2025 (DTAD); implementation grounded in LATTE (Vasilcoiu et al.) |
-
-#### `style_detector.py`
-
-| Class | What it does | Reference |
-|---|---|---|
-| `StyleEmbeddingDetector` | Few-shot text detector built on **LUAR** (`rrivera1849/LUAR-MUD`), a RoBERTa model trained with supervised contrastive learning to embed text into an authorship-*style* space. It scores a query by comparing its style embedding to an AI centroid and a human centroid (cosine similarity → softmax). Centroids come either from a user-supplied support set (`setup_support_set`) or from a small built-in default set. Because it keys on *writing style* rather than perplexity or frequency artefacts, it is a deliberately orthogonal ensemble member, and a harder target for the RL attacker. | Rivera Soto et al., 2024 (arXiv:2401.06712) |
-
-### Reinforcement-learning evasion (`rl_evasion/`)
-
-The offensive side. The CLI entry point is `rl_evasion/run_experiments.py`.
-
-#### Text (`rl_evasion/text_evasion/`)
-
-- **`grpo_trainer.py`**: Group Relative Policy Optimization. For each prompt, sample K completions with the current policy, score them with the reward function, compute group-normalized advantages, and update the policy via per-token policy gradient + a KL penalty against a frozen reference (the same model with its LoRA adapter disabled). Uses TRL's `GRPOTrainer` when available and falls back to a built-in reference loop otherwise.
-- **`multispin.py`**: MultiSPIN. Iterative self-play: at each step the model generates its own response to a prompt and is updated with the DPO-style SPIN log-sigmoid loss to prefer the human reference over its own generation. Stylometric features (burstiness, type-token ratio, sentence-length variance, function-word ratio, POS bigram entropy, hapax ratio) and embedding-MMD distances are computed for monitoring; the SPIN loss is the actual gradient signal.
-- **`proxy_evasion.py`**: A *research stub* exploring the decoding-time logit-shift idea (HUMPA, Wang et al., ICLR 2025). Adds the logits of a small "humanizing" proxy model to the logits of the target model at every step. The proxy training loop is not implemented; treat this as a hook for experimentation, not a finished method.
-- **`feature_bank.py`**: Persistent memory of probe classifiers. After a training round, train a small linear probe on stylometric features that separate the latest generations from human text; keep the K probes with highest AUROC. Future rounds can include the bank's confidence as an extra reward term so the attacker has to defeat *every* feature family it has previously failed on.
-- **`rewards.py`**: Reward functions: detector-evasion (`1 − detector_score`), semantic similarity (E5 sentence embeddings, mean-pooled with the `query:` prefix), and a quadratic length-ratio quality penalty. `CompositeReward` combines them and rejects degenerate short outputs (default: < 20 tokens) by returning `total = 0`.
-- The reward factory also accepts `disrupt_recover` / `dr` as an explicit detector name. It is not in the default RL detector ensemble because it requires either a custom `recover_fn` in code or an OpenAI-compatible recovery API.
-- **`evaluate.py`**: Evaluation harness: aggregates per-detector evasion, attack-success rate, mean semantic similarity, and TPR at given FPR operating points (linearly interpolated, not nearest-neighbor).
-
-#### Image (`rl_evasion/image_evasion/`)
-
-- **`ddpo_trainer.py`**: Denoising Diffusion Policy Optimization. Treats every DDIM denoising step as an RL action and updates the UNet (with LoRA) via importance-sampled policy gradient with PPO-style ratio clipping. Reward = detector-evasion + CLIP image-text alignment + aesthetic score. Includes evaluation under **diffusion purification** (a separate, *pretrained* `StableDiffusionImg2ImgPipeline` adds noise at strength 0.15 and re-denoises the attacker's output before scoring; this measures whether the evasion survives spectral scrubbing). | Black et al., ICLR 2024; Saberi et al., ICLR 2024
-
-#### Arms race (`rl_evasion/arms_race/`)
-
-- **`equilibrium.py`**: The headline experiment. For N rounds: (1) the attacker fine-tunes its policy against the current detector ensemble; (2) generates fresh samples on a *training* prompt subset; (3) the defender retrains on those samples; (4) the attacker's reward function is updated with the retrained defender. All evaluation is on a *disjoint* held-out prompt subset (configured at setup time, fixed seed). The per-round **Nash gap** is `max(0, defender_accuracy − (1 − attacker_success_rate))`, bounded in `[0, 1]`. A gap that converges to a small constant indicates equilibrium; a widening gap means the defender is winning.
-- **`radar_defender.py`**: RADAR-style adaptive defender. Retrains a RoBERTa classifier on the latest attacker outputs vs. matched human references after each round. | Hu et al., NeurIPS 2023
-- **`meta_adapt.py`**: MAML-style meta-learning over a "detector zoo". The inner loop adapts the policy on a *support* prompt subset against a sampled detector; the outer loop minimizes the post-adaptation loss on a disjoint *query* subset. Uses `torch.func.functional_call` for proper second-order gradients when available, falling back to first-order MAML otherwise. The companion method `measure_adaptation_cost` evaluates how many gradient steps are needed to reach an evasion threshold against a brand-new, held-out detector. | Finn et al., ICML 2017
-
-#### Benchmarking (`rl_evasion/benchmarking/`)
-
-- **`datasets.py`**: Dataset loaders: HC3 (human/AI Q&A pairs), CNN/DailyMail (prompt-only), and a generic file loader. Each dataset exposes `ai_texts_available` so the runner knows whether post-hoc methods (paraphrase, synonym substitution) are usable on it.
-- **`baselines.py`**: Seven evasion baselines:
-  - `VanillaBaseline`: no transformation (lower bound).
-  - `ParaphrasingBaseline`: Pegasus-paraphrase, sentence by sentence.
-  - `SynonymSubstitutionBaseline`: WordNet content-word swaps.
-  - `PromptEngineeringBaseline`: prepend a "write like a human" instruction.
-  - `SamplingPerturbationBaseline`: high temperature + nucleus sampling.
-  - `OpenRouterBaseline`: paraphrase via any model on OpenRouter (requires `OPENROUTER_API_KEY`).
-  - `AdversarialParaphrasingBaseline`: the strongest training-free 2025 humanizing attack: iteratively paraphrase with `Qwen/Qwen3.5-9B` (Instruct), score every candidate with a *guidance detector*, and accept the best (lowest AI-score) until either the threshold τ is reached or the iteration cap is hit. Must be constructed with a `guidance_detector` callable, so it is not part of the default `get_all_baselines()` list - add it explicitly. | Chen et al., NeurIPS 2025
-- **`benchmark.py`**: `BenchmarkRunner`. Runs every method on a dataset and reports per-detector evasion + a held-out evasion (computed against detectors that were *not* in the training set, passed via `heldout_detectors=`). It refuses to construct a runner where the held-out and training detectors overlap, which prevents the benchmark from over-crediting methods that already optimized against the eval pool.
-
-### `app.py`
-A Streamlit UI. The text tab takes a paragraph and shows each available detector's score plus the ensemble verdict. The image tab does the same for an uploaded image. Detectors that can't be loaded on the host machine are listed in an "Unavailable detectors" panel rather than crashing the page.
-
-### `notebooks/explainable_detector.ipynb`
-Trains a paragraph-level XGBoost classifier on the MAGE dataset using the surprisal + stylometric features defined in `multispin.py`'s extractors. Then uses SHAP `TreeExplainer` to visualize, per paragraph, which features pushed the model toward "AI" or "human". Document-level macro-averaged AUROC is reported alongside paragraph-level AUROC, with disjoint document IDs across train and test asserted at split time so paragraph correlation can't leak across the boundary.
-
-### `tests/`
-158 unit tests pinning the math of every critical component: reward sign convention and length penalty, GRPO advantage normalization and policy-gradient sign, MultiSPIN DPO log-sigmoid arithmetic, D&R disruption/recovery scoring, Markov score calibration, MLEP entropy maps, the WaRPAD Haar HF reconstruction (constant image → zero HF; noise → non-zero; offset edge → localized HF), the equilibrium Nash-gap bounds and monotonicity, ensemble aggregation, feature-bank probe training, evaluation metrics, and image-detector return-type contracts. The tests are pure-Python and CPU-only; they don't require any LLM or diffusion model to be installed.
-
----
-
-## Hardware requirements
-
-The framework is designed to degrade gracefully: anything that won't fit on the available hardware is reported as `is_available() == False` and the rest keeps working.
-
-### Minimum (CPU only, ~8 GB RAM)
-- Streamlit app with the lightweight zero-shot detectors: `FrequencyDetector` and `ParaphraseRoundTripDetector` (CPU-slow). The supervised checkpoint detectors (`TFIDFDetector`, `ModernBERTDetector` in QLoRA mode, and the classifier-only image detectors `EfficientNetDetector` / `CLIPImageDetector` / `DINOv2Detector`) also *run* on CPU once their inference weights fit — **but only after their checkpoints have been trained** (see step 4 below). On a fresh checkout no checkpoints exist, so these detectors report `is_available() == False` and the app lists them under "Unavailable detectors".
-- `DisruptRecoverDetector` can run from CPU because it delegates recovery to either an injected Python callable or an external OpenAI-compatible chat API. It only appears as available when a recovery model is configured.
-- `MarkovCalibratedTextDetector` and `MLEPDetector` are CPU-friendly. Markov calibration wraps another text scorer; MLEP runs directly on uploaded images and appears in the app by default.
-- The full test suite (pure-Python, no model loads).
-- Non-RL baselines: `VanillaBaseline`, `SynonymSubstitutionBaseline`, `OpenRouterBaseline`.
-- ❗ **Not** available on CPU: `DivEyeDetector` (now scored with Qwen 3.5 9B-Base, ~18 GB bf16), Binoculars / Fast-DetectGPT (Falcon-7B pair), `WaRPADDetector` (DINOv3 ViT-L/16 needs CUDA in practice), `IPADDetector`, all RL trainers (GRPO/MultiSPIN/DDPO).
-
-### Mid-range (single GPU, 24 GB VRAM, e.g. RTX 4090, A10G, L4)
-Sufficient for:
-- `DivEyeDetector` with `Qwen/Qwen3.5-9B-Base` in bf16 (~18 GB resident).
-- `BinocularsDetector` and `FastDetectGPTDetector` with the Falcon-7B pair in 4-bit quantization.
-- All image detectors **except** `IPADDetector` and full-resolution DenoisingTrajectoryDetector + DDPO at the same time: `EfficientNetDetector`, `CLIPImageDetector`, `DINOv2Detector`, `SigLIPDetector`, `WaRPADDetector` (DINOv3 ViT-L/16 in fp16 ≈ 1.2 GB), `FrequencyDetector`, `DenoisingTrajectoryDetector` (Stable Diffusion v1.5 in fp16 ≈ 4 GB) one at a time.
-- DDPO image evasion with LoRA on Stable Diffusion v1.5 (≈ 12 GB during training).
-- GRPO / MultiSPIN with `Qwen/Qwen3.5-9B-Base` + LoRA (≈ 18 GB); keep `grpo_num_generations=4` and `per_device_train_batch_size=2`.
-- `AdversarialParaphrasingBaseline` with `Qwen/Qwen3.5-9B` (Instruct), ~18 GB.
-- The arms-race loop in text mode for short runs (3–5 rounds).
-
-### High-end (single GPU ≥ 40 GB VRAM, e.g. A100-40/80 GB, H100)
-Adds:
-- `IPADDetector`: ~28 GB for `microsoft/Phi-3-medium-128k-instruct` in bf16 plus the three published LoRA adapters (`bellafc/IPAD/Prompt_Inverter`, `Distinguisher_RC`, `Distinguisher_PTCV`). This is the only Phi-3 holdout in the project and exists because LoRA adapters are tied to their training base; swapping to Qwen would silently break the published weights.
-- Binoculars / Fast-DetectGPT in fp16 without quantization.
-- DDPO training + diffusion-purification evaluation simultaneously (two SD pipelines resident).
-- The full arms race for 10+ rounds with frequent defender retraining.
-- Running the entire ensemble (every detector simultaneously) for benchmark-table generation.
-
-### Default model footprint (bf16 unless noted)
-
-| Component | Model | ≈ VRAM |
-|---|---|---|
-| Binoculars / Fast-DetectGPT | `tiiuae/falcon-7b` ×2 | 28 GB fp16 / 8 GB 4-bit |
-| DivEye scoring | `Qwen/Qwen3.5-9B-Base` | 18 GB |
-| Disrupt-and-Recover | External recovery API or injected `recover_fn` | 0 local VRAM |
-| Markov calibration | Existing detector/callable | 0 additional VRAM |
-| MLEP entropy patterns | Numpy/PIL feature extractor, optional sklearn classifier | 0 local VRAM |
-| IPAD | `microsoft/Phi-3-medium-128k-instruct` + 3 LoRA | 28 GB |
-| ParaphraseRoundTrip | `Qwen/Qwen3.5-4B` | 8 GB |
-| Style detector | `rrivera1849/LUAR-MUD` | < 1 GB |
-| Semantic-similarity reward | `intfloat/e5-base-v2` | < 1 GB |
-| WaRPAD backbone | `facebook/dinov3-vitl16-pretrain-lvd1689m` | 1.2 GB fp16 |
-| DenoisingTrajectory | `stable-diffusion-v1-5/stable-diffusion-v1-5` | 4 GB fp16 |
-| GRPO / MultiSPIN base | `Qwen/Qwen3.5-9B-Base` + LoRA | 18 GB + ~2 GB activations |
-| Adversarial Paraphrasing | `Qwen/Qwen3.5-9B` (Instruct) | 18 GB |
-| RADAR defender | `roberta-base` | < 1 GB |
-| DDPO base + LoRA | Stable Diffusion v1.5 | 12 GB during training |
-
-If a model needs more memory than is available, the corresponding `is_available()` returns False and that detector / trainer is skipped without affecting the rest of the run.
-
----
-
-## Step-by-step guide
-
-### 1. Install dependencies
 ```bash
-# From the repo root, in your venv (uv, conda, or plain venv all fine)
+uv venv
+source .venv/bin/activate
 uv pip install -r requirements.txt
-python -m spacy download en_core_web_sm
+uv run python -m spacy download en_core_web_sm
+```
 
-# On the CUDA 12.4 GPU VM used for notebook training, install the standalone GPU file instead:
+On the CUDA 12.4 research VM, install the GPU environment instead:
+
+```bash
 uv pip install -r requirements_gpu.in
 ```
-The `requirements.txt` pins the standard environment. The standalone `requirements_gpu.in` installs the full project plus CUDA 12.4 PyTorch wheels (`torch==2.6.0+cu124`, `torchvision==0.21.0+cu124`, `torchaudio==2.6.0+cu124`) for the VM.
 
-### 2. Verify the install
-```bash
-PYTHONPATH=. pytest ai_content_detector/tests/ -v
-```
-Expected: 158 tests pass in ~10 seconds (CPU only).
+The standard installation is enough for the CPU and mock-based test suite. Most
+large detectors and all meaningful training runs need downloaded Hugging Face
+weights, project checkpoints, and usually a GPU. On macOS, XGBoost also requires
+an OpenMP runtime such as `libomp`.
 
-### 3. Smoke-test the wiring
-```bash
-PYTHONPATH=. python -m ai_content_detector.rl_evasion.run_experiments --experiment smoke_test
-```
-Imports every component, instantiates the lightweight ones, and prints a per-stage status. This is the fastest way to confirm a fresh checkout is healthy.
-
-### 4. Train the supervised detector checkpoints
-
-The supervised detectors — `ModernBERTDetector`, `TFIDFDetector` (text) and `EfficientNetDetector`, `CLIPImageDetector`, `DINOv2Detector` (image) — load **internal checkpoints that are not shipped with the repo**. `ml_pipeline/results/` is git-ignored, so a fresh clone has no weights and no `index.jsonl` registry. Until you produce them, every one of these detectors reports `unavailable: No matching checkpoint in index.jsonl` and is skipped by the app and the ensemble.
-
-These checkpoints are produced by two training notebooks in the sibling `ml_pipeline/` package (GPU strongly recommended):
+### 2. Check imports and wiring
 
 ```bash
-# If you are on the GPU VM, install the standalone CUDA 12.4 requirements first.
-uv pip install -r requirements_gpu.in
-
-# Verify the torch stack before launching the notebooks. This catches
-# torchvision::nms / PreTrainedModel import errors caused by mixed torch wheels.
-python - <<'PY'
-import torch, torchvision
-from transformers import PreTrainedModel
-print("torch:", torch.__version__, "cuda:", torch.version.cuda)
-print("torchvision:", torchvision.__version__)
-print("transformers PreTrainedModel import: ok")
-PY
-
-# Text detectors -> writes ml_pipeline/results/bench_aitextdetect/
-jupyter notebook ml_pipeline/bench-aitextdetect.ipynb
-
-# Image detectors -> writes ml_pipeline/results/bench_imai_artifact/
-jupyter notebook ml_pipeline/bench-imai-artifact.ipynb
+PYTHONPATH=. uv run python -m ai_content_detector.rl_evasion.run_experiments \
+  --experiment smoke_test
 ```
 
-For non-interactive runs, execute the same notebooks with Papermill (`requirements_gpu.in` includes it):
+This is deliberately lightweight. It checks imports, configuration objects,
+reward plumbing, and trainer construction. It does not download or run every
+large model.
+
+### 3. Run the focused test suite
 
 ```bash
-papermill ml_pipeline/bench-aitextdetect.ipynb ml_pipeline/bench-aitextdetect.executed.ipynb
-papermill ml_pipeline/bench-imai-artifact.ipynb ml_pipeline/bench-imai-artifact.executed.ipynb
+PYTHONPATH=. uv run python -m pytest ai_content_detector/tests -q
 ```
 
-Each run trains the models and appends one line per checkpoint to `results/<run>/index.jsonl` (the registry the detectors query), alongside the weight files (`.pt`, `.pkl`, or a HuggingFace `save_pretrained/` directory). See `ml_pipeline/README.md` → "Checkpoints & Results" for the artifact layout.
+These tests validate formulas, tensor shapes, label conventions, split
+contracts, failure behavior, seeding, and leakage controls using CPU-scale
+fixtures and mocks.
 
-Notes:
-- The detectors resolve the registry as `<cwd>/results/<run>/index.jsonl` (relative to the current working directory). Launch the app and experiments from the repo root, or from `ml_pipeline/`, so the path resolves to the trained checkpoints.
-- If you already have the checkpoints (trained on another machine), just copy `ml_pipeline/results/bench_aitextdetect/` and `ml_pipeline/results/bench_imai_artifact/` — including their `index.jsonl` — onto the target machine.
-- This step is optional: skip it if you only want the zero-shot detectors (`Binoculars`, `Fast-DetectGPT`, `DivEye`, `WaRPAD`, `IPAD`), which auto-download public HuggingFace weights and need no local training.
-
-### 5. Try the interactive app
-```bash
-streamlit run ai_content_detector/app.py
-```
-- The text tab runs every available text detector on whatever paragraph you paste and shows per-detector scores + an aggregate verdict.
-- The image tab does the same for an uploaded image.
-- An "Unavailable detectors" panel lists what couldn't be loaded (missing checkpoint, insufficient VRAM, etc.) so you know what's running.
-
-To enable the optional D&R black-box detector in the app, configure a recovery model before launching Streamlit:
+### 4. Launch the scoring app
 
 ```bash
-export OPENAI_API_KEY=...
-export DR_RECOVERY_MODEL=gpt-4o-mini
-streamlit run ai_content_detector/app.py
+PYTHONPATH=. uv run streamlit run ai_content_detector/app.py
 ```
 
-For OpenRouter, set `OPENROUTER_API_KEY` and `DR_RECOVERY_MODEL`; the detector automatically uses `https://openrouter.ai/api/v1`. In code, you can avoid network calls entirely by constructing `DisruptRecoverDetector(recover_fn=...)`.
+Open the URL printed by Streamlit, select the text or image tab, choose the
+available detectors, provide content, and run the analysis. The app reports why
+a detector is unavailable. It does not replace a missing checkpoint with a
+heuristic result. At least one usable detector is required.
 
-### 6. Run a single evasion experiment
+The app treats text shorter than 50 characters as too short for reliable use.
+Some individual methods impose stronger requirements. For example,
+Disrupt-and-Recover defaults to at least 35 words.
 
-The CLI is `python -m ai_content_detector.rl_evasion.run_experiments --experiment <name>`. The available experiments:
+### 5. Run a small benchmark
 
-| Experiment | What it does | Typical runtime (1× A100) |
+Once Hugging Face downloads are available, the following command downloads 20
+HC3 examples and runs CPU-compatible attack baselines against a RoBERTa
+detector. It is a practical pipeline check, not a publishable benchmark:
+
+```bash
+PYTHONPATH=. uv run python \
+  -m ai_content_detector.rl_evasion.benchmarking.benchmark \
+  --dataset hc3 \
+  --max-samples 20 \
+  --lightweight \
+  --detectors roberta_classifier \
+  --output-dir results/benchmark_quickstart
+```
+
+`--lightweight` changes the attack methods, not the scoring stack. This command
+still downloads the RoBERTa detector, the E5 semantic encoder, HC3, and NLTK
+resources. Use the smoke test and unit tests for an offline CPU check.
+
+HC3 contains aligned prompts, human answers, and ChatGPT answers. The
+CNN/DailyMail option contains prompts and human continuations but no stored AI
+continuations, so it can evaluate generation methods but skips rewrite-only
+methods that require an existing AI text.
+
+## Repository map
+
+```text
+ai_content_detector/
+├── app.py                              # Streamlit text and image UI
+├── detectors/
+│   ├── ensemble.py                    # Detector interface and aggregation
+│   ├── text_detectors.py              # Text detectors
+│   ├── image_detectors.py             # Image detectors
+│   └── style_detector.py              # LUAR few-shot style detector
+├── rl_evasion/
+│   ├── config.py                      # Reproducible experiment configs
+│   ├── run_experiments.py             # Unified experiment CLI
+│   ├── text_evasion/                  # GRPO, SPIN, rewards, features, HUMPA
+│   ├── image_evasion/                 # DDPO training and evaluation
+│   ├── arms_race/                     # Repeated adaptation and MAML
+│   └── benchmarking/                  # Datasets, baselines, runner
+├── notebooks/explainable_detector.ipynb
+├── references.bib
+└── tests/
+```
+
+Internal supervised detectors reuse checkpoint loading and model wrappers from
+`ml_pipeline/`. Shared checkpoint behavior should remain there rather than being
+duplicated in this subproject.
+
+## Detector interface and score semantics
+
+Every detector implements `BaseDetector`:
+
+```python
+result = detector.detect(content)
+
+result.score          # float in [0, 1], oriented so larger means more AI-like
+result.label          # "human", "ai", "uncertain", or "error" in an ensemble
+result.detector_name  # runtime detector name
+result.details        # raw statistic, thresholds, semantics, or failure context
+```
+
+`is_available()` checks dependencies, model configuration, support data, and
+checkpoints. `unload()` releases known model references and clears CUDA cache
+when possible. Heavy models are loaded lazily.
+
+### A score is not automatically a probability
+
+All public scores use the same direction, with `0` more human-like and `1` more
+AI-like. That common range makes display and aggregation convenient, but it does
+not give every number the same interpretation.
+
+- `classifier_probability` comes from a fitted classifier's softmax or
+  `predict_proba`. It is still only as reliable as that classifier's data.
+- `calibrated_probability` means a separate calibrator was fitted on labeled
+  validation examples.
+- `uncalibrated_*` means the value is a normalized or monotonic display score.
+  It preserves ordering but must not be read as confidence.
+- A raw statistic and its decision threshold are retained in `details` when a
+  paper method makes its decision in the raw space.
+
+Inspect `result.details["score_semantics"]` whenever it is present. For example,
+a Binoculars display score of `0.8` does not mean an 80 percent probability of
+AI authorship unless a calibrator was explicitly supplied.
+
+The generic three-way helper labels scores at least `0.65` as `ai`, at most
+`0.35` as `human`, and the interval between them as `uncertain`. Methods with a
+native paper threshold make their label from the raw paper statistic instead.
+
+### Ensemble behavior
+
+`EnsembleAggregator` runs all selected detectors independently. Its default
+weighted average is
+
+\[
+S_{\mathrm{ensemble}} = \sum_{j=1}^{m} \tilde{w}_j S_j,
+\qquad
+\tilde{w}_j = \frac{w_j}{\sum_k w_k}.
+\]
+
+Without a fitted logistic calibrator, this is an uncalibrated normalized score
+and the label comes from detector votes. With a calibrator fitted on disjoint
+labeled validation data, the aggregate is reported as a calibrated probability.
+An empty ensemble, a calibration set with one class, and a run in which every
+detector fails all raise clear errors. A failure from one detector is exposed in
+the per-detector results and excluded from the uncalibrated aggregate.
+
+## How the text detectors work
+
+### Background: tokens, probability, surprisal, and perplexity
+
+A language model assigns a conditional probability to each next token. For a
+token sequence \(x_1,\ldots,x_T\), the probability of token \(x_t\) depends on
+the preceding tokens \(x_{<t}\). Its surprisal is
+
+\[
+s_t = -\log p(x_t \mid x_{<t}).
+\]
+
+A predictable token has low surprisal. Perplexity is the exponential of mean
+surprisal. Several detectors start from the observation that machine-generated
+text can be unusually predictable or have a different surprisal pattern from
+human text. This is a population tendency, not a rule for every document.
+
+### Supervised project baselines
+
+| Detector | Signal and implementation | Required resource |
 |---|---|---|
-| `smoke_test` | Imports / instantiation only. No training. | ~30 s |
-| `grpo_text` | GRPO on a 7–9 B causal LM with LoRA against the default text detector ensemble. | 1–4 h depending on `--epochs` |
-| `multispin` | MultiSPIN distribution matching, 5 iterations. | 2–6 h |
-| `ddpo_image` | DDPO on Stable Diffusion v1.5 LoRA against the default image detector ensemble. Includes diffusion-purification evaluation at the end. | 3–8 h |
-| `arms_race --modality text` | 10-round attacker (GRPO) ↔ defender (RADAR retraining) loop with disjoint train/eval prompts. | 6–24 h |
-| `arms_race --modality image` | Same loop, image side. Defender is a placeholder. | 6–24 h |
-| `meta_adapt` | MAML over a detector zoo, then `measure_adaptation_cost` against held-out detectors. | 4–12 h |
-| `benchmark` | Runs every baseline + your trained checkpoints on HC3 and reports a comparison table with held-out evasion. | 30 min – 2 h |
+| `ModernBERTDetector` | A QLoRA-fine-tuned ModernBERT binary classifier. The project checkpoint follows the MAGE label order `0=AI`, `1=human`. | `bench_aitextdetect` ModernBERT checkpoint |
+| `TFIDFDetector` | Counts weighted word features with TF-IDF, then applies logistic regression. It is a useful classical baseline for surface vocabulary patterns. | Fitted classifier and `tfidf_vectorizer.pkl` |
 
-Useful flags:
-- `--model <hf_repo>`: override the default base model.
-- `--epochs N`: override training epochs.
-- `--rounds N`: override arms-race rounds.
-- `--output-dir path/`: where checkpoints and per-round JSON history are written.
+QLoRA trains small low-rank adapter parameters while keeping a quantized base
+model mostly frozen. This reduces training memory. At inference time it is still
+a learned classifier and can inherit the domains and generators represented in
+its training data.
 
-Example:
+TF-IDF gives a word more weight when it is frequent in a document but uncommon
+across documents. Logistic regression learns a linear boundary over those
+features. It is cheap and interpretable, but paraphrasing and domain shift can
+change its evidence substantially.
+
+### Binoculars
+
+`BinocularsDetector` compares two related causal language models: an observer
+and a performer. Let \(q_t\) be the observer distribution at position \(t\),
+\(p_t\) the performer distribution, and \(x_t\) the observed token. The
+implemented ratio is
+
+\[
+B(x) =
+\frac{\frac{1}{T}\sum_t -\log q_t(x_t)}
+     {\frac{1}{T}\sum_t \sum_v -p_t(v)\log q_t(v)}.
+\]
+
+The numerator measures how surprised the observer is by the actual text. The
+denominator measures how surprised the observer would be by the performer's
+full predictive distribution. AI text tends to yield a lower ratio for the
+paired models used by the method. The default low-FPR threshold is `0.9015`.
+The label is decided from this raw ratio. A sigmoid is used only to display the
+score on `[0, 1]` unless a calibrator is provided.
+
+Default models are `tiiuae/falcon-7b` and
+`tiiuae/falcon-7b-instruct`. Availability requires CUDA and both model
+configurations and weights.
+
+### Fast-DetectGPT
+
+`FastDetectGPTDetector` measures conditional probability curvature without
+generating perturbed documents. Let \(\ell_t(v)\) be the scoring model's log
+probability for vocabulary token \(v\), and let \(r_t(v)\) be the reference
+model's distribution. The implemented statistic standardizes how much more
+likely the observed tokens are than tokens expected under the reference model:
+
+\[
+C(x) =
+\frac{\sum_t \left[\ell_t(x_t) -
+      \mathbb{E}_{v\sim r_t}\ell_t(v)\right]}
+     {\sqrt{\sum_t
+      \operatorname{Var}_{v\sim r_t}[\ell_t(v)]}}.
+\]
+
+Higher curvature is treated as more AI-like. The scoring and reference models
+may differ, but they must use identical token vocabularies. The raw curvature
+and threshold remain in `details`; the `[0, 1]` score is an uncalibrated
+logistic transform.
+
+### DivEye
+
+`DivEyeDetector` turns the surprisal sequence into nine document features:
+mean, variance, skewness, kurtosis, first-difference mean and variance,
+second-difference variance and entropy, and lag-one second-difference
+autocorrelation. First differences describe how surprise changes from one token
+to the next. Second differences describe how that change itself accelerates or
+reverses.
+
+Those nine features are inputs to XGBoost. The fitted classifier must preserve
+the feature schema and the label convention `0=AI`, `1=human`. The detector is
+not usable with only the language model because the decision boundary is learned
+by the missing classifier artifact. Text is truncated to at most 1024 tokens.
+
+### Disrupt-and-Recover
+
+`DisruptRecoverDetector` tests whether a passage can be reconstructed after a
+controlled corruption:
+
+1. Split the text at punctuation boundaries.
+2. Shuffle all word tokens inside each chunk with a fixed seed.
+3. Ask one recovery model call to restore the original order without adding or
+   removing words.
+4. Compare the recovery with the source using BERTScore for semantic similarity
+   and averaged Kendall and Spearman rank correlation for structural order.
+5. Average the semantic and structural signals, then map that similarity to an
+   AI-oriented score.
+
+The intuition is that more concentrated or regular machine text may be easier
+for a model to reconstruct exactly. The implementation needs either an injected
+`recover_fn` or an OpenAI-compatible model configured with
+`DR_RECOVERY_MODEL` and an API key. Real BERTScore inference also downloads a
+transformer checkpoint.
+
+### Window smoothing
+
+`WindowSmoothedTextDetector` splits a long document into overlapping word
+windows, scores each with another detector, iteratively pulls neighboring
+scores toward one another, downweights unstable early windows, and computes a
+weighted document score. It is useful when AI-like evidence is local rather
+than uniform across a document.
+
+This is a practical document-window variant. It is not the cited paper's
+learned token-level Markov random field. `MarkovCalibratedTextDetector` remains
+only as a compatibility alias.
+
+### IPAD
+
+`IPADDetector` asks whether a text is consistent with an inferred generating
+prompt. It uses three released LoRA adapters on
+`microsoft/Phi-3-medium-128k-instruct`:
+
+1. Prompt inversion predicts a likely source prompt from the candidate text.
+2. PTCV scores whether that inferred prompt is consistent with the text.
+3. RC scores the relation between the input and a separately regenerated text.
+4. Full `Yes` and `No` sequence likelihoods are normalized as a binary
+   distribution.
+5. The two signals are fused with PTCV weight `0.45`; the paper threshold is
+   `0.54`.
+
+Regeneration is a separate operation, not an adapter role. The shared base model
+is about 14 billion parameters, so the detector refuses CPU loading and expects
+a sufficiently large GPU plus the base model and all three adapters.
+
+### Paraphrase round trip and LUAR style
+
+`ParaphraseRoundTripDetector` rewrites a passage and measures semantic distance
+between the original and paraphrase. It is an explicit heuristic baseline,
+inspired by the idea that generated text may react differently to another
+rewrite. `InversionDetector` is its compatibility alias.
+
+`StyleEmbeddingDetector` uses LUAR to map documents into a vector space where
+cosine similarity represents writing style. Before detection, callers must
+provide both human and AI support examples with `setup_support_set()`. Detection
+compares a query with the two support-set centroids. This is few-shot detection,
+not a universal pretrained AI centroid.
+
+## How the image detectors work
+
+| Detector | Main idea | Repository relationship |
+|---|---|---|
+| `EfficientNetDetector` | Convolutional classifier trained to separate fake and real images. | Internal `bench_imai_artifact` checkpoint |
+| `CLIPImageDetector` | Binary classifier built on CLIP image representations. | Internal `bench_imai_artifact` checkpoint |
+| `DINOv2Detector` | Binary classifier built on self-supervised DINOv2 features. | Internal `bench_imai_artifact` checkpoint |
+| `SigLIPDetector` | Hugging Face image-classification pipeline whose class names define fake and real semantics. | Configured model-card behavior |
+| `PatchBasedClassifier` | Scores overlapping local crops with another detector and aggregates them. | Project robustness wrapper |
+| `FrequencyDetector` | Measures a single-level Haar high-frequency to low-frequency energy ratio. | Explicit cheap heuristic |
+| `MLEPDetector` | Builds multi-scale local entropy maps after spatial patch permutation, then classifies them. | Paper method, trained CNN required |
+| `WaRPADDetector` | Measures DINOv2 representation sensitivity after removing high-frequency content. | Paper method, raw score unless calibrated |
+| `DenoisingTrajectoryDetector` | Measures feature consistency along diffusion inversion and recovery states. | DTAD method implementation |
+
+### Frequency information and Haar wavelets
+
+An image can be decomposed into a low-frequency component, containing broad
+color and shape, and high-frequency components, containing edges and fine
+texture. A Haar wavelet transform performs this split with local sums and
+differences.
+
+`FrequencyDetector` computes a one-level high-to-low energy ratio and squashes
+it into `[0, 1]`. It is fast, but its score can also react to compression,
+sharpening, resizing, or natural texture. It is intentionally a heuristic and
+is not WaRPAD.
+
+### MLEP
+
+`MLEPDetector` searches for local entropy patterns:
+
+1. Independently permute non-overlapping `2 x 2` spatial patches in each color
+   channel.
+2. Repeat at image scales `1`, `0.5`, and `0.25`.
+3. Compute exact stride-one `2 x 2` local entropy maps.
+4. Stack the maps and classify them with a trained ResNet-50.
+
+Entropy measures local uncertainty in the shuffled pattern. The preprocessing
+alone does not produce a valid AI decision, so a fitted CNN checkpoint is
+mandatory.
+
+### WaRPAD
+
+`WaRPADDetector` resizes an image to `896 x 896`, divides it into sixteen
+non-overlapping `224 x 224` patches, removes high-frequency content with a
+two-level Haar transform using `alpha=0.1`, and compares original and perturbed
+DINOv2 ViT-L/14 CLS embeddings. Large representation changes indicate an
+anomalous sensitivity to frequency removal.
+
+Without a supplied threshold or calibrator, the class returns an unclassified
+raw anomaly score and the label `uncertain`. This avoids inventing a universal
+decision boundary.
+
+### Denoising trajectory detection
+
+`DenoisingTrajectoryDetector` maps an image into a diffusion model's latent
+space, performs deterministic DDIM inversion toward noisier states, reconstructs
+predicted-clean images along the trajectory, and extracts CLIP ViT-L/14
+layer-15 image features. It aggregates similarity across the trajectory. The
+working hypothesis is that real and generated images follow different recovery
+geometry.
+
+The output is an uncalibrated similarity transform. Exact numerical parity with
+author code and weights has not been established.
+
+## Evasion methods
+
+### The reward design
+
+Text and image attacks optimize more than detector evasion. If the only reward
+were `1 - detector_score`, a generator could emit empty or irrelevant content.
+The text configuration therefore combines detector evasion, semantic
+similarity, and a length and quality term:
+
+\[
+R_{\mathrm{text}} = 0.6R_{\mathrm{evasion}}
+                  + 0.3R_{\mathrm{semantic}}
+                  + 0.1R_{\mathrm{quality}}.
+\]
+
+The image default combines detector evasion and CLIP prompt alignment with
+weights `0.7` and `0.3`. Its aesthetic weight is zero because no trained
+aesthetic model is bundled. Missing or invalid detector rewards fail clearly.
+
+### GRPO text evasion
+
+`GRPOTextEvasionTrainer` samples a group of completions for each prompt, scores
+them, and uses reward relative to the group as the learning signal. In simple
+terms, completions that evade the detector better than their siblings become
+more likely, and worse completions become less likely. A KL penalty or reference
+policy limits movement away from the starting model.
+
+The configured generator is adapted with LoRA. The method is called GRPO only
+when the TRL implementation is available. The optional local fallback is
+explicitly named group-normalized REINFORCE and is disabled by default.
+
+### SPIN with feature monitoring
+
+`SPINTrainerWithFeatureMonitoring` alternates between generating model outputs
+and preferring human reference continuations over those outputs. Its loss uses
+completion-only conditional log-probabilities, so prompt tokens do not dominate
+the preference signal. The frozen reference snapshot advances after each SPIN
+iteration.
+
+Stylometric statistics, E5 embeddings, LUAR style embeddings, and learned probe
+features are monitoring outputs. They are not gradient losses because decoding
+text breaks a differentiable path from those features back to model parameters.
+`MultiSPINTrainer` remains as a compatibility alias.
+
+### HUMPA-style proxy intervention
+
+`ProxyEvasionWrapper` changes next-token logits during decoding:
+
+\[
+z_{\mathrm{combined}} = z_{\mathrm{target}}
+  + \alpha\left(z_{\mathrm{fine\ proxy}} - z_{\mathrm{reference\ proxy}}\right).
+\]
+
+The difference isolates what the fine proxy learned relative to its frozen
+reference and steers the target without fine-tuning the target itself. All three
+models must share the same vocabulary. This wrapper implements the decoding-time
+intervention; training the fine proxy is outside its scope.
+
+### Adversarial paraphrasing
+
+`AdversarialParaphrasingBaseline` performs autoregressive candidate search. At
+each token position it keeps candidates from top-p `0.99`, limits them to top-k
+`50`, decodes each candidate prefix, asks a supplied detector for an AI score,
+and selects the lowest-scoring token. It requires a real guidance detector.
+This is much more expensive than ordinary sampling because every output token
+can trigger many detector calls.
+
+The benchmark also includes simpler controls: no transformation, neural
+paraphrasing, WordNet synonym substitution, human-style prompt instructions,
+high-temperature sampling, and optional OpenRouter generation.
+
+### DDPO image evasion
+
+`DDPOImageEvasionTrainer` treats diffusion denoising decisions as a policy. It
+samples complete denoising trajectories, scores the final images, and increases
+the likelihood of transitions from trajectories with above-baseline rewards.
+The implementation uses stochastic DDIM transition likelihoods, scheduler
+prediction-type handling, per-prompt advantage statistics, PPO-style ratio
+clipping, seeded sampling, and gradient accumulation.
+
+### MAML fast adaptation
+
+`MAMLAdaptation` learns a LoRA initialization intended to adapt quickly to a new
+detector. Each meta-training episode uses disjoint support and query prompts:
+
+1. Take several policy-gradient steps against sampled detectors on support
+   prompts.
+2. Evaluate the adapted fast weights on different query prompts.
+3. Backpropagate the query loss through the inner updates to improve the shared
+   initialization.
+
+Full MAML retains second-order derivatives through the inner loop. `--first-order`
+uses FOMAML, which drops those Hessian terms to reduce compute and memory. One
+detector is reserved before meta-training, and held-out adaptation is compared
+with the exact pre-meta initialization.
+
+### Repeated attacker and defender adaptation
+
+`ArmsRaceExperiment` keeps a fixed evaluation prompt split and records paired
+measurements at three points in each round: before attacker training, after the
+attacker update, and after defender retraining. The attacker step budget is
+enforced.
+
+`AdaptiveClassifierDefender` retrains a RoBERTa classifier on current attacker
+outputs and matched human references. `RADARDefender` is only a compatibility
+alias; this is not the RADAR alternating paraphraser and detector algorithm.
+The resulting curves are empirical repeated-update measurements, not a Nash
+equilibrium or Nash gap.
+
+Image arms-race mode is intentionally rejected because an adaptive image
+defender is not implemented.
+
+## Evaluation and leakage controls
+
+### Data flow
+
+Text and image prompt sets are split deterministically before training. The
+evaluation portion is immutable. MAML additionally separates support prompts,
+used for inner adaptation, from query prompts, used for its meta-objective.
+
+Benchmark datasets validate one-to-one alignment between prompts, AI texts,
+human references, and sample identifiers. They record a source revision when
+the dataset exposes one. Trained GRPO and SPIN checkpoints record method,
+optimized detector names, and seed metadata. The benchmark rejects an attack
+checkpoint whose optimized detector names overlap declared held-out detectors.
+Training sample IDs are not yet stored in attack checkpoints, so sample-level
+overlap cannot yet be rejected automatically.
+
+Methods declare whether they rewrite an existing text, generate a new text from
+a prompt, or support both. Incompatible dataset and method pairs are reported as
+skipped. Failed transformations are counted and excluded; the original text is
+never substituted as a successful evasion output.
+
+### Metrics
+
+- **AUROC** measures how often a random AI example receives a higher score than
+  a random human example across all thresholds. It requires both classes.
+- **False-positive rate (FPR)** is the fraction of human examples incorrectly
+  labeled AI at a threshold.
+- **True-positive rate (TPR)** is the fraction of AI examples correctly labeled
+  AI at that threshold.
+- **TPR at a target FPR** uses the best empirically achievable threshold at or
+  below the requested FPR. It does not interpolate an unattainable operating
+  point.
+- **Attack success rate** is the fraction of generated examples whose mean
+  evasion reward exceeds `0.5`, equivalently whose mean detector AI score is
+  below `0.5`. It does not require that the original example was first detected.
+- **Semantic similarity** or **CLIP alignment** checks that successful evasion
+  did not simply discard the requested content.
+
+Empty, misaligned, non-finite, and invalid single-class metric inputs are
+rejected rather than turned into plausible-looking results.
+
+### Feature and notebook leakage controls
+
+`FeatureBank` selects probes on a group-disjoint validation partition and fits
+its scaler on training data only. The explainability notebook assigns stable
+document identifiers before paragraph expansion, uses document-disjoint train,
+validation, and test sets, restores sentence segmentation, labels SHAP direction
+for the actual class, and reserves test data for final evaluation.
+
+## Running experiments
+
+The unified entry point is:
+
 ```bash
-PYTHONPATH=. python -m ai_content_detector.rl_evasion.run_experiments \
-    --experiment grpo_text \
-    --model Qwen/Qwen3.5-9B-Base \
-    --epochs 2 \
-    --output-dir results/grpo_qwen
+PYTHONPATH=. uv run python -m ai_content_detector.rl_evasion.run_experiments \
+  --experiment <name>
 ```
 
-### 7. Run the explainability notebook
+| Experiment | Example | Main requirement and output |
+|---|---|---|
+| Smoke test | `--experiment smoke_test` | CPU wiring check; no training |
+| GRPO text | `--experiment grpo_text --model Qwen/Qwen3.5-9B-Base --epochs 3` | Local causal LM, TRL, detectors, GPU; saves a final adapter and metadata |
+| SPIN | `--experiment multispin --epochs 5` | Local causal LM, CNN/DailyMail, GPU; saves one checkpoint per iteration |
+| DDPO image | `--experiment ddpo_image --epochs 50` | Stable Diffusion, image detectors, GPU; saves diffusion LoRA checkpoints |
+| Arms race | `--experiment arms_race --modality text --rounds 10` | Working text attacker and adaptive defender; saves round history |
+| Meta-adaptation | `--experiment meta_adapt --epochs 100` | At least two functioning detectors, LoRA model, GPU; saves `meta_init` |
+| Benchmark | `--experiment benchmark --dataset hc3 --epochs 200` | Here `--epochs` is used as the maximum sample count; saves benchmark JSON |
+
+Shared options are `--model`, `--epochs`, `--rounds`, `--modality`,
+`--first-order`, `--dataset`, and `--output-dir`. Configuration dataclasses in
+`rl_evasion/config.py` expose the remaining learning rates, batch sizes, reward
+weights, prompt splits, seeds, and checkpoint intervals.
+
+For finer benchmark control, including explicit held-out detectors and
+checkpoints, call the benchmark module directly:
+
 ```bash
-jupyter notebook ai_content_detector/notebooks/explainable_detector.ipynb
+PYTHONPATH=. uv run python \
+  -m ai_content_detector.rl_evasion.benchmarking.benchmark \
+  --dataset hc3 \
+  --max-samples 200 \
+  --detectors binoculars fast_detect_gpt \
+  --heldout-detectors diveye \
+  --grpo-checkpoint results/text_evasion/grpo/final \
+  --output-dir results/benchmark
 ```
-Loads MAGE, splits paragraphs from disjoint documents, extracts surprisal + stylometric features, fits an XGBoost classifier, and shows SHAP waterfall + summary plots. Both paragraph-level and document-level macro-averaged metrics are printed.
 
-### 8. Reproduce the headline comparison
+OpenRouter baselines are added only when `OPENROUTER_API_KEY` is present. API
+failures are counted as failures and never fall back to returning the prompt.
+
+## Required models and external resources
+
+| Component | What must be supplied |
+|---|---|
+| ModernBERT and TF-IDF | Artifacts under the existing `ml_pipeline` `bench_aitextdetect` checkpoint registry |
+| EfficientNet, CLIP, and DINOv2 classifiers | Artifacts under `bench_imai_artifact` |
+| Binoculars and Fast-DetectGPT | Their Hugging Face causal language models; CUDA is required by availability checks |
+| DivEye | Scoring LM plus fitted XGBoost classifier with the nine-feature schema |
+| Disrupt-and-Recover | Recovery callable or OpenAI-compatible API, plus a BERTScore transformer checkpoint |
+| IPAD | Phi-3 base model, three released adapters, and a large GPU |
+| LUAR style detector | LUAR weights plus task-specific human and AI support sets |
+| MLEP | Trained ResNet-50 classifier checkpoint |
+| WaRPAD | DINOv2 ViT-L/14 weights, plus a validation threshold or calibrator for classification |
+| Denoising trajectory | Stable Diffusion and CLIP ViT-L/14 weights |
+| GRPO, SPIN, MAML, and DDPO | Local trainable base models, datasets, functioning reward detectors, and GPU memory |
+
+Useful optional environment variables are:
+
 ```bash
-PYTHONPATH=. python -m ai_content_detector.rl_evasion.run_experiments \
-    --experiment benchmark \
-    --output-dir results/benchmark
+export OPENROUTER_API_KEY=...   # OpenRouter benchmark or D&R recovery
+export OPENAI_API_KEY=...       # OpenAI-compatible D&R recovery
+export OPENAI_BASE_URL=...      # Alternate OpenAI-compatible endpoint
+export DR_RECOVERY_MODEL=...    # Recovery model ID for D&R
 ```
-Produces a JSON file with one row per method and one column per detector + a held-out evasion column. The held-out column is the right number to read for the "did our RL attack actually generalize?" question.
 
-By default the `benchmark` experiment runs the baselines returned by `get_all_baselines()` - Vanilla, Paraphrasing, Synonym substitution, Prompt engineering, Sampling perturbation, and OpenRouter (if `OPENROUTER_API_KEY` is set) - plus any trained GRPO / MultiSPIN checkpoints it finds. `AdversarialParaphrasingBaseline` is **not** in that default list because it needs a `guidance_detector` callable to be constructed; add it explicitly in code (or via `BenchmarkRunner`) when you want the headline RL-vs-strongest-training-free-baseline comparison.
+Do not commit keys. Model and dataset downloads also require network access and,
+for gated models, the provider's authentication and license acceptance.
 
----
+## Extending the project
 
-## What this means for a novel idea
+### Add a detector
 
-The two most relevant previously unimplemented target-venue papers for this codebase were:
+1. Subclass `BaseDetector` in the appropriate detector module.
+2. Set `name` and `modality`.
+3. Implement `detect()` and return a `DetectionResult` with an AI-oriented score.
+4. Put the native statistic, threshold, class order, and `score_semantics` in
+   `details`.
+5. Implement a truthful `is_available()` and rely on `unload()` or extend its
+   resource list for heavy state.
+6. Add focused tests for boundary decisions, batches, missing resources, label
+   ordering, and score direction.
+7. Register it in the app or experiment detector zoo only after its dependencies
+   and failure behavior are explicit.
 
-1. **Wu et al., ICLR 2026 - Markov-Informed Calibration**: most relevant on the text side because the repo already has several raw detector scores, but not a principled local-evidence calibration layer. It is now implemented as `MarkovCalibratedTextDetector`.
-2. **Yuan et al., NeurIPS 2025 - MLEP**: most relevant on the image side because it explicitly tries to remove semantic/content bias by using shuffled local entropy patterns. It is now implemented as `MLEPDetector`.
+### Add an evasion method
 
-The repo is already strong on classic zero-shot text likelihood signals, black-box paraphrase attacks, RL evasion, and modern zero-shot image signals. The remaining novelty space is not "add one more classifier." The strongest gaps are:
+Declare whether it rewrites existing content or generates from prompts. Preserve
+sample identifiers in training metadata, record every detector optimized by the
+method, and separate training data from final evaluation. A failed example must
+remain a failed example rather than being replaced by the unmodified input.
 
-1. Calibration over token/local evidence, especially Markov-informed smoothing of noisy detector scores.
-2. Hybrid-content detection, because realistic documents are often AI-assisted rather than fully AI-written.
-3. Detector signals that explicitly remove semantic/content bias: D&R recovery, OOD framing, MLEP-style shuffled entropy, and OmniAID-style semantic/artifact separation all point in this direction.
-4. Evaluation under adaptive attacks: use `AdversarialParaphrasingBaseline`, GRPO/MultiSPIN, and held-out detector pools before claiming novelty.
+## Validation status
 
----
+The current checkout's local validation pass completed the full CPU and
+mock-based suite:
 
-## Reproduction caveats
+```text
+179 passed in 5.83s
+```
 
-A short list of where each component sits relative to the original paper, so reviewers know what they're looking at:
+Focused WaRPAD, MAML, and benchmark-contract tests passed `15` tests. Focused
+Disrupt-and-Recover tests passed `5` tests after installing the declared
+`bert-score==0.3.13` dependency. The following checks also passed:
 
-- **D&R / `DisruptRecoverDetector`**: configurable ICLR 2026 D&R-style hook, not a paper-exact reproduction. It implements local word-order disruption (with mask mode for ablations), one recovery call, and recoverability scoring. The authors' public repository confirms the high-level method but does not yet expose a complete calibrated detector pipeline, so thresholds should be calibrated on your own validation split before reporting numbers.
-- **Markov calibration**: `MarkovCalibratedTextDetector` adapts Wu et al.'s token-level MRF idea to the local-window scores exposed by this repo's detectors. It is a faithful calibration pattern, not a drop-in reproduction of their exact token-metric implementation.
-- **MLEP**: `MLEPDetector` implements shuffled multi-scale entropy feature extraction and an optional classifier hook. Without a trained classifier path it uses a transparent heuristic score; calibrate or train it before treating numbers as paper-level performance.
-- **IPAD**: uses the authors' three released LoRA adapters on `microsoft/Phi-3-medium-128k-instruct`; our contribution is the ensemble integration.
-- **WaRPAD**: exact algorithm (2-level Haar HF + self-supervised-embedding cosine sensitivity + non-overlapping 224² patches over an 896² rescale, α = 0.1), hyperparameters as in the paper. The paper's backbone is DINOv2 ViT-L/14; the code defaults to the newer DINOv3 ViT-L/16 (`facebook/dinov3-vitl16-pretrain-lvd1689m`), same parameter scale, current SOTA self-supervised encoder. Pass `backbone=` to switch back.
-- **DenoisingTrajectoryDetector**: DTAD-style metric; since DTAD itself has no public code, the implementation is grounded in the released LATTE pipeline (Vasilcoiu et al.).
-- **Adversarial Paraphrasing**: port of the authors' algorithm with their default hyperparameters; the paraphraser is configurable (default `Qwen/Qwen3.5-9B`, the Instruct variant; pass `paraphraser_id=` to swap).
-- **HUMPA proxy attack**: `proxy_evasion.py` is a research stub demonstrating the decoding-time logit-shift idea; the proxy training loop is not implemented.
-- **GRPO**: the manual fallback path is a minimal reference implementation (group-normalized advantages, per-token policy gradient, k2 KL to a frozen reference). For production runs, prefer the TRL path.
-- **MultiSPIN**: applies the DPO-style SPIN log-sigmoid loss; the stylometric / embedding / style-MMD distances are logged as monitoring metrics. They don't carry gradients here because text decoding is non-differentiable.
-- **Arms-race Nash gap**: best-response deficit on a held-out prompt split. Empirical proxy, not a theoretical equilibrium guarantee.
-- **MAML adaptation cost**: the inner loop uses `torch.func.functional_call` for proper second-order gradients when available, otherwise first-order MAML. The loss is an evasion-weighted LM surrogate.
-- **`ParaphraseRoundTripDetector`**: DIPPER-style round-trip heuristic, not a SOTA detector on its own.
+```bash
+PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python \
+  -m ai_content_detector.rl_evasion.run_experiments --experiment smoke_test
 
----
+PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python \
+  -c 'import ai_content_detector.app'
 
-## Key references
+PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python -m compileall -q \
+  ai_content_detector
 
-The canonical BibTeX entries live in [`references.bib`](references.bib). 
+PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python -m json.tool \
+  ai_content_detector/notebooks/explainable_detector.ipynb
+
+git diff --check
+```
+
+These results establish formula, interface, boundary, and leakage behavior for
+the tested paths. They do not establish parity with published metrics.
+
+Local end-to-end validation was limited by unavailable Hugging Face access,
+absent internal checkpoints, and a macOS XGBoost load failure caused by missing
+`libomp`. The Streamlit module imported successfully and reported those missing
+resources, but a real browser session with loaded checkpoints was not run. The
+explainability notebook is valid JSON and was inspected, but its dataset loading,
+XGBoost training, SHAP plots, and metrics were not executed in this checkout.
+
+## Next steps before relying on research results
+
+The following work is intentionally still open. It replaces the former separate
+limitations document and is ordered from validation fundamentals to new
+capabilities.
+
+1. **Run real-model validation on the research VM.** Exercise Binoculars,
+   Fast-DetectGPT, DivEye, IPAD, LUAR, WaRPAD, and denoising-trajectory inference
+   end to end. Run GRPO, SPIN, MAML, DDPO, and repeated adaptation on a GPU. Run
+   the Streamlit app in a browser with real checkpoints.
+
+2. **Build immutable benchmark manifests and reproduce paper protocols.** Pin
+   dataset revisions, model revisions, preprocessing, prompts, seeds, and
+   calibration artifacts. Then reproduce AUROC, TPR, FPR, attack-success, and
+   convergence measurements. No published metric has yet been reproduced in
+   this checkout.
+
+3. **Train and version the missing artifacts.** Produce the DivEye XGBoost
+   classifier, MLEP ResNet-50, internal text and image checkpoints, LUAR support
+   sets, and per-detector and ensemble calibrators. Store their schemas, class
+   order, training sample identifiers, and provenance beside each artifact.
+   Extend attack checkpoint metadata and benchmark checks so held-out sample IDs
+   are rejected automatically, just as held-out detector overlap is today.
+
+4. **Calibrate for each deployment domain.** Fit thresholds and calibrators on
+   representative validation data disjoint from training and final testing.
+   Recheck them across language, topic, generator family, decoding strategy,
+   image post-processing, and attack type. A universal calibration artifact
+   would be misleading.
+
+5. **Validate external-resource methods.** Run real BERTScore plus network
+   recovery for Disrupt-and-Recover. Establish DTAD parity against a complete
+   runnable primary reference if one becomes available. Until then, retain its
+   raw similarity semantics and avoid paper-parity claims.
+
+6. **Execute the explainability notebook on the VM.** Materialize the
+   document-disjoint splits, train XGBoost, generate SHAP analyses, and save the
+   exact dataset and model provenance before relying on any plots or metrics.
+
+7. **Complete deliberately out-of-scope method pieces if needed.** Train the
+   fine proxy used by HUMPA, add a validated aesthetic reward before assigning
+   it nonzero weight, and implement an adaptive image defender before enabling
+   image arms-race experiments.
+
+8. **Keep practical variants named honestly.** Window smoothing is not a
+   token-level MRF, adaptive RoBERTa retraining is not RADAR, SPIN feature signals
+   are monitoring-only, and paraphrase round-trip and wavelet energy are
+   heuristic baselines. Compatibility aliases may remain for callers, but new
+   results should use the precise runtime names.
+
+9. **Test reproducibility across the production stack.** The audited paths seed
+   Python, NumPy, Torch, and explicit sampling generators, but bitwise equality
+   is not guaranteed across CUDA devices, drivers, mixed-precision kernels,
+   distributed training, or third-party model releases. Treat saved provenance
+   and statistically consistent reruns as the reproducibility contract.
+
+Until those steps are complete, interpret uncalibrated scores as comparative
+signals and the current tests as correctness checks, not proof of real-world or
+paper-level performance.

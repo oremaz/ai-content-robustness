@@ -1,4 +1,4 @@
-"""MAML-style meta-learning for fast adversarial adaptation.
+"""Policy-gradient MAML for fast adversarial adaptation.
 
 Implements full second-order MAML (Finn et al., ICML 2017) over a "detector zoo"
 so the attacker learns a meta-initialization that adapts in few gradient steps
@@ -26,7 +26,6 @@ References:
 
 from __future__ import annotations
 
-import copy
 import logging
 import os
 from typing import Dict, List, Optional, Tuple
@@ -45,8 +44,9 @@ class DetectorZoo:
     a task; the meta-learner must adapt to fool any detector in the zoo.
     """
 
-    def __init__(self):
+    def __init__(self, seed: int = 42):
         self.detectors: Dict[str, callable] = {}
+        self._rng = np.random.default_rng(seed)
 
     def add(self, name: str, detector_fn: callable):
         """Add a detector. detector_fn: text -> float (AI probability)."""
@@ -56,7 +56,9 @@ class DetectorZoo:
     def sample(self, k: int = 3) -> Dict[str, callable]:
         """Sample k detectors from the zoo."""
         names = list(self.detectors.keys())
-        selected = np.random.choice(names, size=min(k, len(names)), replace=False)
+        if not names:
+            raise ValueError("Cannot sample from an empty detector zoo")
+        selected = self._rng.choice(names, size=min(k, len(names)), replace=False)
         return {n: self.detectors[n] for n in selected}
 
     def get_all(self) -> Dict[str, callable]:
@@ -94,7 +96,7 @@ class DetectorZoo:
         try:
             from ..text_evasion.rewards import _build_roberta_detector_reward
             dr = _build_roberta_detector_reward(device)
-            zoo.add("roberta_openai", lambda t, d=dr: d(t))
+            zoo.add("roberta_openai", lambda t, d=dr: 1.0 - d(t))
         except Exception:
             pass
 
@@ -136,7 +138,13 @@ def _get_adaptable_params(model) -> List[Tuple[str, torch.nn.Parameter]]:
 _get_lora_params = _get_adaptable_params
 
 
-def _functional_forward(model, input_ids, fast_weights: Dict[str, torch.Tensor]):
+def _functional_forward(
+    model,
+    input_ids,
+    fast_weights: Dict[str, torch.Tensor],
+    attention_mask=None,
+    labels=None,
+):
     """Forward pass using ``fast_weights`` in place of the model's parameters.
 
     Requires ``torch.func.functional_call`` so the fast-weight tensors remain in
@@ -158,10 +166,15 @@ def _functional_forward(model, input_ids, fast_weights: Dict[str, torch.Tensor])
             params_and_buffers[name] = fast_weights.get(name, param)
         for name, buf in model.named_buffers():
             params_and_buffers[name] = buf
+        kwargs = {"input_ids": input_ids}
+        if attention_mask is not None:
+            kwargs["attention_mask"] = attention_mask
+        if labels is not None:
+            kwargs["labels"] = labels
         return functional_call(
             model, params_and_buffers,
             args=(),
-            kwargs={"input_ids": input_ids, "labels": input_ids},
+            kwargs=kwargs,
         )
 
     # Fallback: in-place swap. OK for FOMAML (first-order) only.
@@ -171,7 +184,11 @@ def _functional_forward(model, input_ids, fast_weights: Dict[str, torch.Tensor])
             saved[name] = param.data.clone()
             param.data = fast_weights[name].detach()
     try:
-        outputs = model(input_ids=input_ids, labels=input_ids)
+        outputs = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            labels=labels,
+        )
     finally:
         for name, param in model.named_parameters():
             if name in saved:
@@ -209,6 +226,9 @@ class MAMLAdaptation:
         first_order: bool = False,
         gradient_clip: float = 1.0,
         output_dir: str = "results/meta_adapt",
+        max_new_tokens: int = 64,
+        rollouts_per_prompt: int = 2,
+        seed: int = 42,
     ):
         self.model = model
         self.tokenizer = tokenizer
@@ -221,7 +241,62 @@ class MAMLAdaptation:
         self.first_order = first_order
         self.gradient_clip = gradient_clip
         self.output_dir = output_dir
+        self.max_new_tokens = max_new_tokens
+        self.rollouts_per_prompt = rollouts_per_prompt
+        self.seed = seed
         self.adaptation_curves = []
+        self._initial_adaptable_state = {
+            name: param.detach().clone()
+            for name, param in _get_adaptable_params(model)
+        }
+
+    def _sample_completion(
+        self,
+        model,
+        prompt: str,
+        fast_weights: Optional[Dict[str, torch.Tensor]],
+        seed: int,
+    ) -> Tuple[str, torch.Tensor]:
+        """Sample an action and return its differentiable mean log-probability."""
+        device = next(model.parameters()).device
+        encoded = self.tokenizer(
+            prompt, return_tensors="pt", truncation=True, max_length=256,
+        ).to(device)
+        prompt_len = encoded["input_ids"].shape[1]
+        sequence = encoded["input_ids"]
+        generator = torch.Generator(device=device).manual_seed(seed)
+        eos_id = self.tokenizer.eos_token_id
+
+        model.eval()
+        with torch.no_grad():
+            for _ in range(self.max_new_tokens):
+                attention = torch.ones_like(sequence)
+                if fast_weights is None:
+                    outputs = model(input_ids=sequence, attention_mask=attention)
+                else:
+                    outputs = _functional_forward(
+                        model, sequence, fast_weights, attention_mask=attention,
+                    )
+                logits = outputs.logits[:, -1] / 0.8
+                probs = torch.softmax(logits, dim=-1)
+                next_token = torch.multinomial(probs, 1, generator=generator)
+                sequence = torch.cat([sequence, next_token], dim=1)
+                if eos_id is not None and int(next_token.item()) == eos_id:
+                    break
+
+        attention = torch.ones_like(sequence)
+        if fast_weights is None:
+            outputs = model(input_ids=sequence, attention_mask=attention)
+        else:
+            outputs = _functional_forward(
+                model, sequence, fast_weights, attention_mask=attention,
+            )
+        token_log_probs = torch.log_softmax(outputs.logits[:, :-1], dim=-1)
+        targets = sequence[:, 1:]
+        selected = token_log_probs.gather(2, targets.unsqueeze(-1)).squeeze(-1)
+        completion_log_prob = selected[:, prompt_len - 1:].mean()
+        text = self.tokenizer.decode(sequence[0, prompt_len:], skip_special_tokens=True)
+        return text, completion_log_prob
 
     def _compute_evasion_loss(
         self,
@@ -231,53 +306,32 @@ class MAMLAdaptation:
         fast_weights: Optional[Dict[str, torch.Tensor]] = None,
         num_samples: int = 4,
     ) -> torch.Tensor:
-        """Compute differentiable evasion loss for a detector.
-
-        Generate text from the model, score with the detector, and return
-        a differentiable loss. The loss is the cross-entropy scaled by
-        how detectable the generated text is.
-
-        For the meta-gradient to flow, we use the language modeling loss
-        (which IS differentiable w.r.t. model params) weighted by the
-        detector score (which provides the reward signal).
-        """
-        device = next(model.parameters()).device
-
-        total_loss = torch.tensor(0.0, device=device, requires_grad=True)
-
-        for prompt in prompts[:num_samples]:
-            inputs = self.tokenizer(
-                prompt, return_tensors="pt", truncation=True, max_length=256
-            ).to(device)
-
-            # Generate text (non-differentiable — provides reward signal)
-            model.eval()
-            with torch.no_grad():
-                gen = model.generate(
-                    **inputs, max_new_tokens=200, do_sample=True, temperature=0.8,
+        """Return a REINFORCE loss over detector-scored generated completions."""
+        if not prompts:
+            raise ValueError("MAML evasion loss requires at least one prompt")
+        losses = []
+        sample_counter = 0
+        for prompt_idx, prompt in enumerate(prompts[:num_samples]):
+            rewards = []
+            log_probs = []
+            for rollout in range(self.rollouts_per_prompt):
+                text, log_prob = self._sample_completion(
+                    model,
+                    prompt,
+                    fast_weights,
+                    seed=self.seed + 1009 * prompt_idx + rollout + sample_counter,
                 )
-            text = self.tokenizer.decode(
-                gen[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
-            )
-
-            # Get detector score (reward signal, non-differentiable)
-            try:
-                detector_score = detector_fn(text)
-            except Exception:
-                detector_score = 0.5
-
-            # Compute differentiable language modeling loss
-            model.train()
-            if fast_weights is not None:
-                outputs = _functional_forward(model, inputs["input_ids"], fast_weights)
-            else:
-                outputs = model(**inputs, labels=inputs["input_ids"])
-
-            # Scale CE loss by detector score: higher detection -> higher loss
-            # This creates the gradient signal: "change parameters to reduce detectability"
-            total_loss = total_loss + outputs.loss * detector_score
-
-        return total_loss / num_samples
+                detector_score = float(detector_fn(text))
+                if not np.isfinite(detector_score) or not 0.0 <= detector_score <= 1.0:
+                    raise ValueError(f"Detector returned invalid AI score: {detector_score}")
+                rewards.append(1.0 - detector_score)
+                log_probs.append(log_prob)
+                sample_counter += 1
+            reward_tensor = torch.tensor(rewards, device=log_probs[0].device)
+            baseline = reward_tensor.mean() if len(rewards) > 1 else reward_tensor.new_tensor(0.5)
+            advantages = reward_tensor - baseline
+            losses.extend(-adv.detach() * log_prob for adv, log_prob in zip(advantages, log_probs))
+        return torch.stack(losses).mean()
 
     def _differentiable_inner_loop(
         self,
@@ -294,7 +348,6 @@ class MAMLAdaptation:
         Returns:
             (fast_weights, evasion_scores) — adapted parameters and per-step scores
         """
-        device = next(model.parameters()).device
         lora_params = _get_lora_params(model)
 
         # Initialize fast weights from current model parameters
@@ -303,10 +356,12 @@ class MAMLAdaptation:
         evasion_scores = []
 
         for step in range(k_steps):
+            start = (step * 2) % len(prompts)
+            step_prompts = [prompts[(start + offset) % len(prompts)] for offset in range(min(2, len(prompts)))]
             # Compute loss at current fast_weights
             loss = self._compute_evasion_loss(
                 model, detector_fn,
-                prompts[step * 2:(step + 1) * 2],  # cycle through prompts
+                step_prompts,
                 fast_weights=fast_weights,
                 num_samples=2,
             )
@@ -330,19 +385,13 @@ class MAMLAdaptation:
                     new_fast_weights[name] = fast_weights[name]
             fast_weights = new_fast_weights
 
-            # Track evasion (non-differentiable, for logging)
-            with torch.no_grad():
-                prompt = prompts[step % len(prompts)]
-                inputs = self.tokenizer(
-                    prompt, return_tensors="pt", truncation=True, max_length=256
-                ).to(device)
-                gen = model.generate(**inputs, max_new_tokens=200, do_sample=True, temperature=0.8)
-                text = self.tokenizer.decode(gen[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
-                try:
-                    score = detector_fn(text)
-                    evasion_scores.append(1.0 - score)
-                except Exception:
-                    evasion_scores.append(0.5)
+            # Track evasion under the adapted weights.
+            prompt = prompts[step % len(prompts)]
+            text, _ = self._sample_completion(
+                model, prompt, fast_weights, seed=self.seed + 50_000 + step,
+            )
+            score = float(detector_fn(text))
+            evasion_scores.append(1.0 - score)
 
         return fast_weights, evasion_scores
 
@@ -360,10 +409,8 @@ class MAMLAdaptation:
 
         With first_order=True (FOMAML), step 5 only uses first-order gradients.
 
-        Note on the inner/outer loss: since text generation is non-differentiable,
-        the "loss" used here is an evasion-weighted LM loss (CE·detector_score),
-        a supervised surrogate for the true RL objective. Inner and outer loops
-        use the *same* surrogate definition, only on different prompt splits.
+        Inner and outer losses use the same score-function policy-gradient
+        objective on different prompt splits.
         """
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -373,6 +420,10 @@ class MAMLAdaptation:
                 "meta_adapt: no adaptable parameters found. Apply LoRA or set "
                 "requires_grad=True on the parameters you want to meta-learn."
             )
+        if len(self.detector_zoo.detectors) == 0:
+            raise ValueError("Meta-training requires a nonempty detector zoo")
+        if len(prompts) < 4:
+            raise ValueError("Meta-training requires at least four prompts")
         meta_optimizer = torch.optim.Adam(
             [param for _, param in adaptable],
             lr=self.meta_lr,
@@ -382,7 +433,7 @@ class MAMLAdaptation:
         logger.info("Starting meta-training with %s, %d outer steps", order_str, self.outer_steps)
 
         meta_losses_history = []
-        rng = np.random.default_rng(0)
+        rng = np.random.default_rng(self.seed)
 
         for outer_step in range(self.outer_steps):
             meta_optimizer.zero_grad()
@@ -484,25 +535,18 @@ class MAMLAdaptation:
                 # Measure evasion
                 self.model.eval()
                 evasion_scores = []
-                for p in prompts[:20]:
-                    inputs = self.tokenizer(p, return_tensors="pt", truncation=True, max_length=256).to(device)
-                    with torch.no_grad():
-                        gen = self.model.generate(**inputs, max_new_tokens=200, do_sample=True, temperature=0.8)
-                    text = self.tokenizer.decode(gen[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
-                    try:
-                        score = held_out_detector(text)
-                        evasion_scores.append(1.0 - score)
-                    except Exception:
-                        evasion_scores.append(0.5)
+                for prompt_idx, p in enumerate(prompts[:20]):
+                    text, _ = self._sample_completion(
+                        self.model, p, None, seed=self.seed + 70_000 + prompt_idx,
+                    )
+                    score = float(held_out_detector(text))
+                    evasion_scores.append(1.0 - score)
 
                 mean_evasion = float(np.mean(evasion_scores))
                 curve["steps"].append(step)
                 curve["evasion"].append(mean_evasion)
                 logger.info("  Adaptation step %d: evasion=%.3f", step, mean_evasion)
 
-            # Adaptation step — use the SAME evasion-weighted LM loss as the
-            # meta-training inner loop so adaptation cost measures the same
-            # objective that was optimized during meta-training (apples to apples).
             self.model.train()
             step_prompts = [prompts[step % len(prompts)]]
             loss = self._compute_evasion_loss(
@@ -521,14 +565,14 @@ class MAMLAdaptation:
         self.adaptation_curves.append(curve)
         return curve
 
-    def compare_with_scratch(
+    def compare_with_pre_meta(
         self,
         held_out_detector: callable,
         detector_name: str,
         prompts: List[str],
         max_steps: int = 100,
     ) -> Dict:
-        """Compare meta-learned adaptation vs. training from scratch.
+        """Compare meta-learned adaptation with the exact pre-meta initialization.
 
         Returns both curves for plotting.
         """
@@ -537,22 +581,21 @@ class MAMLAdaptation:
             held_out_detector, f"{detector_name}_meta", prompts, max_steps
         )
 
-        # For "from scratch" comparison, reset LoRA weights to random
-        logger.info("Measuring from-scratch adaptation cost...")
+        # Compare against the exact pre-meta initialization under the same protocol.
+        logger.info("Measuring pre-meta initialization adaptation cost...")
         saved_state = {
             name: param.clone()
             for name, param in self.model.named_parameters()
             if param.requires_grad
         }
 
-        # Reinit LoRA weights
         with torch.no_grad():
             for name, param in self.model.named_parameters():
-                if param.requires_grad and "lora" in name.lower():
-                    torch.nn.init.kaiming_uniform_(param)
+                if name in self._initial_adaptable_state:
+                    param.copy_(self._initial_adaptable_state[name])
 
-        scratch_curve = self.measure_adaptation_cost(
-            held_out_detector, f"{detector_name}_scratch", prompts, max_steps
+        pre_meta_curve = self.measure_adaptation_cost(
+            held_out_detector, f"{detector_name}_pre_meta", prompts, max_steps
         )
 
         # Restore
@@ -563,14 +606,17 @@ class MAMLAdaptation:
 
         return {
             "meta": meta_curve,
-            "scratch": scratch_curve,
-            "speedup": self._compute_speedup(meta_curve, scratch_curve),
+            "pre_meta": pre_meta_curve,
+            "speedup": self._compute_speedup(meta_curve, pre_meta_curve),
         }
 
-    def _compute_speedup(self, meta_curve: Dict, scratch_curve: Dict) -> float:
-        """Compute how much faster meta-learning adapts vs. scratch.
+    # Compatibility alias for callers written before the baseline was corrected.
+    compare_with_scratch = compare_with_pre_meta
 
-        Defined as: steps_scratch_to_threshold / steps_meta_to_threshold
+    def _compute_speedup(self, meta_curve: Dict, pre_meta_curve: Dict) -> float:
+        """Compute how much faster meta-learning adapts vs. its initialization.
+
+        Defined as: steps_pre_meta_to_threshold / steps_meta_to_threshold
         where threshold = 0.7 evasion.
         """
         threshold = 0.7
@@ -582,8 +628,8 @@ class MAMLAdaptation:
             return curve["steps"][-1] if curve["steps"] else float("inf")
 
         meta_steps = steps_to_threshold(meta_curve)
-        scratch_steps = steps_to_threshold(scratch_curve)
+        pre_meta_steps = steps_to_threshold(pre_meta_curve)
 
         if meta_steps == 0:
             return float("inf")
-        return scratch_steps / meta_steps
+        return pre_meta_steps / meta_steps

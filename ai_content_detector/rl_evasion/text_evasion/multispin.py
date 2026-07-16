@@ -1,14 +1,7 @@
-"""MultiSPIN: Multi-feature distribution matching via self-play.
+"""SPIN self-play training with out-of-graph feature monitoring.
 
-Extends SPIN (Self-Play Fine-Tuning, Chen et al. 2024) with explicit
-multi-feature distribution matching across stylometric, embedding,
-and perplexity-curvature feature spaces. The goal is to close the
-distributional gap between model output and human text in the feature
-spaces that real detectors use.
-
-Novel contribution from todo/rl_evasion_research_directions_v2.md:
-    L_MultiSPIN = L_SPIN + λ1*||φ_stylo(y)-φ_stylo(y')||² +
-                  λ2*MMD(φ_emb(y),φ_emb(y')) + λ3*L_task
+Feature distances are diagnostics only because text sampling is discrete. They
+are never presented as differentiable losses.
 
 References:
     - Chen et al., SPIN (arXiv:2401.01335)
@@ -18,6 +11,8 @@ References:
 from __future__ import annotations
 
 import logging
+import json
+import os
 import subprocess
 import sys
 from typing import Dict, List, Optional, Tuple
@@ -70,6 +65,8 @@ class StylometricExtractor:
                 self._nlp = spacy.blank("en")
                 if "sentencizer" not in self._nlp.pipe_names:
                     self._nlp.add_pipe("sentencizer")
+        if "sentencizer" not in self._nlp.pipe_names:
+            self._nlp.add_pipe("sentencizer")
 
     def extract(self, text: str) -> np.ndarray:
         """Extract stylometric feature vector."""
@@ -151,16 +148,26 @@ class EmbeddingExtractor:
 
     def extract(self, text: str) -> np.ndarray:
         self._load()
-        tokens = self._tokenizer(text, return_tensors="pt", truncation=True, max_length=512, padding=True).to(self._device)
+        tokens = self._tokenizer(
+            f"query: {text}", return_tensors="pt", truncation=True,
+            max_length=512, padding=True,
+        ).to(self._device)
         with torch.no_grad():
-            emb = self._model(**tokens).last_hidden_state[:, 0].cpu().numpy()
+            hidden = self._model(**tokens).last_hidden_state
+            mask = tokens["attention_mask"].unsqueeze(-1).to(hidden.dtype)
+            emb = ((hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)).cpu().numpy()
         return emb.flatten() / (np.linalg.norm(emb) + 1e-8)
 
     def extract_batch(self, texts: List[str]) -> np.ndarray:
         self._load()
-        tokens = self._tokenizer(texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(self._device)
+        tokens = self._tokenizer(
+            [f"query: {text}" for text in texts], return_tensors="pt",
+            truncation=True, max_length=512, padding=True,
+        ).to(self._device)
         with torch.no_grad():
-            emb = self._model(**tokens).last_hidden_state[:, 0].cpu().numpy()
+            hidden = self._model(**tokens).last_hidden_state
+            mask = tokens["attention_mask"].unsqueeze(-1).to(hidden.dtype)
+            emb = ((hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)).cpu().numpy()
         norms = np.linalg.norm(emb, axis=1, keepdims=True) + 1e-8
         return emb / norms
 
@@ -202,14 +209,14 @@ def compute_mmd(X: np.ndarray, Y: np.ndarray, gamma: float = 1.0) -> float:
 # ---------------------------------------------------------------------------
 
 
-class MultiSPINTrainer:
-    """Train a model using MultiSPIN: SPIN + multi-feature distribution matching.
+class SPINTrainerWithFeatureMonitoring:
+    """Train with SPIN and report non-differentiable feature diagnostics.
 
     Training loop:
     1. Generate outputs y' from current model given prompts x.
     2. Compute DPO-style SPIN loss: model learns to prefer human text over its own.
-    3. Compute feature-matching losses across stylometric and embedding spaces.
-    4. Update model on composite loss.
+    3. Compute feature diagnostics across stylometric and embedding spaces.
+    4. Update the model only on the SPIN objective.
     5. After each iteration, update persistent feature bank (optional).
     """
 
@@ -241,6 +248,8 @@ class MultiSPINTrainer:
         import copy
 
         cfg = self.config
+        from ..config import seed_everything
+        seed_everything(cfg.seed)
 
         self.tokenizer = AutoTokenizer.from_pretrained(cfg.base_model, trust_remote_code=True)
         if self.tokenizer.pad_token is None:
@@ -251,6 +260,9 @@ class MultiSPINTrainer:
         self.model = AutoModelForCausalLM.from_pretrained(
             cfg.base_model, torch_dtype=dtype, device_map="auto", trust_remote_code=True,
         )
+        self._generator = torch.Generator(
+            device=next(self.model.parameters()).device,
+        ).manual_seed(cfg.seed)
 
         # Apply LoRA — try "all-linear" first, fall back to explicit modules
         lora_config = LoraConfig(
@@ -295,7 +307,7 @@ class MultiSPINTrainer:
 
         # Pre-compute human style embeddings (Rivera Soto et al., 2024)
         self.human_style_emb = None
-        if cfg.lambda_style > 0:
+        if cfg.monitor_style_embeddings:
             try:
                 from ...detectors.style_detector import StyleEmbeddingDetector
                 self.style_extractor = StyleEmbeddingDetector(
@@ -317,40 +329,58 @@ class MultiSPINTrainer:
 
         logger.info("MultiSPIN setup complete. %d human references.", len(self.human_texts))
 
+    def _conditional_logprob(self, model, prompts: List[str], completions: List[str]) -> torch.Tensor:
+        """Return completion-only log-probabilities conditioned on shared prompts."""
+        device = next(model.parameters()).device
+        sequences = []
+        prompt_lengths = []
+        for prompt, completion in zip(prompts, completions):
+            prompt_ids = self.tokenizer(
+                prompt, add_special_tokens=True, truncation=True,
+                max_length=self.config.max_seq_length - 1,
+            ).input_ids
+            completion_ids = self.tokenizer(
+                f" {completion}", add_special_tokens=False,
+            ).input_ids
+            available = max(1, self.config.max_seq_length - len(prompt_ids))
+            completion_ids = completion_ids[:available]
+            sequences.append(prompt_ids + completion_ids)
+            prompt_lengths.append(len(prompt_ids))
+        max_length = max(len(sequence) for sequence in sequences)
+        pad_id = self.tokenizer.pad_token_id
+        input_ids = torch.full((len(sequences), max_length), pad_id, dtype=torch.long)
+        attention = torch.zeros_like(input_ids)
+        for row, sequence in enumerate(sequences):
+            input_ids[row, :len(sequence)] = torch.tensor(sequence)
+            attention[row, :len(sequence)] = 1
+        input_ids = input_ids.to(device)
+        attention = attention.to(device)
+        logits = model(input_ids=input_ids, attention_mask=attention).logits[:, :-1]
+        targets = input_ids[:, 1:]
+        token_log_probs = F.log_softmax(logits, dim=-1).gather(
+            2, targets.unsqueeze(-1),
+        ).squeeze(-1)
+        completion_mask = torch.zeros_like(token_log_probs)
+        for row, prompt_length in enumerate(prompt_lengths):
+            completion_mask[row, prompt_length - 1:len(sequences[row]) - 1] = 1
+        return (token_log_probs * completion_mask).sum(dim=-1)
+
     def _compute_spin_loss(
         self,
-        human_ids: torch.Tensor,
-        human_mask: torch.Tensor,
-        generated_ids: torch.Tensor,
-        generated_mask: torch.Tensor,
+        prompts: List[str],
+        human_completions: List[str],
+        generated_completions: List[str],
     ) -> torch.Tensor:
         """DPO-style SPIN loss (Chen et al., 2024).
 
         L_SPIN = -E[log σ(β · ((log π_θ(y_h) - log π_ref(y_h)) - (log π_θ(y_g) - log π_ref(y_g))))]
         """
-        device = next(self.model.parameters()).device
         beta = float(self.config.beta_spin)
-
-        human_ids = human_ids.to(device)
-        human_mask = human_mask.to(device)
-        generated_ids = generated_ids.to(device)
-        generated_mask = generated_mask.to(device)
-
-        def _seq_logprob(model, ids, mask) -> torch.Tensor:
-            logits = model(input_ids=ids, attention_mask=mask).logits
-            log_p = F.log_softmax(logits[:, :-1], dim=-1)
-            target = ids[:, 1:]
-            tok_lp = log_p.gather(2, target.unsqueeze(-1)).squeeze(-1)
-            # Mask out pad and the shifted-off first position
-            tok_mask = mask[:, 1:].to(tok_lp.dtype)
-            return (tok_lp * tok_mask).sum(dim=-1)
-
         with torch.no_grad():
-            ref_lp_h = _seq_logprob(self.ref_model, human_ids, human_mask)
-            ref_lp_g = _seq_logprob(self.ref_model, generated_ids, generated_mask)
-
-        curr_lp_h = _seq_logprob(self.model, human_ids, human_mask)
-        curr_lp_g = _seq_logprob(self.model, generated_ids, generated_mask)
+            ref_lp_h = self._conditional_logprob(self.ref_model, prompts, human_completions)
+            ref_lp_g = self._conditional_logprob(self.ref_model, prompts, generated_completions)
+        curr_lp_h = self._conditional_logprob(self.model, prompts, human_completions)
+        curr_lp_g = self._conditional_logprob(self.model, prompts, generated_completions)
 
         logit_diff = beta * ((curr_lp_h - ref_lp_h) - (curr_lp_g - ref_lp_g))
         return -F.logsigmoid(logit_diff).mean()
@@ -388,17 +418,6 @@ class MultiSPINTrainer:
             "style_mmd": style_mmd,
         }
 
-    def _tokenize_batch(self, texts: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Tokenize a list of texts with padding to the longest in the batch."""
-        tok = self.tokenizer(
-            texts,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=self.config.max_seq_length,
-        )
-        return tok["input_ids"], tok["attention_mask"]
-
     def _generate_batch(self, prompts: List[str]) -> List[str]:
         """Generate completions for a batch of prompts with the current policy."""
         cfg = self.config
@@ -417,6 +436,7 @@ class MultiSPINTrainer:
                     do_sample=True,
                     temperature=cfg.temperature,
                     pad_token_id=self.tokenizer.pad_token_id,
+                    generator=self._generator,
                 )
             text = self.tokenizer.decode(
                 out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
@@ -470,20 +490,19 @@ class MultiSPINTrainer:
                 # Generate matching completions with current policy
                 gen_batch = self._generate_batch(prompt_batch)
 
-                # Tokenize human references and generations
-                human_ids, human_mask = self._tokenize_batch(human_batch)
-                gen_ids, gen_mask = self._tokenize_batch(gen_batch)
+                human_completions = [" ".join(text.split()[50:]) for text in human_batch]
 
-                # True SPIN loss
-                spin_loss = self._compute_spin_loss(human_ids, human_mask, gen_ids, gen_mask)
+                spin_loss = self._compute_spin_loss(
+                    prompt_batch, human_completions, gen_batch,
+                )
                 total_loss = cfg.lambda_spin * spin_loss
 
-                total_loss.backward()
-                torch.nn.utils.clip_grad_norm_(
-                    [p for p in self.model.parameters() if p.requires_grad], 1.0,
-                )
+                (total_loss / cfg.gradient_accumulation_steps).backward()
 
                 if (step + 1) % cfg.gradient_accumulation_steps == 0:
+                    torch.nn.utils.clip_grad_norm_(
+                        [p for p in self.model.parameters() if p.requires_grad], 1.0,
+                    )
                     optimizer.step()
                     optimizer.zero_grad()
 
@@ -505,14 +524,39 @@ class MultiSPINTrainer:
                     n_running = 0
 
             # Save iteration checkpoint
+            if cfg.steps_per_iteration % cfg.gradient_accumulation_steps:
+                torch.nn.utils.clip_grad_norm_(
+                    [p for p in self.model.parameters() if p.requires_grad], 1.0,
+                )
+                optimizer.step()
+                optimizer.zero_grad()
+
             iter_dir = os.path.join(cfg.output_dir, f"iteration_{iteration + 1}")
             self.model.save_pretrained(iter_dir)
             self.tokenizer.save_pretrained(iter_dir)
+            with open(os.path.join(iter_dir, "training_metadata.json"), "w") as metadata_file:
+                json.dump({
+                    "method": "spin_with_feature_monitoring",
+                    "detector_names": [],
+                    "seed": cfg.seed,
+                    "iteration": iteration + 1,
+                }, metadata_file, indent=2)
 
             # Update feature bank if attached
             if self.feature_bank is not None:
-                self.feature_bank.update(generated_texts, self.human_texts[:len(generated_texts)])
+                self.feature_bank.update(
+                    generated_texts,
+                    self.human_texts[:len(generated_texts)],
+                    stylo_extractor=self.stylo_extractor,
+                    emb_extractor=self.emb_extractor,
+                )
+
+            self.ref_model.load_state_dict(self.model.state_dict())
+            self.ref_model.eval()
 
             logger.info("Iteration %d complete. Checkpoint saved to %s", iteration + 1, iter_dir)
 
-        logger.info("MultiSPIN training complete.")
+        logger.info("SPIN training with feature monitoring complete.")
+
+
+MultiSPINTrainer = SPINTrainerWithFeatureMonitoring

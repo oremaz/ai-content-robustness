@@ -26,6 +26,14 @@ def evaluate_text_evasion(
         Dict with metrics: mean_reward, mean_evasion, mean_semantic,
         attack_success_rate, per_detector scores.
     """
+    if not generated_texts:
+        raise ValueError("generated_texts must contain at least one successful sample")
+    if len(generated_texts) != len(source_texts):
+        raise ValueError(
+            "generated_texts and source_texts must have equal lengths, "
+            f"got {len(generated_texts)} and {len(source_texts)}"
+        )
+
     all_rewards = []
     all_evasion = []
     all_semantic = []
@@ -85,22 +93,16 @@ def compute_tpr_at_fpr(
 
     scores = np.array(detector_scores)
     labels_arr = np.array(labels)
+    if len(scores) != len(labels_arr) or len(scores) == 0:
+        raise ValueError("detector_scores and labels must be nonempty and aligned")
+    if len(np.unique(labels_arr)) < 2:
+        raise ValueError("TPR at FPR is undefined when labels contain only one class")
+    if not 0.0 <= fpr_target <= 1.0:
+        raise ValueError("fpr_target must be in [0, 1]")
 
     fpr, tpr, _ = roc_curve(labels_arr, scores)
-
-    # Linear interpolation of TPR at the target FPR (the raw ROC grid rarely
-    # lands exactly on e.g. 0.01, so nearest-neighbor lookup gives biased values
-    # at the low-FPR operating points papers actually care about).
-    idx = int(np.searchsorted(fpr, fpr_target))
-    if idx == 0:
-        return float(tpr[0])
-    if idx >= len(fpr):
-        return float(tpr[-1])
-    lo, hi = float(fpr[idx - 1]), float(fpr[idx])
-    if hi == lo:
-        return float(tpr[idx])
-    w = (fpr_target - lo) / (hi - lo)
-    return float((1.0 - w) * tpr[idx - 1] + w * tpr[idx])
+    feasible = tpr[fpr <= fpr_target]
+    return float(feasible.max()) if feasible.size else 0.0
 
 
 def compute_auroc(
@@ -110,10 +112,14 @@ def compute_auroc(
     """Compute AUROC for a detector."""
     from sklearn.metrics import roc_auc_score
 
-    try:
-        return float(roc_auc_score(labels, detector_scores))
-    except ValueError:
-        return 0.5
+    if len(detector_scores) != len(labels) or not labels:
+        raise ValueError("detector_scores and labels must be nonempty and aligned")
+    if len(set(labels)) < 2:
+        raise ValueError("AUROC is undefined when labels contain only one class")
+    result = float(roc_auc_score(labels, detector_scores))
+    if not np.isfinite(result):
+        raise ValueError("AUROC is undefined for the supplied inputs")
+    return result
 
 
 def print_evaluation_report(metrics: Dict[str, float], title: str = "Evaluation Report"):

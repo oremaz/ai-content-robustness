@@ -53,6 +53,8 @@ def ddim_step_with_logprob(
     prompt_embeds: torch.Tensor,
     guidance_scale: float = 7.5,
     prev_sample: Optional[torch.Tensor] = None,
+    eta: float = 1.0,
+    generator: Optional[torch.Generator] = None,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Perform one DDIM denoising step and return (next_latents, log_prob).
 
@@ -76,46 +78,50 @@ def ddim_step_with_logprob(
     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
     noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
 
-    # DDIM parameters from scheduler
-    alpha_prod_t = scheduler.alphas_cumprod[timestep]
+    prev_timestep = int(scheduler.previous_timestep(timestep))
+    alpha_prod_t = scheduler.alphas_cumprod[timestep].to(latents.device, latents.dtype)
     alpha_prod_t_prev = (
-        scheduler.alphas_cumprod[scheduler.previous_timestep(timestep)]
-        if hasattr(scheduler, "previous_timestep")
-        else scheduler.alphas_cumprod[max(timestep - scheduler.config.num_train_timesteps // scheduler.num_inference_steps, 0)]
+        scheduler.alphas_cumprod[prev_timestep].to(latents.device, latents.dtype)
+        if prev_timestep >= 0 else scheduler.final_alpha_cumprod.to(latents.device, latents.dtype)
     )
-
     beta_prod_t = 1.0 - alpha_prod_t
-    beta_prod_t_prev = 1.0 - alpha_prod_t_prev
-
-    # Predicted x_0 from noise prediction
-    pred_original = (latents - beta_prod_t.sqrt() * noise_pred) / alpha_prod_t.sqrt()
+    prediction_type = scheduler.config.prediction_type
+    if prediction_type == "epsilon":
+        pred_original = (latents - beta_prod_t.sqrt() * noise_pred) / alpha_prod_t.sqrt()
+        pred_epsilon = noise_pred
+    elif prediction_type == "sample":
+        pred_original = noise_pred
+        pred_epsilon = (latents - alpha_prod_t.sqrt() * pred_original) / beta_prod_t.sqrt()
+    elif prediction_type == "v_prediction":
+        pred_original = alpha_prod_t.sqrt() * latents - beta_prod_t.sqrt() * noise_pred
+        pred_epsilon = alpha_prod_t.sqrt() * noise_pred + beta_prod_t.sqrt() * latents
+    else:
+        raise ValueError(f"Unsupported DDIM prediction type: {prediction_type}")
 
     # Clip predicted x_0 for stability
     if scheduler.config.clip_sample:
         pred_original = pred_original.clamp(-scheduler.config.clip_sample_range, scheduler.config.clip_sample_range)
 
-    # DDIM predicted mean (mu_theta)
-    mu = alpha_prod_t_prev.sqrt() * pred_original + beta_prod_t_prev.sqrt() * noise_pred
-
-    # Variance (sigma_t^2) — DDIM uses eta * sigma for stochasticity
-    # With eta=0 (deterministic DDIM), sigma=0 and log_prob is delta.
-    # We use eta=1 (DDPM-like) for stochastic sampling needed by DDPO.
-    sigma_sq = beta_prod_t_prev
-    # Ensure minimum variance for numerical stability
-    sigma_sq = torch.clamp(sigma_sq, min=1e-6)
-    std = sigma_sq.sqrt()
+    variance = scheduler._get_variance(timestep, prev_timestep).to(latents.device, latents.dtype)
+    std = eta * variance.sqrt()
+    direction = (1.0 - alpha_prod_t_prev - std.square()).clamp(min=0.0).sqrt() * pred_epsilon
+    mu = alpha_prod_t_prev.sqrt() * pred_original + direction
+    std_for_logprob = std.clamp(min=1e-6)
 
     if prev_sample is not None:
         # Training phase: compute log_prob of the given sample under current policy
         sample = prev_sample
     else:
         # Sampling phase: draw from Gaussian
-        noise = torch.randn_like(latents)
+        noise = torch.randn(
+            latents.shape, device=latents.device, dtype=latents.dtype, generator=generator,
+        )
         sample = mu + std * noise
 
     # Gaussian log-probability: -0.5 * ||x - mu||^2 / sigma^2 - 0.5 * d * log(2pi * sigma^2)
-    log_prob = -0.5 * ((sample - mu) ** 2 / sigma_sq).sum(dim=(1, 2, 3))
-    log_prob -= 0.5 * sample[0].numel() * torch.log(2.0 * torch.pi * sigma_sq)
+    log_prob = -((sample.detach() - mu) ** 2) / (2.0 * std_for_logprob.square())
+    log_prob = log_prob - torch.log(std_for_logprob) - 0.5 * np.log(2.0 * np.pi)
+    log_prob = log_prob.mean(dim=tuple(range(1, log_prob.ndim)))
 
     return sample, log_prob
 
@@ -126,6 +132,7 @@ def pipeline_sample_with_logprob(
     negative_prompt_embeds: torch.Tensor,
     num_inference_steps: int = 50,
     guidance_scale: float = 7.5,
+    generator: Optional[torch.Generator] = None,
 ) -> Tuple[torch.Tensor, List[torch.Tensor], List[torch.Tensor]]:
     """Run full denoising pipeline, returning trajectory of latents and log-probs.
 
@@ -146,6 +153,7 @@ def pipeline_sample_with_logprob(
         (prompt_embeds.shape[0], unet.config.in_channels, 64, 64),
         device=device,
         dtype=prompt_embeds.dtype,
+        generator=generator,
     )
     latents = latents * scheduler.init_noise_sigma
 
@@ -162,6 +170,7 @@ def pipeline_sample_with_logprob(
             timestep=int(t),
             prompt_embeds=combined_embeds,
             guidance_scale=guidance_scale,
+            generator=generator,
         )
         all_latents.append(next_latents.detach().clone())
         all_log_probs.append(log_prob.detach())
@@ -200,6 +209,12 @@ class PerPromptStatTracker:
         """Record rewards and return normalized advantages."""
         advantages = np.zeros(len(rewards))
 
+        rewards_arr = np.asarray(rewards, dtype=np.float64)
+        global_std = float(rewards_arr.std())
+        global_advantages = (
+            (rewards_arr - rewards_arr.mean()) / (global_std + 1e-8)
+            if global_std > 1e-8 else np.zeros_like(rewards_arr)
+        )
         for i, (prompt, reward) in enumerate(zip(prompts, rewards)):
             self._stats[prompt].append(reward)
             # Keep buffer bounded
@@ -210,7 +225,7 @@ class PerPromptStatTracker:
             if len(buf) >= self.min_count:
                 advantages[i] = (reward - np.mean(buf)) / (np.std(buf) + 1e-8)
             else:
-                advantages[i] = 0.0
+                advantages[i] = global_advantages[i]
 
         return advantages
 
@@ -231,12 +246,10 @@ class ImageDetectorReward:
         self.name = name
 
     def __call__(self, image) -> float:
-        try:
-            result = self.detector.detect(image)
-            return 1.0 - result.score
-        except Exception as e:
-            logger.warning("Detector %s failed: %s", self.name, e)
-            return 0.5
+        result = self.detector.detect(image)
+        if not 0.0 <= result.score <= 1.0:
+            raise ValueError(f"Detector {self.name} returned invalid score {result.score}")
+        return 1.0 - result.score
 
 
 class CompositeImageReward:
@@ -246,9 +259,15 @@ class CompositeImageReward:
         self,
         detector_rewards: List[ImageDetectorReward],
         weights: Optional[Dict[str, float]] = None,
+        aesthetic_scorer=None,
     ):
         self.detector_rewards = detector_rewards
         self.weights = weights or {"evasion": 0.5, "clip": 0.3, "aesthetic": 0.2}
+        if not detector_rewards:
+            raise ValueError("CompositeImageReward requires at least one detector")
+        if self.weights.get("aesthetic", 0.0) > 0 and aesthetic_scorer is None:
+            raise ValueError("A nonzero aesthetic weight requires an aesthetic_scorer")
+        self.aesthetic_scorer = aesthetic_scorer
         self._clip_model = None
         self._clip_processor = None
 
@@ -270,15 +289,17 @@ class CompositeImageReward:
                 outputs = self._clip_model(**inputs)
             score = outputs.logits_per_image.item() / 100.0
             return min(max(score, 0.0), 1.0)
-        except Exception:
-            return 0.5
+        except Exception as error:
+            raise RuntimeError("CLIP alignment scoring failed") from error
 
     def __call__(self, image, prompt: str = "") -> Dict[str, float]:
         evasion_scores = [dr(image) for dr in self.detector_rewards]
-        mean_evasion = float(np.mean(evasion_scores)) if evasion_scores else 0.5
+        mean_evasion = float(np.mean(evasion_scores))
 
         clip_score = self._get_clip_score(image, prompt) if prompt else 0.5
-        aesthetic_score = clip_score  # proxy; real impl would use LAION aesthetic predictor
+        aesthetic_score = (
+            float(self.aesthetic_scorer(image, prompt)) if self.aesthetic_scorer is not None else 0.0
+        )
 
         total = (
             self.weights["evasion"] * mean_evasion
@@ -326,10 +347,15 @@ class DDPOImageEvasionTrainer:
     def setup(self):
         """Load diffusion model, apply LoRA, set up rewards."""
         logger.info("Setting up DDPO image evasion trainer...")
+        self._seed_everything()
         self._setup_model()
         self._setup_rewards()
         self._setup_prompts()
         logger.info("Setup complete.")
+
+    def _seed_everything(self):
+        from ..config import seed_everything
+        seed_everything(self.config.seed)
 
     def _setup_model(self):
         """Load Stable Diffusion with LoRA on UNet."""
@@ -340,7 +366,7 @@ class DDPOImageEvasionTrainer:
 
         self.pipeline = StableDiffusionPipeline.from_pretrained(
             cfg.diffusion_model,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
         )
         # Use DDIM scheduler for tractable log-prob computation
         self.pipeline.scheduler = DDIMScheduler.from_config(
@@ -392,6 +418,11 @@ class DDPOImageEvasionTrainer:
                 except Exception as e:
                     logger.warning("Could not load detector %s: %s", name, e)
 
+        if not detector_rewards:
+            raise RuntimeError(
+                f"No requested image detector could be loaded: {self.config.detector_names}"
+            )
+
         self.reward_fn = CompositeImageReward(
             detector_rewards=detector_rewards,
             weights={
@@ -418,11 +449,24 @@ class DDPOImageEvasionTrainer:
                 "An aerial photograph of a city at night",
             ] * (cfg.num_prompts // 5)
 
-        logger.info("Loaded %d prompts for training.", len(self.prompts))
+        if len(self.prompts) < 5:
+            raise ValueError("DDPO requires at least five prompts")
+        rng = np.random.default_rng(cfg.seed)
+        permutation = rng.permutation(len(self.prompts))
+        n_eval = max(1, int(round(cfg.evaluation_fraction * len(permutation))))
+        all_prompts = list(self.prompts)
+        self.eval_prompts = [all_prompts[index] for index in permutation[:n_eval]]
+        self.prompts = [all_prompts[index] for index in permutation[n_eval:]]
+
+        logger.info(
+            "Loaded %d training and %d immutable evaluation prompts.",
+            len(self.prompts), len(self.eval_prompts),
+        )
 
     def _encode_prompts(self, prompts: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encode prompts into text embeddings for the pipeline."""
         device = self.pipeline.unet.device
+        generator = torch.Generator(device=device).manual_seed(cfg.seed)
         dtype = self.pipeline.unet.dtype
 
         text_inputs = self.pipeline.tokenizer(
@@ -478,7 +522,8 @@ class DDPOImageEvasionTrainer:
             self.pipeline.unet.eval()
 
             # Sample a batch of prompts
-            batch_indices = np.random.permutation(len(self.prompts))[:cfg.sample_batch_size]
+            rng = np.random.default_rng(cfg.seed + epoch)
+            batch_indices = rng.permutation(len(self.prompts))[:cfg.sample_batch_size]
             batch_prompts = [self.prompts[i] for i in batch_indices]
 
             # Encode prompts
@@ -492,6 +537,7 @@ class DDPOImageEvasionTrainer:
                     negative_prompt_embeds=negative_embeds,
                     num_inference_steps=cfg.num_inference_steps,
                     guidance_scale=7.5,
+                    generator=generator,
                 )
 
             # Decode to images and compute rewards
@@ -561,7 +607,7 @@ class DDPOImageEvasionTrainer:
                     kl_penalty = torch.mean(log_ratio ** 2) * 0.5  # approximate KL
                     loss = ppo_loss + kl_coeff * kl_penalty
 
-                    loss.backward()
+                    (loss / cfg.train_batch_size).backward()
 
                     total_loss += ppo_loss.item()
                     total_kl += kl_penalty.item()
@@ -577,6 +623,9 @@ class DDPOImageEvasionTrainer:
 
                 # Flush remaining gradients
                 if num_updates % cfg.train_batch_size != 0:
+                    torch.nn.utils.clip_grad_norm_(
+                        self.pipeline.unet.parameters(), max_norm=1.0,
+                    )
                     optimizer.step()
                     optimizer.zero_grad()
 
@@ -615,7 +664,7 @@ class DDPOImageEvasionTrainer:
         self.pipeline.unet.eval()
         results: Dict[str, List[float]] = {"total": [], "evasion": [], "clip": [], "purified_evasion": []}
 
-        eval_prompts = self.prompts[-num_samples:] if len(self.prompts) > num_samples else self.prompts
+        eval_prompts = self.eval_prompts[:num_samples]
 
         # Build a SEPARATE, pretrained purifier pipeline (no LoRA, no RL updates).
         # This guarantees the purification eval is not leaking the attacker's weights.

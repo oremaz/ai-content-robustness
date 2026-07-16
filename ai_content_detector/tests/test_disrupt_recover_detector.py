@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from ai_content_detector.detectors import DisruptRecoverDetector
 
 
@@ -15,14 +17,14 @@ LONG_TEXT = (
 )
 
 
-def test_mask_disruption_is_deterministic_and_masks_words():
-    det = DisruptRecoverDetector(recover_fn=lambda corrupted: corrupted, disruption_mode="mask")
+def test_shuffle_disruption_is_deterministic():
+    det = DisruptRecoverDetector(recover_fn=lambda corrupted: corrupted)
 
     first = det._disrupt(LONG_TEXT)
     second = det._disrupt(LONG_TEXT)
 
     assert first == second
-    assert "[MASK]" in first
+    assert "[MASK]" not in first
     assert first != LONG_TEXT
 
 
@@ -37,18 +39,24 @@ def test_default_shuffle_disruption_preserves_tokens_without_masks():
 
 
 def test_exact_recovery_scores_high():
-    det = DisruptRecoverDetector(recover_fn=lambda corrupted: LONG_TEXT, min_words=5)
+    det = DisruptRecoverDetector(
+        recover_fn=lambda corrupted: LONG_TEXT,
+        semantic_scorer=lambda source, recovered: 1.0,
+        min_words=5,
+    )
 
     result = det.detect(LONG_TEXT)
 
     assert result.score > 0.9
     assert result.label == "ai"
-    assert result.details["word_edit_similarity"] == 1.0
+    assert result.details["recovery_similarity"] == 1.0
+    assert result.details["structural_rank_similarity"] == pytest.approx(1.0)
 
 
 def test_poor_recovery_scores_low():
     det = DisruptRecoverDetector(
         recover_fn=lambda corrupted: "short unrelated answer with little overlap",
+        semantic_scorer=lambda source, recovered: 0.0,
         min_words=5,
     )
 
@@ -56,7 +64,7 @@ def test_poor_recovery_scores_low():
 
     assert result.score < 0.2
     assert result.label == "human"
-    assert result.details["word_edit_similarity"] < 0.4
+    assert result.details["recovery_similarity"] < 0.4
 
 
 def test_short_text_is_uncertain_without_recovery_call():
@@ -67,7 +75,9 @@ def test_short_text_is_uncertain_without_recovery_call():
         called = True
         return "should not be used"
 
-    det = DisruptRecoverDetector(recover_fn=recover, min_words=10)
+    det = DisruptRecoverDetector(
+        recover_fn=recover, semantic_scorer=lambda source, recovered: 1.0, min_words=10,
+    )
 
     result = det.detect("Too short.")
 

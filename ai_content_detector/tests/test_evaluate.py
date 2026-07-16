@@ -99,6 +99,14 @@ class TestComputeTPRAtFPR:
         tpr = compute_tpr_at_fpr(scores, labels, fpr_target=0.0)
         assert 0.0 <= tpr <= 1.0
 
+    def test_single_class_tpr_is_undefined(self):
+        with pytest.raises(ValueError, match="one class"):
+            compute_tpr_at_fpr([0.1, 0.2], [1, 1], 0.01)
+
+    def test_invalid_fpr_target_raises(self):
+        with pytest.raises(ValueError, match=r"\[0, 1\]"):
+            compute_tpr_at_fpr([0.1, 0.9], [0, 1], 1.1)
+
 
 # ---------------------------------------------------------------------------
 # compute_auroc
@@ -125,13 +133,14 @@ class TestComputeAUROC:
         assert 0.4 < auroc < 0.6
 
     def test_single_class(self):
-        # sklearn returns nan (with warning) for single-class y_true;
-        # compute_auroc catches ValueError but not the nan/warning path.
-        # Verify it doesn't crash.
         scores = [0.5, 0.6, 0.7]
         labels = [1, 1, 1]
-        result = compute_auroc(scores, labels)
-        assert isinstance(result, float)
+        with pytest.raises(ValueError, match="one class"):
+            compute_auroc(scores, labels)
+
+    def test_misaligned_inputs_raise(self):
+        with pytest.raises(ValueError, match="aligned"):
+            compute_auroc([0.5], [0, 1])
 
     def test_two_samples(self):
         assert compute_auroc([1.0, 0.0], [1, 0]) == pytest.approx(1.0)

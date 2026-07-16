@@ -6,6 +6,7 @@ from .text_detectors import (
     DivEyeDetector,
     DisruptRecoverDetector,
     MarkovCalibratedTextDetector,
+    WindowSmoothedTextDetector,
     InversionDetector,  # alias kept for back-compat
     ParaphraseRoundTripDetector,
     IPADDetector,
@@ -35,6 +36,7 @@ __all__ = [
     "DivEyeDetector",
     "DisruptRecoverDetector",
     "MarkovCalibratedTextDetector",
+    "WindowSmoothedTextDetector",
     "InversionDetector",
     "ParaphraseRoundTripDetector",
     "IPADDetector",
