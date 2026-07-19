@@ -19,3 +19,6 @@ cifake_data/
 # Results and model weights
 results/
 ml_pipeline/results/
+# RF-DETR pretrained weight cache (auto-downloaded by rfdetr)
+rf-detr-*.pth
+ml_pipeline/data/

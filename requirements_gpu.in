@@ -17,6 +17,7 @@ streamlit
 langgraph
 langchain-google-genai
 langchain-core
+langchain-openai  # OpenRouter LLM fallback for NutriCoach
 google-genai
 pandas
 numpy==1.26.3
@@ -24,6 +25,7 @@ scikit-learn==1.7.2
 xgboost
 bert-score
 lightgbm
+catboost
 plotly
 python-dotenv
 scipy==1.16.2
@@ -73,6 +75,8 @@ argon2-cffi
 openai  # OpenRouter API (OpenAI-compatible)
 rfdetr  # RF-DETR object detection (Method 1)
 supervision  # Detection result handling
+pycocotools  # COCO datasets for RF-DETR fine-tuning
+faster-coco-eval  # mAP evaluation during RF-DETR training
 roboflow  # Dataset download for fine-tuning
 sentence-transformers  # Embeddings for RAG method
 langgraph-checkpoint-sqlite  # LangGraph v2 persistence
