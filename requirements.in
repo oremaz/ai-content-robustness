@@ -37,12 +37,20 @@ datasets
 # Jupyter for notebooks
 notebook
 jupyter
+papermill
+
+# Experiment tracking
+wandb
+
+# Tabular preprocessing
+skrub
 
 # Visualization (if used)
 matplotlib
 seaborn
 imblearn
 kaggle
+kagglehub  # anonymous fallback downloads for public Kaggle datasets
 torchvision
 timm==1.0.9
 tabicl
