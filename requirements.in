@@ -54,6 +54,7 @@ kagglehub  # anonymous fallback downloads for public Kaggle datasets
 torchvision
 timm==1.0.9
 tabicl
+tabfm[pytorch] @ git+https://github.com/google-research/tabfm.git@d8678b6895f1428a468d4cc299c1ff4cf704e726
 albumentations
 Pillow
 rich
