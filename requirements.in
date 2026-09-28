@@ -1,8 +1,7 @@
 streamlit
 langgraph
-langchain-google-genai
+langchain-openai
 langchain-core
-langchain-openai  # OpenRouter LLM fallback for NutriCoach
 google-genai
 pandas
 numpy==1.26.3
