@@ -22,4 +22,5 @@ ml_pipeline/results/
 # RF-DETR pretrained weight cache (auto-downloaded by rfdetr)
 rf-detr-*.pth
 ml_pipeline/data/
+nut_agent/nutricoach/food_vision/data/
 wandb/

@@ -73,6 +73,8 @@ catalogue==2.0.10
     #   spacy
     #   srsly
     #   thinc
+catboost==1.2.10
+    # via -r requirements.in
 certifi==2026.6.17
     # via
     #   httpcore
@@ -173,6 +175,8 @@ fsspec==2026.4.0
     #   torch
 ftfy==6.3.1
     # via -r requirements.in
+graphviz==0.21
+    # via catboost
 gitdb==4.0.12
     # via gitpython
 gitpython==3.1.50

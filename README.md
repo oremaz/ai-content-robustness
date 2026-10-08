@@ -163,7 +163,6 @@ ai_content_detector/
 │   ├── image_evasion/                 # DDPO training and evaluation
 │   ├── arms_race/                     # Repeated adaptation and MAML
 │   └── benchmarking/                  # Datasets, baselines, runner
-├── notebooks/explainable_detector.ipynb
 ├── references.bib
 └── tests/
 ```
@@ -725,9 +724,6 @@ PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python \
 
 PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python -m compileall -q \
   ai_content_detector
-
-PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python -m json.tool \
-  ai_content_detector/notebooks/explainable_detector.ipynb
 
 git diff --check
 ```
