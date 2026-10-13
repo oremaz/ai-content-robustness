@@ -127,7 +127,6 @@ decorator==5.3.1
 defusedxml==0.7.1
     # via
     #   nbconvert
-    #   supervision
 diffusers==0.39.0
     # via -r requirements.in
 dill==0.4.1
@@ -404,7 +403,6 @@ matplotlib==3.11.0
     # via
     #   -r requirements.in
     #   seaborn
-    #   supervision
 matplotlib-inline==0.2.2
     # via
     #   ipykernel
@@ -482,7 +480,6 @@ numpy==1.26.3
     #   pydeck
     #   pytorch-wavelets
     #   pywavelets
-    #   rfdetr
     #   scikit-learn
     #   scipy
     #   seaborn
@@ -490,7 +487,6 @@ numpy==1.26.3
     #   shap
     #   spacy
     #   streamlit
-    #   supervision
     #   tabicl
     #   thinc
     #   torchmetrics
@@ -500,7 +496,6 @@ numpy==1.26.3
 openai==2.44.0
     # via -r requirements.in
 opencv-python==4.11.0.86
-    # via supervision
 opencv-python-headless==4.11.0.86
     # via
     #   albucore
@@ -564,7 +559,6 @@ pillow==12.3.0
     #   diffusers
     #   matplotlib
     #   streamlit
-    #   supervision
     #   torchvision
 platformdirs==4.10.0
     # via jupyter-core
@@ -623,7 +617,6 @@ pydantic==2.13.4
     #   langgraph
     #   langsmith
     #   openai
-    #   rfdetr
     #   spacy
     #   thinc
     #   weasel
@@ -633,8 +626,6 @@ pydeck==0.9.3
     # via streamlit
 pydeprecate==0.9.0
     # via
-    #   rfdetr
-    #   supervision
 pygments==2.20.0
     # via
     #   ipython
@@ -687,7 +678,6 @@ pyyaml==6.0.3
     #   langchain-core
     #   peft
     #   pytorch-lightning
-    #   supervision
     #   timm
     #   transformers
 pyzmq==27.1.0
@@ -717,10 +707,8 @@ requests==2.34.2
     #   kagglesdk
     #   langsmith
     #   requests-toolbelt
-    #   rfdetr
     #   spacy
     #   streamlit
-    #   supervision
 requests-toolbelt==1.0.0
     # via langsmith
 rfc3339-validator==0.1.4
@@ -733,14 +721,10 @@ rfc3986-validator==0.1.1
     #   jupyter-events
 rfc3987-syntax==1.1.0
     # via jsonschema
-rfdetr==1.8.3
-    # via -r requirements.in
 rich==15.0.0
     # via
     #   -r requirements.in
     #   typer
-roboflow==0.1.1
-    # via -r requirements.in
 rpds-py==2026.6.3
     # via
     #   jsonschema
@@ -770,7 +754,6 @@ scipy==1.16.2
     #   scikit-learn
     #   sentence-transformers
     #   shap
-    #   supervision
     #   tabfm
     #   tabicl
     #   xgboost
@@ -833,10 +816,6 @@ streamlit==1.59.0
     # via -r requirements.in
 stringzilla==4.6.2
     # via albucore
-supervision==0.29.1
-    # via
-    #   -r requirements.in
-    #   rfdetr
 sympy==1.14.0
     # via torch
 tabfm @ git+https://github.com/google-research/tabfm.git@d8678b6895f1428a468d4cc299c1ff4cf704e726
@@ -880,7 +859,6 @@ torch==2.12.1
     #   peft
     #   pytorch-lightning
     #   pytorch-wavelets
-    #   rfdetr
     #   sentence-transformers
     #   tabfm
     #   tabicl
@@ -892,7 +870,6 @@ torchmetrics==1.9.0
 torchvision==0.27.1
     # via
     #   -r requirements.in
-    #   rfdetr
     #   timm
 tornado==6.5.7
     # via
@@ -912,11 +889,9 @@ tqdm==4.68.4
     #   openai
     #   peft
     #   pytorch-lightning
-    #   rfdetr
     #   sentence-transformers
     #   shap
     #   spacy
-    #   supervision
     #   tabicl
     #   transformers
 traitlets==5.15.1
@@ -939,7 +914,6 @@ transformers==5.13.0
     # via
     #   -r requirements.in
     #   peft
-    #   rfdetr
     #   sentence-transformers
     #   trl
 trl==1.7.1

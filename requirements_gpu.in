@@ -30,7 +30,7 @@ python-dotenv
 scipy==1.16.2
 
 # Optional: for HuggingFace/transformers/PEFT support
-transformers
+transformers>=5.8.0
 peft
 #trl
 pytorch-wavelets
@@ -74,12 +74,7 @@ argon2-cffi
 
 # Food Vision (NutriCoach image analysis)
 openai  # OpenRouter API (OpenAI-compatible)
-rfdetr  # RF-DETR object detection (Method 1)
-supervision  # Detection result handling
-pycocotools  # COCO datasets for RF-DETR fine-tuning
-faster-coco-eval  # mAP evaluation during RF-DETR training
-roboflow  # Dataset download for fine-tuning
-sentence-transformers  # Embeddings for RAG method
+sentence-transformers  # Shared text embedding models
 langgraph-checkpoint-sqlite  # LangGraph v2 persistence
 
 # Explainable detector notebook
