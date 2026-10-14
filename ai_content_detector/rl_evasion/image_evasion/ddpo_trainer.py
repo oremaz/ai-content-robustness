@@ -391,11 +391,7 @@ class DDPOImageEvasionTrainer:
 
     def _setup_rewards(self):
         """Build image detector reward ensemble."""
-        import sys
-        from pathlib import Path
-
-        sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-        from detectors.image_detectors import (
+        from ai_content_detector.detectors.image_detectors import (
             EfficientNetDetector,
             CLIPImageDetector,
             SigLIPDetector,

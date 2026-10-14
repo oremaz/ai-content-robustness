@@ -6,7 +6,6 @@ Includes internal (checkpoint-based) and external (HuggingFace) detectors.
 from __future__ import annotations
 
 import logging
-import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
@@ -26,11 +25,6 @@ def _check_hf_image_config(instance, model_name: str) -> bool:
     except Exception as error:
         instance._availability_error = str(error)
         return False
-
-_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-_ML_PIPELINE = _REPO_ROOT / "ml_pipeline"
-if str(_ML_PIPELINE) not in sys.path:
-    sys.path.insert(0, str(_ML_PIPELINE))
 
 # ImageNet normalization constants (shared across vision detectors)
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
@@ -79,9 +73,9 @@ class EfficientNetDetector(BaseDetector):
             return
         try:
             import torch
-            from pipelines_torch.vision_models import MODEL_REGISTRY
-            from pipelines_torch.base import SimplePredictor
-            from utils.utils import load_model_by_name
+            from ml_pipeline.pipelines_torch.vision_models import MODEL_REGISTRY
+            from ml_pipeline.pipelines_torch.base import SimplePredictor
+            from ml_pipeline.utils.utils import load_model_by_name
 
             device = self._device_spec
             if device == "auto":
@@ -160,9 +154,9 @@ class CLIPImageDetector(BaseDetector):
             return
         try:
             import torch
-            from pipelines_torch.vision_models import MODEL_REGISTRY
-            from pipelines_torch.base import SimplePredictor
-            from utils.utils import load_model_by_name
+            from ml_pipeline.pipelines_torch.vision_models import MODEL_REGISTRY
+            from ml_pipeline.pipelines_torch.base import SimplePredictor
+            from ml_pipeline.utils.utils import load_model_by_name
 
             device = self._device_spec
             if device == "auto":
@@ -240,9 +234,9 @@ class DINOv2Detector(BaseDetector):
             return
         try:
             import torch
-            from pipelines_torch.vision_models import MODEL_REGISTRY
-            from pipelines_torch.base import SimplePredictor
-            from utils.utils import load_model_by_name
+            from ml_pipeline.pipelines_torch.vision_models import MODEL_REGISTRY
+            from ml_pipeline.pipelines_torch.base import SimplePredictor
+            from ml_pipeline.utils.utils import load_model_by_name
 
             device = self._device_spec
             if device == "auto":

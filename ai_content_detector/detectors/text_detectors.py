@@ -8,7 +8,6 @@ from __future__ import annotations
 import logging
 import os
 import re
-import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
@@ -31,11 +30,6 @@ def _check_hf_config(instance, model_name: str, trust_remote_code: bool = False)
 # ---------------------------------------------------------------------------
 # Path setup — allow imports from ml_pipeline/
 # ---------------------------------------------------------------------------
-_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-_ML_PIPELINE = _REPO_ROOT / "ml_pipeline"
-if str(_ML_PIPELINE) not in sys.path:
-    sys.path.insert(0, str(_ML_PIPELINE))
-
 
 # ===========================================================================
 # 1. Internal detectors (from bench-aitextdetect checkpoints)
@@ -65,9 +59,9 @@ class ModernBERTDetector(BaseDetector):
             return
         try:
             import torch
-            from pipelines_torch.models import HuggingFaceQLoRAWrapper
-            from pipelines_torch.vision_models import MODEL_REGISTRY  # noqa: F401
-            from utils.utils import load_model_by_name
+            from ml_pipeline.pipelines_torch.models import HuggingFaceQLoRAWrapper
+            from ml_pipeline.pipelines_torch.vision_models import MODEL_REGISTRY  # noqa: F401
+            from ml_pipeline.utils.utils import load_model_by_name
 
             device = self._device
             if device == "auto":
@@ -142,8 +136,8 @@ class TFIDFDetector(BaseDetector):
         try:
             import joblib
             from sklearn.linear_model import LogisticRegression
-            from utils.utils import load_model_by_name
-            from pipelines_torch.models import SklearnRandomForestClassifierWrapper
+            from ml_pipeline.utils.utils import load_model_by_name
+            from ml_pipeline.pipelines_torch.models import SklearnRandomForestClassifierWrapper
 
             # Determine model class from name
             if "random_forest" in self._model_name:
@@ -159,7 +153,8 @@ class TFIDFDetector(BaseDetector):
             )
 
             # Try to load saved vectorizer
-            vec_path = _ML_PIPELINE / "results" / self._path_start / "tfidf_vectorizer.pkl"
+            from ml_pipeline.utils.utils import RESULTS_DIR_IN
+            vec_path = Path(RESULTS_DIR_IN) / self._path_start / "tfidf_vectorizer.pkl"
             if vec_path.exists():
                 self._vectorizer = joblib.load(vec_path)
             else:

@@ -15,15 +15,7 @@ from pathlib import Path
 
 import streamlit as st
 
-# Ensure ml_pipeline is importable
-_REPO_ROOT = Path(__file__).resolve().parent.parent
-_ML_PIPELINE = _REPO_ROOT / "ml_pipeline"
-if str(_ML_PIPELINE) not in sys.path:
-    sys.path.insert(0, str(_ML_PIPELINE))
-if str(_REPO_ROOT / "ai_content_detector") not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT / "ai_content_detector"))
-
-from detectors.ensemble import EnsembleAggregator, DetectionResult
+from ai_content_detector.detectors.ensemble import EnsembleAggregator, DetectionResult
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -61,7 +53,7 @@ def _unload_detectors(detectors):
 @st.cache_resource
 def load_text_detectors():
     """Load all available text detectors."""
-    from detectors.text_detectors import (
+    from ai_content_detector.detectors.text_detectors import (
         ModernBERTDetector,
         TFIDFDetector,
         BinocularsDetector,
@@ -99,7 +91,7 @@ def load_text_detectors():
 @st.cache_resource
 def load_image_detectors():
     """Load all available image detectors."""
-    from detectors.image_detectors import (
+    from ai_content_detector.detectors.image_detectors import (
         EfficientNetDetector,
         CLIPImageDetector,
         DINOv2Detector,

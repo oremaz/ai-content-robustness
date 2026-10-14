@@ -1,85 +1,20 @@
-streamlit
-langgraph
-langchain-openai
-langchain-core
-google-genai
-pandas
-numpy==1.26.3
-scikit-learn==1.7.2
-torch
-xgboost
-bert-score
-lightgbm
-catboost
-plotly
-python-dotenv
-scipy==1.16.2
-
-# Optional: for HuggingFace/transformers/PEFT support
-transformers>=5.8.0
-peft
-#bitsandbytes==0.47.0 (if available)
-#trl
-pytorch-wavelets
-tqdm
-efficientnet-pytorch
-pytorch-lightning
-PyWavelets
-ftfy
-
-# Optional: for Llama.cpp support
-llama-cpp-python
-
-# Optional: for datasets
-datasets
-
-# Jupyter for notebooks
-notebook
-jupyter
-papermill
-
-# Experiment tracking
-wandb
-
-# Tabular preprocessing
-skrub
-
-# Visualization (if used)
-matplotlib
-seaborn
-imblearn
-kaggle
-kagglehub  # anonymous fallback downloads for public Kaggle datasets
-torchvision
-timm==1.0.9
-tabicl
-tabpfn
-tabfm[pytorch] @ git+https://github.com/google-research/tabfm.git@d8678b6895f1428a468d4cc299c1ff4cf704e726
-albumentations
-Pillow
-rich
-watchdog
-
-# Testing
-pytest
-pytest-asyncio
-
-# Security
-argon2-cffi
-
-# Food Vision (NutriCoach image analysis)
-openai  # OpenRouter API (OpenAI-compatible)
-sentence-transformers  # Shared text embedding models
-langgraph-checkpoint-sqlite  # LangGraph v2 persistence
-
-# Explainable detector notebook
-shap
-spacy
-
-# RL evasion (text)
-trl
-
-# RL evasion (image)
-diffusers
-textstat
-editdistance
+ml-pipeline[vision,text] @ git+https://github.com/oremaz/ml-playground.git@919d8b697b6cfea759e33d1402ddbea89a654855
+streamlit==1.52.2
+bert-score==0.3.13
+spacy==3.8.14
+shap==0.49.1
+trl==0.29.1
+diffusers==0.37.1
+textstat==0.7.13
+editdistance==0.8.1
+plotly==6.5.0
+matplotlib==3.10.8
+seaborn==0.13.2
+rich==14.2.0
+jupyter==1.1.1
+papermill==2.7.0
+wandb==0.28.1
+kaggle==1.8.3
+kagglehub==1.0.2
+pytest==9.0.2
+pytest-asyncio==1.3.0

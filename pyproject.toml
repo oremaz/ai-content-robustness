@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-content-robustness"
+version = "0.1.0"
+description = "Text and image detection, adversarial evasion, and robustness evaluation."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ml-pipeline[vision,text] @ git+https://github.com/oremaz/ml-playground.git@919d8b697b6cfea759e33d1402ddbea89a654855",
+    "streamlit==1.52.2",
+    "bert-score==0.3.13",
+    "spacy==3.8.14",
+    "shap==0.49.1",
+    "trl==0.29.1",
+    "diffusers==0.37.1",
+    "textstat==0.7.13",
+    "editdistance==0.8.1",
+    "plotly==6.5.0",
+    "matplotlib==3.10.8",
+    "seaborn==0.13.2",
+    "rich==14.2.0",
+]
+
+[project.optional-dependencies]
+research = [
+    "jupyter==1.1.1",
+    "papermill==2.7.0",
+    "wandb==0.28.1",
+    "kaggle==1.8.3",
+    "kagglehub==1.0.2",
+]
+dev = [
+    "pytest==9.0.2",
+    "pytest-asyncio==1.3.0",
+]
+
+[project.urls]
+Repository = "https://github.com/oremaz/ai-content-robustness"
+
+[tool.setuptools.packages.find]
+include = ["ai_content_detector*"]
+exclude = ["ai_content_detector.tests*"]

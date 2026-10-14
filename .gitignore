@@ -41,3 +41,11 @@ nut_agent/nutricoach/food_vision/data/
 nut_agent/nutricoach/food_vision/nutrition5k_*.json
 !nut_agent/nutricoach/food_vision/nutrition5k_500_qwen_results.json
 wandb/
+
+# Package builds and local environments
+build/
+dist/
+*.egg-info/
+.uv-cache/
+.venv-*/
+data/

@@ -4,10 +4,10 @@ You are a senior machine learning research engineer. This repository combines ta
 
 ## Project structure
 
-* `ml_pipeline/` contains reusable training, augmentation, benchmarking, and checkpoint utilities.
-* `nut_agent/` contains the NutriCoach and Recipe Lab Streamlit applications.
-* `ai_content_detector/` contains text and image detectors, adversarial-evasion research, and a Streamlit scoring application.
-* Read the README in the relevant subproject before changing it. Keep shared functionality in the existing common modules rather than duplicating it across subprojects.
+* `ai_content_detector/` contains detectors, evasion research, tests, and detection notebooks.
+* Generic ML utilities are imported from the installed `ml_pipeline` package maintained in `oremaz/ml-playground`.
+
+Read the relevant README before changing code. Keep generic ML functionality in `ml_pipeline`.
 
 ## Environment
 

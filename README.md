@@ -1,4 +1,4 @@
-# AI Content Detection and Evasion Research
+# AI Content Robustness: Detection and Evasion Research
 
 This subproject is a research workbench for three related questions:
 
@@ -16,7 +16,7 @@ can change with language, topic, generator, decoding settings, image processing,
 and adversarial rewriting. Use this project to run controlled experiments or to
 assist review, not as the sole basis for a consequential decision.
 
-The bibliography is in [`references.bib`](references.bib). This README explains
+The bibliography is in [`references.bib`](ai_content_detector/references.bib). This README explains
 the ideas needed to understand the implementation without requiring the reader
 to first read those papers.
 
@@ -72,6 +72,7 @@ uv venv
 source .venv/bin/activate
 uv pip install -r requirements.txt
 uv run python -m spacy download en_core_web_sm
+uv run python -m nltk.downloader cmudict
 ```
 
 On the CUDA 12.4 research VM, install the GPU environment instead:
@@ -168,7 +169,7 @@ ai_content_detector/
 ```
 
 Internal supervised detectors reuse checkpoint loading and model wrappers from
-`ml_pipeline/`. Shared checkpoint behavior should remain there rather than being
+the installed `ml_pipeline` package, pinned to a specific [ML Playground](https://github.com/oremaz/ml-playground) Git commit. Shared checkpoint behavior should remain there rather than being
 duplicated in this subproject.
 
 ## Detector interface and score semantics
@@ -704,39 +705,13 @@ remain a failed example rather than being replaced by the unmodified input.
 
 ## Validation status
 
-The current checkout's local validation pass completed the full CPU and
-mock-based suite:
-
-```text
-179 passed in 5.83s
-```
-
-Focused WaRPAD, MAML, and benchmark-contract tests passed `15` tests. Focused
-Disrupt-and-Recover tests passed `5` tests after installing the declared
-`bert-score==0.3.13` dependency. The following checks also passed:
+The split checkout's CPU and mock-based suite passed on 2026-10-14: **173 passed, 1 skipped**. It used a separate validation interpreter with the installed `ml_pipeline` wheel, declared numerical-library versions, and the NLTK `cmudict` corpus.
 
 ```bash
-PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python \
-  -m ai_content_detector.rl_evasion.run_experiments --experiment smoke_test
-
-PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python \
-  -c 'import ai_content_detector.app'
-
-PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python -m compileall -q \
-  ai_content_detector
-
-git diff --check
+PYTHONPATH=. uv run python -m pytest ai_content_detector/tests -q
 ```
 
-These results establish formula, interface, boundary, and leakage behavior for
-the tested paths. They do not establish parity with published metrics.
-
-Local end-to-end validation was limited by unavailable Hugging Face access,
-absent internal checkpoints, and a macOS XGBoost load failure caused by missing
-`libomp`. The Streamlit module imported successfully and reported those missing
-resources, but a real browser session with loaded checkpoints was not run. The
-explainability notebook is valid JSON and was inspected, but its dataset loading,
-XGBoost training, SHAP plots, and metrics were not executed in this checkout.
+The suite checks formulas, tensor shapes, score conventions, interfaces, split contracts, error handling, and leakage controls. It does not establish parity with published metrics. Detection notebook outputs were preserved exactly; their modified setup and imports were checked for Python syntax. No GPU notebook training or large-model inference was rerun during extraction.
 
 ## Next steps before relying on research results
 
@@ -797,3 +772,18 @@ capabilities.
 Until those steps are complete, interpret uncalibrated scores as comparative
 signals and the current tests as correctness checks, not proof of real-world or
 paper-level performance.
+
+## Detection training notebooks
+
+- [`bench-aitextdetect.ipynb`](ai_content_detector/notebooks/bench-aitextdetect.ipynb): supervised MAGE text detection, TF-IDF baselines, QLoRA classifiers, and cross-dataset evaluation. Updated model comparisons still require a new GPU run.
+- [`bench-imai-artifact.ipynb`](ai_content_detector/notebooks/bench-imai-artifact.ipynb): image detection on ArtiFact, with CIFAKE and shoes as external evaluations. The existing executed results and observed OOD failure are preserved; the improvement experiment remains unexecuted.
+
+Install the dependencies first, then open notebooks from this checkout. Their setup locates the repository root and imports `ml_pipeline`; it does not clone or delete another repository. Detection datasets use the repository's `data/` directory and saved checkpoints use `results/`, both excluded from Git. Set `ML_PIPELINE_RESULTS_DIR` before launching the process to read or write another checkpoint directory.
+
+Saved notebook outputs retain the paths and results from their original executions. The migration changes imports and setup paths, not the training protocols or the reported measurements.
+
+For CPU validation on shared VMs, set `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 LOKY_MAX_CPU_COUNT=2` before running the tests.
+
+The experiment CLI smoke test passed. The Streamlit scoring application passed a startup check with detector availability mocked; no real-model scoring was performed.
+
+The shared framework also built and installed successfully directly from the pinned public Git commit. The applications do not require a sibling `ml-playground` checkout.
