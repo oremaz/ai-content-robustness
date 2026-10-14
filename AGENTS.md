@@ -33,6 +33,7 @@ PYTHONPATH=. uv run python ...
 * Before implementing new functionality, search the relevant subproject and shared utilities for an existing implementation.
 * If you fetch a research paper, download and read the full PDF before describing or implementing its method.
 * Keep the relevant subproject README synchronized with user-facing features, commands, dependencies, and validated test results.
+* Do not make any suppositions while working. Do not hesitate to ask many questions until you understand perfectly what do you want to implement.
 
 ## Code style
 

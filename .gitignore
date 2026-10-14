@@ -1,4 +1,7 @@
 .env
+.env.*
+!.env.example
+!.env.template
 .venv
 __pycache__
 *.pyc
@@ -8,6 +11,18 @@ __pycache__
 *.pyz
 *.pywz
 *.pyzw
+
+# Local system files, caches and logs
+.DS_Store
+.pytest_cache/
+.ipynb_checkpoints/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.log
+tmux_logs.txt
 
 # Secret files
 nut_agent/secrets/
@@ -23,4 +38,6 @@ ml_pipeline/results/
 rf-detr-*.pth
 ml_pipeline/data/
 nut_agent/nutricoach/food_vision/data/
+nut_agent/nutricoach/food_vision/nutrition5k_*.json
+!nut_agent/nutricoach/food_vision/nutrition5k_500_qwen_results.json
 wandb/
