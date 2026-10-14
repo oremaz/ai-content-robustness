@@ -81,9 +81,32 @@ class ArmsRaceExperiment:
             seed=self.config.seed,
         )
         self.defender.setup()
+        self._warmup_defender()
+
+    def _warmup_defender(self) -> None:
+        n = min(self.config.defender_retrain_samples // 2, len(self.train_prompts))
+        if n < 2:
+            raise ValueError("Defender warm-up requires at least two training prompt/reference pairs")
+        ai_texts = self._generate(self.train_prompts[:n], seed=self.config.seed + 1)
+        metrics = self.defender.retrain(
+            ai_texts=ai_texts,
+            human_texts=self.train_references[:n],
+            warmup=True,
+        )
+        self._update_attacker_detectors()
+        os.makedirs(self.config.output_dir, exist_ok=True)
+        with open(os.path.join(self.config.output_dir, "defender_warmup.json"), "w") as f:
+            json.dump(metrics, f, indent=2, default=str)
+        logger.info("Defender warm-up complete: %s", metrics)
 
     def _partition_prompts(self, eval_frac: float = 0.2) -> None:
         """Create an immutable split and remove evaluation prompts from training."""
+        if getattr(self.attacker, "eval_prompts", None):
+            self.train_prompts = list(self.attacker.prompts)
+            self.train_references = list(self.attacker.references)
+            self.eval_prompts = list(self.attacker.eval_prompts)
+            self.eval_references = list(self.attacker.eval_references)
+            return
         n = len(self.attacker.prompts)
         if n < 5:
             raise ValueError("Arms-race evaluation requires at least five prompt/reference pairs")

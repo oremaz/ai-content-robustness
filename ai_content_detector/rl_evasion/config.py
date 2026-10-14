@@ -68,6 +68,7 @@ class TextEvasionConfig:
     reference_dataset: str = "cnn_dailymail"
     reference_split: str = "train"
     reference_max_samples: int = 10000
+    evaluation_fraction: float = 0.2
 
     # Output
     output_dir: str = "results/text_evasion"
