@@ -24,7 +24,7 @@ import torch
 @pytest.fixture
 def trainer_train_source() -> str:
     from ai_content_detector.rl_evasion.text_evasion.multispin import MultiSPINTrainer
-    return inspect.getsource(MultiSPINTrainer.train)
+    return inspect.getsource(MultiSPINTrainer._train)
 
 
 class TestSPINLossWired:

@@ -35,6 +35,9 @@ class TextEvasionConfig:
 
     # Training
     learning_rate: float = 5e-5
+    lr_scheduler_type: str = "linear"
+    lr_scheduler_kwargs: Dict = field(default_factory=dict)
+    warmup_steps: int = 0
     num_train_epochs: int = 3
     per_device_train_batch_size: int = 2
     gradient_accumulation_steps: int = 4
@@ -45,6 +48,7 @@ class TextEvasionConfig:
 
     # GRPO specific
     grpo_num_generations: int = 4  # number of completions per prompt
+    grpo_beta: float = 0.0
     grpo_kl_coeff: float = 0.05  # KL penalty coefficient (manual loop only)
     grpo_max_grad_norm: float = 1.0
     allow_reinforce_fallback: bool = False
@@ -59,6 +63,7 @@ class TextEvasionConfig:
     detector_names: List[str] = field(
         default_factory=lambda: ["binoculars", "fast_detect_gpt", "roberta_classifier"]
     )
+    detector_checkpoint_hash: Optional[str] = None
 
     # Semantic preservation
     embedding_model: str = "intfloat/e5-base-v2"

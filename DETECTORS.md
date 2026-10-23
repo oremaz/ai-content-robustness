@@ -169,24 +169,21 @@ shorter than ten tokens return a score of `0.0`.
 
 ### DivEye
 
-`DivEyeDetector` looks at **how token surprise fluctuates across a document**,
-not just its average. It computes per-token surprisal and reduces it to nine
-features, in this fixed order: mean, variance, skewness, excess kurtosis, mean
-and variance of the first differences, variance and entropy of the second
-differences (20 histogram bins), and the lag-one autocorrelation of the second
-differences. First differences measure changes in surprise; second differences
-measure how those changes evolve. XGBoost learns which patterns separate human
-from AI text.
+`DivEyeDetector` now uses the authors' released **combined DivEye/BiScope**
+classifier, rather than the local standalone nine-feature approximation. It
+concatenates eleven Falcon-7B surprisal/compression features with 72 Gemma-1.1-
+2B-Instruct BiScope features. XGBoost maps that ordered 83-feature vector to
+an AI probability, using probability column 1 as in the authors' application.
 
-The detector returns the classifier's probability for label `0`,
-which is resolved by **label lookup** in `classes_` and is not fooled by column
-ordering, but the checkpoint must still use `0 = AI`, `1 = human`. A higher
-score means the document's surprisal dynamics resemble those of AI training
-examples; it is a **learned** judgment, not a universal rule about smoothness.
-Passages under five tokens raise; inputs are truncated to `1024` tokens; and the
-language model alone is insufficient, the fitted XGBoost artifact is mandatory.
-The full feature dict is returned in `details["surprisal_features"]`, so the
-classification can always be re-checked against the schema.
+Both language models and the already fitted classifier remain frozen during
+inference and attacker training. No local classifier fitting is required.
+The implementation pins the classifier revision and checksum and both model
+revisions, rejects incompatible classifier schemas, and supports one GPU.
+Inputs require at least 15 words; Falcon truncates at 1,024 tokens and Gemma
+at 2,000 text tokens plus the completion prompt. Gemma requires authorized
+Hugging Face access. Detection details identify the combined variant, classifier
+hash, model identities and score orientation. This release is not the paper's
+standalone nine-feature experiment. See [integration notes](docs/diveye_classifier.md).
 
 ### Disrupt-and-Recover
 

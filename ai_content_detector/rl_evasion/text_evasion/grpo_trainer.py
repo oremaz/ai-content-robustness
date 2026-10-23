@@ -158,7 +158,7 @@ class GRPOTextEvasionTrainer:
         logger.info("Loading reference dataset: %s", cfg.reference_dataset)
 
         if cfg.reference_dataset == "cnn_dailymail":
-            ds = load_dataset("cnn_dailymail", "3.0.0", split=cfg.reference_split)
+            ds = load_dataset("abisee/cnn_dailymail", "3.0.0", split=cfg.reference_split)
             texts = ds["article"][:cfg.reference_max_samples]
         else:
             ds = load_dataset(cfg.reference_dataset, split=cfg.reference_split)
@@ -183,11 +183,9 @@ class GRPOTextEvasionTrainer:
 
         if len(self.prompts) < 5:
             raise ValueError("GRPO requires at least five prompt/reference pairs")
-        rng = np.random.default_rng(cfg.seed)
-        permutation = rng.permutation(len(self.prompts))
-        n_eval = max(1, int(round(cfg.evaluation_fraction * len(permutation))))
-        eval_indices = permutation[:n_eval]
-        train_indices = permutation[n_eval:]
+        from ml_pipeline.utils.data_split import grouped_holdout_indices
+        n_eval = max(1, int(round(cfg.evaluation_fraction * len(self.prompts))))
+        train_indices, eval_indices = grouped_holdout_indices(self.prompts, n_eval, seed=cfg.seed)
         all_prompts, all_references = self.prompts, self.references
         self.eval_prompts = [all_prompts[index] for index in eval_indices]
         self.eval_references = [all_references[index] for index in eval_indices]
@@ -208,12 +206,19 @@ class GRPOTextEvasionTrainer:
         """
         rewards = []
         sources = references if references is not None else prompts
+        if hasattr(self.reward_fn, "batch"):
+            return [result["total"] for result in self.reward_fn.batch(sources, completions)]
         for source, completion in zip(sources, completions):
             result = self.reward_fn(source, completion)
             rewards.append(result["total"])
         return rewards
 
     def train(self, max_steps: Optional[int] = None):
+        from ..checkpointing import StopRequest
+        with StopRequest() as self._stop_request:
+            return self._train(max_steps=max_steps)
+
+    def _train(self, max_steps: Optional[int] = None):
         """Run GRPO training loop.
 
         Uses TRL's GRPOTrainer if available, otherwise falls back to a
@@ -221,6 +226,7 @@ class GRPOTextEvasionTrainer:
         """
         cfg = self.config
         os.makedirs(cfg.output_dir, exist_ok=True)
+        self.training_history = []
         with open(os.path.join(cfg.output_dir, "training_metadata.json"), "w") as metadata_file:
             json.dump({
                 "method": "grpo" if not cfg.allow_reinforce_fallback else "grpo_or_reinforce_fallback",
@@ -241,11 +247,23 @@ class GRPOTextEvasionTrainer:
             logger.warning("TRL unavailable; running group-normalized REINFORCE baseline")
             self._train_group_normalized_reinforce(max_steps=max_steps)
 
+    def _load_restart_context(self, path):
+        from ..checkpointing import load_checkpoint
+        context = load_checkpoint(path)
+        if context is not None and TextEvasionConfig(**context["config"]) != self.config:
+            raise ValueError(f"Restart configuration differs from {path}")
+        return context
+
     def _train_with_trl(self, max_steps: Optional[int] = None):
         """Train using HuggingFace TRL's GRPOTrainer."""
         from trl import GRPOConfig, GRPOTrainer
 
         cfg = self.config
+
+        candidates = getattr(self, "microbatch_candidates", [])
+        if candidates:
+            from .batch_layout import restore_layout
+            restore_layout(self, candidates)
 
         # Prepare dataset as HF Dataset
         train_dataset = Dataset.from_dict({"prompt": self.prompts, "reference": self.references})
@@ -254,12 +272,9 @@ class GRPOTextEvasionTrainer:
         def reward_fn(completions: list, **kwargs) -> list:
             prompts_batch = kwargs.get("prompts", [""] * len(completions))
             references_batch = kwargs.get("reference", prompts_batch)
-            rewards = []
-            for reference, completion in zip(references_batch, completions):
-                text = completion[0]["content"] if isinstance(completion, list) else str(completion)
-                result = self.reward_fn(reference, text)
-                rewards.append(torch.tensor(result["total"]))
-            return rewards
+            texts = [completion[0]["content"] if isinstance(completion, list) else str(completion)
+                     for completion in completions]
+            return [torch.tensor(value) for value in self.compute_reward(prompts_batch, texts, references_batch)]
 
         grpo_config = GRPOConfig(
             output_dir=cfg.output_dir,
@@ -267,14 +282,19 @@ class GRPOTextEvasionTrainer:
             per_device_train_batch_size=cfg.per_device_train_batch_size,
             gradient_accumulation_steps=cfg.gradient_accumulation_steps,
             learning_rate=cfg.learning_rate,
+            lr_scheduler_type=cfg.lr_scheduler_type,
+            lr_scheduler_kwargs=cfg.lr_scheduler_kwargs,
+            warmup_steps=cfg.warmup_steps,
             logging_steps=cfg.logging_steps,
             save_steps=cfg.save_steps,
             num_generations=cfg.grpo_num_generations,
+            beta=cfg.grpo_beta,
+            num_iterations=1,
             max_completion_length=cfg.max_new_tokens,
             seed=cfg.seed,
             max_steps=max_steps if max_steps is not None else -1,
+            save_total_limit=2,
         )
-
         # TRL renamed ``tokenizer`` → ``processing_class`` around 0.14. Pass both if
         # accepted, else fall back, so we don't break on either version.
         try:
@@ -294,10 +314,137 @@ class GRPOTextEvasionTrainer:
                 tokenizer=self.tokenizer,
             )
 
-        trainer.train()
+        if candidates:
+            from .batch_layout import select_layout
+            select_layout(self, trainer, candidates)
+        with open(os.path.join(cfg.output_dir, "trl_training_arguments.json"), "w") as handle:
+            json.dump(grpo_config.to_dict(), handle, indent=2, default=str)
+
+        from .schedules import configure_scheduler
+        configure_scheduler(trainer, cfg)
+        from .reference import configure_reference_restart
+        configure_reference_restart(trainer, cfg)
+
+        from dataclasses import asdict
+        from transformers import TrainerCallback
+        from ..checkpointing import (
+            CheckpointClock, CheckpointPause, atomic_save, atomic_transformers_save,
+            load_checkpoint, map_tensors, rng_state, restore_rng,
+        )
+        context_path = Path(cfg.output_dir) / "restart_context.pt"
+        context = self._load_restart_context(context_path)
+        if context is None:
+            atomic_save({
+                "config": asdict(cfg), "prompts": self.prompts, "references": self.references,
+                "eval_prompts": self.eval_prompts, "eval_references": self.eval_references,
+                "max_steps": max_steps,
+            }, context_path)
+        elif (context["prompts"] != self.prompts or context["references"] != self.references
+              or context["eval_prompts"] != self.eval_prompts
+              or context["eval_references"] != self.eval_references
+              or context["max_steps"] != max_steps):
+            raise ValueError("GRPO dataset split or step budget differs from restart context")
+        stop_request = self._stop_request
+        clock = CheckpointClock()
+
+        native_save = trainer._save_checkpoint
+
+        def save_checkpoint(model, trial=None):
+            atomic_transformers_save(trainer, native_save, model, trial, {
+                "step": getattr(trainer, "_step", 0),
+                "buffered_inputs": map_tensors(
+                    getattr(trainer, "_buffered_inputs", None), lambda tensor: tensor.detach().cpu()
+                ),
+            })
+            if trainer.state.global_step == 500:
+                import shutil
+                destination = Path(cfg.output_dir) / "milestones/step_500"
+                if not destination.exists():
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    temporary = destination.with_name(".saving_step_500")
+                    shutil.rmtree(temporary, ignore_errors=True)
+                    shutil.copytree(Path(cfg.output_dir) / "checkpoint-500", temporary)
+                    shutil.copy2(context_path, temporary / "research_restart_context.pt")
+                    (temporary / "original_training_arguments.json").write_text(
+                        json.dumps(grpo_config.to_dict(), indent=2, default=str) + "\n")
+                    os.replace(temporary, destination)
+            clock.saved()
+
+        trainer._save_checkpoint = save_checkpoint
+        diagnostic = getattr(self, "log_training_diagnostic", None)
+
+        class RestartCallback(TrainerCallback):
+            def on_train_begin(self, args, state, control, **kwargs):
+                if resume is None:
+                    trainer._save_checkpoint(trainer.model, trial=None)
+                    if diagnostic is not None:
+                        diagnostic(0)
+                return control
+
+            def on_step_end(self, args, state, control, **kwargs):
+                if clock.due() or stop_request.requested:
+                    control.should_save = True
+                if diagnostic is not None and state.global_step % 50 == 0:
+                    control.should_save = True
+                if stop_request.requested:
+                    control.should_training_stop = True
+                return control
+
+            def on_save(self, args, state, control, **kwargs):
+                if diagnostic is not None and state.global_step > 0 and state.global_step % 50 == 0 and not stop_request.requested:
+                    diagnostic(state.global_step)
+                return control
+
+            def on_train_end(self, args, state, control, **kwargs):
+                if diagnostic is not None and state.global_step > 0 and not stop_request.requested:
+                    trainer._save_checkpoint(trainer.model, trial=None)
+                    diagnostic(state.global_step)
+                return control
+
+        trainer.add_callback(RestartCallback())
+        checkpoints = sorted(
+            (path for path in Path(cfg.output_dir).glob("checkpoint-*")
+             if path.is_dir() and (path / "restart_complete.pt").is_file()),
+            key=lambda path: int(path.name.split("-")[-1]),
+        )
+        resume = str(checkpoints[-1]) if checkpoints else None
+        if resume is not None:
+            internal = load_checkpoint(Path(resume) / "restart_complete.pt")
+            trainer._step = internal["step"]
+            trainer._buffered_inputs = map_tensors(
+                internal["buffered_inputs"], lambda tensor: tensor.to(next(self.model.parameters()).device)
+            )
+        self._trainer = trainer
+        if resume is not None and diagnostic is not None and not context.get("completed"):
+            resumed_step = int(Path(resume).name.split("-")[-1])
+            if resumed_step % 50 == 0:
+                trainer._load_from_checkpoint(resume, self.model)
+                diagnostic(resumed_step)
+                if stop_request.requested:
+                    raise CheckpointPause("GRPO diagnostic progress retained before training continuation")
+        if context is not None and context.get("completed"):
+            if resume is None:
+                raise ValueError("Completed GRPO restart is missing its full checkpoint")
+            if max_steps is not None and int(Path(resume).name.split("-")[-1]) != max_steps:
+                raise ValueError("Completed GRPO restart does not match the fixed update budget")
+            trainer._load_from_checkpoint(resume, self.model)
+            self.training_history = json.loads((Path(resume) / "trainer_state.json").read_text())["log_history"]
+            restore_rng(context["rng"])
+            return
+        trainer.train(resume_from_checkpoint=resume)
+        self.training_history = trainer.state.log_history
+        trainer._save_checkpoint(trainer.model, trial=None)
+        if stop_request.requested:
+            raise CheckpointPause("GRPO optimizer, scheduler, RNG and sampler progress saved")
+        if max_steps is not None and trainer.state.global_step != max_steps:
+            raise ValueError("GRPO ended before completing its fixed update budget")
         trainer.save_model(os.path.join(cfg.output_dir, "final"))
         self.tokenizer.save_pretrained(os.path.join(cfg.output_dir, "final"))
         self._copy_training_metadata(os.path.join(cfg.output_dir, "final"))
+        context = self._load_restart_context(context_path)
+        context["completed"] = True
+        context["rng"] = rng_state()
+        atomic_save(context, context_path)
         logger.info("TRL GRPO training complete. Model saved to %s", cfg.output_dir)
 
     def _train_group_normalized_reinforce(self, max_steps: Optional[int] = None):
@@ -316,6 +463,8 @@ class GRPOTextEvasionTrainer:
                ``gradient_accumulation_steps`` optimizer updates.
         """
         cfg = self.config
+        if cfg.lr_scheduler_type != "linear" or cfg.warmup_steps or cfg.lr_scheduler_kwargs or cfg.grpo_beta:
+            raise ValueError("Configured learning-rate schedules require TRL GRPO")
         device = next(self.model.parameters()).device
         np.random.seed(cfg.seed)
         torch.manual_seed(cfg.seed)
@@ -443,6 +592,8 @@ class GRPOTextEvasionTrainer:
                     optimizer.zero_grad()
 
                 step += 1
+                self.training_history.append({"step": step, "loss": float(batch_loss.item()),
+                                              "reward": float(rewards_np.mean())})
 
                 if step % log_interval == 0:
                     avg_reward = np.mean(all_rewards[-100:]) if all_rewards else 0.0
@@ -498,8 +649,10 @@ class GRPOTextEvasionTrainer:
         device = next(self.model.parameters()).device
         self.model.eval()
 
-        generated_texts = []
-        source_texts = []
+        from dataclasses import asdict
+        from ..checkpointing import (
+            CheckpointPause, StopRequest, atomic_save, evaluation_state, rng_state,
+        )
 
         if prompt_indices:
             eval_indices = list(prompt_indices)[:num_samples]
@@ -509,25 +662,37 @@ class GRPOTextEvasionTrainer:
             eval_prompts = getattr(self, "eval_prompts", self.prompts)
             eval_references = getattr(self, "eval_references", self.references)
             eval_indices = list(range(min(num_samples, len(eval_prompts))))
+        pairs = [(eval_prompts[i], eval_references[i] or eval_prompts[i]) for i in eval_indices]
+        path = Path(self.config.output_dir) / "evaluation_restart.pt"
+        state = evaluation_state(path, {"config": asdict(self.config), "pairs": pairs}, self.model)
 
-        for i in eval_indices:
-            prompt = eval_prompts[i]
-            inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=self.config.max_seq_length).to(device)
+        def save():
+            state["rng"] = rng_state()
+            atomic_save(state, path)
 
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    **inputs,
-                    max_new_tokens=self.config.max_new_tokens,
-                    temperature=self.config.temperature,
-                    top_p=self.config.top_p,
-                    do_sample=True,
-                )
-            gen_text = self.tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
-            generated_texts.append(gen_text)
-            source_texts.append(eval_references[i] or prompt)
-
+        with StopRequest() as stop:
+            for prompt, source in pairs[len(state["generated"]):]:
+                if stop.requested:
+                    raise CheckpointPause("GRPO evaluation saved")
+                inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True,
+                                        max_length=self.config.max_seq_length).to(device)
+                with torch.no_grad():
+                    outputs = self.model.generate(
+                        **inputs, max_new_tokens=self.config.max_new_tokens,
+                        temperature=self.config.temperature, top_p=self.config.top_p, do_sample=True,
+                    )
+                state["generated"].append(self.tokenizer.decode(
+                    outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
+                ))
+                save()
+            for index in range(len(state["scores"]), len(pairs)):
+                if stop.requested:
+                    raise CheckpointPause("GRPO evaluation saved")
+                state["scores"].append(self.reward_fn(pairs[index][1], state["generated"][index]))
+                save()
+            if stop.requested:
+                raise CheckpointPause("GRPO evaluation saved")
+        scores = iter(state["scores"])
         return evaluate_text_evasion(
-            generated_texts,
-            source_texts,
-            self.reward_fn,
+            state["generated"], [source for _, source in pairs], lambda source, generated: next(scores),
         )

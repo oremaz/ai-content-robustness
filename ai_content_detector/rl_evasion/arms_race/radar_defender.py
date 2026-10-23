@@ -12,10 +12,16 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import numpy as np
 import torch
+
+from ..checkpointing import (
+    CheckpointClock, CheckpointPause, StopRequest, atomic_save, atomic_transformers_save, load_checkpoint,
+    model_state, restore_model, restore_rng, rng_state,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +45,10 @@ class AdaptiveClassifierDefender:
         lr: float = 2e-5,
         max_length: int = 512,
         seed: int = 42,
+        ai_label: int = 1,
+        trainer_class=None,
+        paired_validation: bool = False,
+        mixed_precision: bool = False,
     ):
         self.model_name = model_name
         self.output_dir = output_dir
@@ -47,6 +57,12 @@ class AdaptiveClassifierDefender:
         self.lr = lr
         self.max_length = max_length
         self.seed = seed
+        if ai_label not in (0, 1):
+            raise ValueError("ai_label must be zero or one")
+        self.ai_label = ai_label
+        self.trainer_class = trainer_class
+        self.paired_validation = paired_validation
+        self.mixed_precision = mixed_precision
         self.model = None
         self.tokenizer = None
         self._round = 0
@@ -87,13 +103,33 @@ class AdaptiveClassifierDefender:
             self._round += 1
         logger.info("Adaptive defender retrain, round %d", self._round)
 
-        from transformers import Trainer, TrainingArguments
+        from transformers import Trainer, TrainingArguments, TrainerCallback
         from datasets import Dataset
+
+        destination = Path(self.output_dir) / ("warmup" if warmup else f"round_{self._round}")
+        signature = {
+            "ai_texts": ai_texts, "human_texts": human_texts,
+            "model": self.model_name, "epochs": self.epochs, "lr": self.lr,
+            "max_length": self.max_length, "seed": self.seed + self._round,
+            "retrain_samples": self.retrain_samples,
+            "validation_split": "paired_80_20" if self.paired_validation else "stratified_80_20",
+            "ai_label": self.ai_label,
+            "mixed_precision": self.mixed_precision,
+        }
+        context = destination / "restart_context.pt"
+        previous = load_checkpoint(context, signature)
+        if previous is None:
+            atomic_save({"config": signature}, context)
+        complete = load_checkpoint(destination / "completed.pt", signature)
+        if complete is not None:
+            restore_model(self.model, complete["model"])
+            restore_rng(complete["rng"])
+            return complete["metrics"]
 
         # Balance classes
         n = min(len(ai_texts), len(human_texts), self.retrain_samples // 2)
         texts = ai_texts[:n] + human_texts[:n]
-        labels = [1] * n + [0] * n  # 1 = AI, 0 = human
+        labels = [self.ai_label] * n + [1 - self.ai_label] * n
 
         # Shuffle
         if n < 2:
@@ -104,9 +140,22 @@ class AdaptiveClassifierDefender:
         labels = [labels[i] for i in indices]
 
         # Split train/val
-        split = int(0.8 * len(texts))
-        train_texts, val_texts = texts[:split], texts[split:]
-        train_labels, val_labels = labels[:split], labels[split:]
+        from sklearn.model_selection import train_test_split
+
+        if self.paired_validation:
+            _, validation_pairs = train_test_split(np.arange(n), test_size=0.2,
+                                                   random_state=self.seed + self._round)
+            groups = np.tile(np.arange(n), 2)[indices]
+            is_validation = np.isin(groups, validation_pairs)
+            train_texts = [text for text, held in zip(texts, is_validation) if not held]
+            val_texts = [text for text, held in zip(texts, is_validation) if held]
+            train_labels = [label for label, held in zip(labels, is_validation) if not held]
+            val_labels = [label for label, held in zip(labels, is_validation) if held]
+        else:
+            train_texts, val_texts, train_labels, val_labels = train_test_split(
+                texts, labels, test_size=max(2, int(np.ceil(0.2 * len(texts)))),
+                random_state=self.seed + self._round, stratify=labels,
+            )
 
         # Tokenize
         def tokenize_fn(examples):
@@ -126,18 +175,20 @@ class AdaptiveClassifierDefender:
 
         # Train
         training_args = TrainingArguments(
-            output_dir=os.path.join(self.output_dir, "warmup" if warmup else f"round_{self._round}"),
+            output_dir=str(destination),
             num_train_epochs=self.epochs,
             per_device_train_batch_size=8,
             per_device_eval_batch_size=16,
             learning_rate=self.lr,
             eval_strategy="epoch",
             save_strategy="epoch",
+            save_total_limit=2,
             load_best_model_at_end=True,
             metric_for_best_model="eval_loss",
             logging_steps=50,
             seed=self.seed + self._round,
             report_to="none",
+            bf16=self.mixed_precision and torch.cuda.is_available(),
         )
 
         from sklearn.metrics import accuracy_score, roc_auc_score
@@ -145,23 +196,55 @@ class AdaptiveClassifierDefender:
         def compute_metrics(eval_pred):
             logits, labels_arr = eval_pred
             preds = np.argmax(logits, axis=-1)
-            probs = torch.softmax(torch.tensor(logits), dim=-1).numpy()[:, 1]
+            probs = torch.softmax(torch.tensor(logits), dim=-1).numpy()[:, self.ai_label]
             acc = accuracy_score(labels_arr, preds)
             try:
-                auroc = roc_auc_score(labels_arr, probs)
+                auroc = roc_auc_score(np.asarray(labels_arr) == self.ai_label, probs)
             except ValueError:
                 auroc = 0.5
             return {"accuracy": acc, "auroc": auroc}
 
-        trainer = Trainer(
+        clock = CheckpointClock()
+        stop = StopRequest()
+
+        class RestartCallback(TrainerCallback):
+            def on_train_begin(self, args, state, control, **kwargs):
+                if not checkpoints:
+                    trainer._save_checkpoint(trainer.model, trial=None)
+                return control
+
+            def on_step_end(self, args, state, control, **kwargs):
+                if clock.due() or stop.requested:
+                    control.should_save = True
+                return control
+
+            def on_save(self, args, state, control, **kwargs):
+                clock.saved()
+                if stop.requested:
+                    raise CheckpointPause("Adaptive defender training restart state saved")
+
+        trainer = (self.trainer_class or Trainer)(
             model=self.model,
             args=training_args,
             train_dataset=train_ds,
             eval_dataset=val_ds,
             compute_metrics=compute_metrics,
+            callbacks=[RestartCallback()],
+        )
+        native_save = trainer._save_checkpoint
+
+        def save_checkpoint(model, trial=None):
+            atomic_transformers_save(trainer, native_save, model, trial)
+
+        trainer._save_checkpoint = save_checkpoint
+        checkpoints = sorted(
+            (path for path in destination.glob("checkpoint-*")
+             if (path / "restart_complete.pt").is_file()),
+            key=lambda path: int(path.name.split("-")[-1]),
         )
 
-        train_result = trainer.train()
+        with stop:
+            train_result = trainer.train(resume_from_checkpoint=str(checkpoints[-1]) if checkpoints else None)
         eval_result = trainer.evaluate()
 
         metrics = {
@@ -173,6 +256,8 @@ class AdaptiveClassifierDefender:
             "train_samples": len(train_ds),
             "val_samples": len(val_ds),
         }
+        atomic_save({"config": signature, "model": model_state(self.model),
+                     "rng": rng_state(), "metrics": metrics}, destination / "completed.pt")
 
         logger.info(
             "Defender round %d: accuracy=%.3f, auroc=%.3f",
@@ -204,7 +289,7 @@ class AdaptiveClassifierDefender:
             logits = self.model(**tokens).logits
             probs = torch.softmax(logits, dim=-1).cpu().numpy()[0]
 
-        return float(probs[1])  # probability of class 1 = AI
+        return float(probs[self.ai_label])
 
     def predict_batch(self, texts: List[str]) -> List[float]:
         """Predict AI probability for a batch of texts."""

@@ -81,6 +81,22 @@ On the CUDA 12.4 research VM, install the GPU environment instead:
 uv pip install -r requirements_gpu.in
 ```
 
+For Qwen3.5 RL on the Jean Zay H100 environment, optional linear-attention and
+causal-convolution kernels avoid the slow PyTorch fallbacks. Keep the installed
+PyTorch/CUDA versions and build the convolution extension against that stack:
+
+```bash
+module load cuda/12.4.1
+export CC=/usr/bin/gcc CXX=/usr/bin/g++ CUDAHOSTCXX=/usr/bin/g++
+uv pip install ninja wheel
+CAUSAL_CONV1D_FORCE_BUILD=TRUE MAX_JOBS=4 TORCH_CUDA_ARCH_LIST=9.0 \
+  uv pip install --no-build-isolation --no-deps -r requirements_rl_kernels.in
+```
+
+Run GPU validation inside Slurm. The official prebuilt convolution wheels failed
+the ABI import check with this PyTorch build. The kernel pins and native build
+preserve PyTorch 2.6/CUDA 12.4 rather than upgrading the experiment environment.
+
 The standard installation is enough for the CPU and mock-based test suite. Most
 large detectors and all meaningful training runs need downloaded Hugging Face
 weights, project checkpoints, and usually a GPU. On macOS, XGBoost also requires
@@ -317,9 +333,10 @@ continuations. Outputs shorter than 20 whitespace-separated words receive zero
 reward before detector or semantic scoring. Semantic and length rewards further
 discourage irrelevant or degenerate outputs, without guaranteeing quality.
 
-No critic and no value network: the group average replaces them. A KL penalty
-(`grpo_kl_coeff = 0.05`) against the reference model keeps the policy from
-drifting away from the starting weights. The generator is adapted with LoRA.
+No critic and no value network: the group average replaces them. The native
+TRL arguments are saved in `trl_training_arguments.json`; its existing default
+KL coefficient is `beta=0`. The dataclass's `grpo_kl_coeff=0.05` applies only to
+the disabled manual fallback. The generator is adapted with LoRA.
 The method is called GRPO only when the TRL implementation is available; the
 local fallback is explicitly named group-normalized REINFORCE and is disabled
 by default.
@@ -435,6 +452,20 @@ starting weights are retained and saved as `meta_init`.
 The CLI evaluates adaptation to a held-out detector against the exact pre-meta
 starting weights. By default, second-order MAML differentiates through the
 practice gradients; `--first-order` uses FOMAML to reduce compute and memory.
+
+MAML checks the default detector families and all registered text notebook
+classifiers. A detector joins the pool only after producing a finite AI score
+on a startup probe. `detector_availability.json` records every candidate and
+unavailable resource; `prompt_manifest.json` records the actual training pool
+and the held-out detector. Style Embedding needs labeled support centroids;
+DivEye uses the authors' released 83-feature DivEye/BiScope classifier and its
+matching Falcon-7B and Gemma-1.1-2B-Instruct extractors. Gemma access must be
+enabled on Hugging Face or an authorized local checkpoint supplied.
+
+Frozen MAML detectors run on CPU, reserving the single H100 for the trainable
+generator and its second-order graph. The Slurm controller requests 96 physical
+CPUs for this stage to provide host memory for the expanded pool. The original
+100 episodes, five inner updates and at most three tasks per episode remain.
 
 ### Repeated attacker and defender adaptation
 
@@ -587,7 +618,7 @@ failures are counted as failures and never fall back to returning the prompt.
 | ModernBERT and TF-IDF | Artifacts under the existing `ml_pipeline` `bench_aitextdetect` checkpoint registry |
 | EfficientNet, CLIP, and DINOv2 classifiers | Artifacts under `bench_imai_artifact` |
 | Binoculars and Fast-DetectGPT | Their Hugging Face causal language models; CUDA is required by availability checks |
-| DivEye | Scoring LM plus fitted XGBoost classifier with the nine-feature schema |
+| DivEye | Authors' released XGBoost classifier, Falcon-7B and gated Gemma-1.1-2B-Instruct; all frozen during inference |
 | Disrupt-and-Recover | Recovery callable or OpenAI-compatible API, plus a BERTScore transformer checkpoint |
 | IPAD | Phi-3 base model, three released adapters, and a large GPU |
 | LUAR style detector | LUAR weights plus task-specific human and AI support sets |
@@ -631,97 +662,109 @@ sample identifiers in training metadata, record every detector optimized by the
 method, and separate training data from final evaluation. A failed example must
 remain a failed example rather than being replaced by the unmodified input.
 
-## Validation status
 
-The current checkout's local validation pass completed the full CPU and
-mock-based suite:
+## Retained experiments on Jean Zay
 
-```text
-179 passed in 5.83s
-```
+The retained attacker is `Qwen/Qwen3.5-9B-Base`, adapted with LoRA against
+Gemma, ModernBERT-large, or the mean score of all seven warmed detectors.
+The retained final checkpoints are Gemma at 1,213 updates, ModernBERT at
+1,487, and the ensemble at 502. Their step-500 snapshots are also retained.
+A separate RoBERTa step-500 attacker documents the limits of selecting one
+apparently successful checkpoint.
 
-Focused WaRPAD, MAML, and benchmark-contract tests passed `15` tests. Focused
-Disrupt-and-Recover tests passed `5` tests after installing the declared
-`bert-score==0.3.13` dependency. The following checks also passed:
+| Attacker target | Saved updates | Evaluation texts | Evasion at threshold 0.5 |
+| --- | ---: | ---: | ---: |
+| Gemma | 1,213 | 500 | 77.2% |
+| ModernBERT-large | 1,487 | 500 | 96.8% |
+| Seven-detector ensemble | 502 | 500 | 94.8% |
+| RoBERTa, diagnostic subset | 500 | 100 | 98.0% |
+
+The RoBERTa diagnostic trajectory later fell to 93% at update 550 and 36%
+at 600 on the same 100 prompts. Its full 500-text evaluation at 600 gave
+39.2%. Only its step-500 model is retained; later measurements document the
+fluctuation. A peak does not establish stable convergence. The three long
+runs used different training budgets, so their final scores are not a
+matched-budget ranking of defender architectures. The ensemble evaluation
+was performed at 502, rather than exactly 500.
+
+The [results report](docs/research_results.md) contains the retained tables,
+training curves, RoBERTa trajectory, and their source CSVs and vector SVGs.
+Other experiment reports and discarded RL checkpoints have been removed.
+Notebook models, model/dataset caches, warmed detectors and recorded data
+partitions remain available as execution prerequisites.
+
+The completed experiment performed **one defender update only** for each of the
+three retained long-run attackers. Each job generates outputs on the existing
+1,000 fitting prompts and retrains its warmed defender(s) with the existing
+supervised protocol. The 500 evaluation prompts remain excluded from training.
+Post-defense evaluation reuses exactly the saved attack texts, making the
+before/after comparison attributable to the defender update. There is no new
+attacker training and no second round in these jobs.
 
 ```bash
-PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python \
-  -m ai_content_detector.rl_evasion.run_experiments --experiment smoke_test
-
-PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python \
-  -c 'import ai_content_detector.app'
-
-PYTHONPATH=. UV_CACHE_DIR=/tmp/uv-cache uv run python -m compileall -q \
-  ai_content_detector
-
-git diff --check
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/retained_races.py prepare
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/retained_races.py submit NEW_MANIFEST
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/architecture_races.py release NEW_MANIFEST
 ```
 
-These results establish formula, interface, boundary, and leakage behavior for
-the tested paths. They do not establish parity with published metrics.
+All three completed successfully in one development allocation, with no requeue:
 
-Local end-to-end validation was limited by unavailable Hugging Face access,
-absent internal checkpoints, and a macOS XGBoost load failure caused by missing
-`libomp`. The Streamlit module imported successfully and reported those missing
-resources, but a real browser session with loaded checkpoints was not run. The
-explainability notebook is valid JSON and was inspected, but its dataset loading,
-XGBoost training, SHAP plots, and metrics were not executed in this checkout.
+| Defender | Evasion before update | Evasion after update | Human false positives after | Allocation time |
+| --- | ---: | ---: | ---: | --- |
+| Gemma | 77.2% | 0.2% | 0.2% | 47m35s |
+| ModernBERT-large | 96.8% | 1.0% | 0.4% | 41m45s |
+| Seven-detector ensemble | 94.8% | 0.4% | 0.0% | 1h31m13s |
 
-## Next steps before relying on research results
+These comparisons reuse the same 500 saved attack texts and 500 human passages
+at threshold 0.5. Detection recovers against the fixed attackers; resistance to
+another adaptive RL attack remains untested.
 
-The following work is intentionally still open. It replaces the former separate
-limitations document and is ordered from validation fundamentals to new
-capabilities.
+The updated defenders are also evaluated on the original 500 reserved
+base-Qwen outputs and 500 human passages, without generating or training
+again. The results report compares their detection and human false-positive
+rates with the original warmed detectors, including every ensemble member.
+This separate check measures whether learning the RL outputs preserves
+detection of the base generator.
 
-1. **Run real-model validation on the research VM.** Exercise Binoculars,
-   Fast-DetectGPT, DivEye, IPAD, LUAR, WaRPAD, and denoising-trajectory inference
-   end to end. Run GRPO, SPIN, MAML, DDPO, and repeated adaptation on a GPU. Run
-   the Streamlit app in a browser with real checkpoints.
+All three base-model checks completed successfully:
 
-2. **Build immutable benchmark manifests and reproduce paper protocols.** Pin
-   dataset revisions, model revisions, preprocessing, prompts, seeds, and
-   calibration artifacts. Then reproduce AUROC, TPR, FPR, attack-success, and
-   convergence measurements. No published metric has yet been reproduced in
-   this checkout.
+| Updated branch | Base detection before update | Base detection after update | Human false positives after |
+| --- | ---: | ---: | ---: |
+| Gemma | 100.0% | 100.0% | 0.2% |
+| ModernBERT-large | 99.0% | 90.2% | 0.4% |
+| Seven-detector ensemble | 100.0% | 98.4% | 0.0% |
 
-3. **Train and version the missing artifacts.** Produce the DivEye XGBoost
-   classifier, MLEP ResNet-50, internal text and image checkpoints, LUAR support
-   sets, and per-detector and ensemble calibrators. Store their schemas, class
-   order, training sample identifiers, and provenance beside each artifact.
-   Extend attack checkpoint metadata and benchmark checks so held-out sample IDs
-   are rejected automatically, just as held-out detector overlap is today.
+ModernBERT loses some base-model detection at the fixed threshold. Inside the
+ensemble, TF-IDF falls from 88.6% to 28.2% base detection, with 7.0% human false
+positives and AUROC 0.6158. Recovery against the fixed RL attacker therefore
+does not guarantee retention on base outputs, even when the ensemble remains
+strong. The report includes every member and before/after figures.
 
-4. **Calibrate for each deployment domain.** Fit thresholds and calibrators on
-   representative validation data disjoint from training and final testing.
-   Recheck them across language, topic, generator family, decoding strategy,
-   image post-processing, and attack type. A universal calibration artifact
-   would be misleading.
+The three independent jobs each used one H100 and two-hour development
+allocations. They save generation, defender optimizer and phase progress,
+then requeue after a checkpointed pause. Shared `metrics.csv` rows identify
+the branch, phase and historical attacker budget. See the
+[defender-update protocol](docs/defender_comparison.md) for exact checkpoints,
+job identities, splits and continuation behavior. The report selection is
+explicit, so surviving prerequisite receipts cannot reintroduce discarded
+experiments into the Markdown report.
 
-5. **Validate external-resource methods.** Run real BERTScore plus network
-   recovery for Disrupt-and-Recover. Establish DTAD parity against a complete
-   runnable primary reference if one becomes available. Until then, retain its
-   raw similarity semantics and avoid paper-parity claims.
+## Validation status
 
-6. **Execute the explainability notebook on the VM.** Materialize the
-   document-disjoint splits, train XGBoost, generate SHAP analyses, and save the
-   exact dataset and model provenance before relying on any plots or metrics.
+The retained-attacker defender workflow passed **44 focused tests in 111.55
+seconds** in this checkout. They cover zero new attacker updates, interrupted
+phase recovery, saved-text evaluation without regeneration, reserved-prompt
+validation, cached metric alignment and report selection. The retained source
+checkpoint hashes, all warmed-defender identities and the cached initial metrics
+were also checked against the original completed evaluations before release.
+All three GPU jobs subsequently completed with exit code zero. The completed
+defender checkpoints, identical evaluation-row alignment, and 36 unique shared
+metric rows were checked against the saved outputs.
 
-7. **Complete deliberately out-of-scope method pieces if needed.** Add a validated
-   aesthetic reward before assigning it nonzero weight, and implement an adaptive
-   image defender before enabling image arms-race experiments.
-
-8. **Keep practical variants named honestly.** Window smoothing is not a
-   token-level MRF, adaptive RoBERTa retraining is not RADAR, SPIN feature signals
-   are monitoring-only, and paraphrase round-trip and wavelet energy are
-   heuristic baselines. Compatibility aliases may remain for callers, but new
-   results should use the precise runtime names.
-
-9. **Test reproducibility across the production stack.** The audited paths seed
-   Python, NumPy, Torch, and explicit sampling generators, but bitwise equality
-   is not guaranteed across CUDA devices, drivers, mixed-precision kernels,
-   distributed training, or third-party model releases. Treat saved provenance
-   and statistically consistent reruns as the reproducibility contract.
-
-Until those steps are complete, interpret uncalibrated scores as comparative
-signals and the current tests as correctness checks, not proof of real-world or
-paper-level performance.
+The additional base-model evaluation and its shared submission/reporting paths
+passed 26 focused tests in 417.35 seconds. These check use of saved base outputs
+and updated weights, completed-result reuse, rejection of changed inputs or
+checkpoints, and separate before/after base-model reporting. The three scoring
+jobs completed with exit code zero, no restart, and runtimes of 2m54s, 1m40s
+and 5m50s for Gemma, ModernBERT and the ensemble respectively. All 500 paired
+evaluation identities and 24 unique shared base-metric rows were verified.

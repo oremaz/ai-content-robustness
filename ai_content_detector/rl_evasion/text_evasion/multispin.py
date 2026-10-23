@@ -292,7 +292,7 @@ class SPINTrainerWithFeatureMonitoring:
 
         # Load human reference texts
         if cfg.reference_dataset == "cnn_dailymail":
-            ds = load_dataset("cnn_dailymail", "3.0.0", split="train")
+            ds = load_dataset("abisee/cnn_dailymail", "3.0.0", split="train")
             self.human_texts = ds["article"][:cfg.reference_max_samples]
         else:
             ds = load_dataset(cfg.reference_dataset, split="train")
@@ -429,14 +429,22 @@ class SPINTrainerWithFeatureMonitoring:
                 prompt, return_tensors="pt",
                 truncation=True, max_length=cfg.max_seq_length,
             ).to(device)
-            with torch.no_grad():
+            with torch.no_grad(), torch.random.fork_rng(
+                devices=[device.index or 0] if device.type == "cuda" else [],
+            ):
+                if device.type == "cuda":
+                    torch.cuda.set_rng_state(self._generator.get_state(), device)
+                else:
+                    torch.set_rng_state(self._generator.get_state())
                 out = self.model.generate(
                     **inputs,
                     max_new_tokens=cfg.max_new_tokens,
                     do_sample=True,
                     temperature=cfg.temperature,
                     pad_token_id=self.tokenizer.pad_token_id,
-                    generator=self._generator,
+                )
+                self._generator.set_state(
+                    torch.cuda.get_rng_state(device) if device.type == "cuda" else torch.get_rng_state()
                 )
             text = self.tokenizer.decode(
                 out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
@@ -446,6 +454,11 @@ class SPINTrainerWithFeatureMonitoring:
         return generated
 
     def train(self):
+        from ..checkpointing import StopRequest
+        with StopRequest() as self._stop_request:
+            return self._train()
+
+    def _train(self):
         """Run MultiSPIN iterative training.
 
         Each step applies the true DPO-style SPIN loss (not CE), recomputed from a
@@ -462,26 +475,73 @@ class SPINTrainerWithFeatureMonitoring:
             lr=cfg.learning_rate,
         )
 
+        from dataclasses import asdict
+        from ..checkpointing import (
+            CheckpointClock, CheckpointPause, atomic_save, gradient_state,
+            load_checkpoint, model_state, restore_gradients, restore_model,
+            restore_rng, rng_state,
+        )
+        restart_path = os.path.join(cfg.output_dir, "restart.pt")
+        restart = load_checkpoint(restart_path, cfg)
+        iteration_start, step_start = 0, 0
+        initialized = False
+        self.training_history = []
+        generated_texts, fm_losses = [], {}
+        loss_running, n_running = 0.0, 0
+        names = [name for name, parameter in self.model.named_parameters() if parameter.requires_grad]
+        if restart is not None:
+            restore_model(self.model, restart["model"])
+            restore_model(self.ref_model, restart["reference"])
+            optimizer.load_state_dict(restart["optimizer"])
+            restore_gradients(self.model, restart["gradients"])
+            iteration_start, step_start = restart["iteration"], restart["step"]
+            initialized = restart["initialized"]
+            self.training_history = restart.get("training_history", [])
+            generated_texts, fm_losses = restart["generated_texts"], restart["fm_losses"]
+            loss_running, n_running = restart["loss_running"], restart["n_running"]
+            self.feature_bank = restart["feature_bank"]
+            self.human_texts = restart["human_texts"]
+            self.human_stylo, self.human_emb = restart["human_stylo"], restart["human_emb"]
+            self.human_style_emb = restart["human_style_emb"]
+            restore_rng(restart["rng"], self._generator)
         prompts_pool = self.human_texts[:cfg.batch_size * 50]
+        clock = CheckpointClock()
 
-        for iteration in range(cfg.num_iterations):
+        def save(iteration, step, initialized):
+            atomic_save({
+                "config": asdict(cfg), "model": model_state(self.model),
+                "reference": model_state(self.ref_model, names),
+                "optimizer": optimizer.state_dict(), "gradients": gradient_state(self.model),
+                "iteration": iteration, "step": step, "initialized": initialized,
+                "training_history": self.training_history,
+                "generated_texts": generated_texts, "fm_losses": fm_losses,
+                "loss_running": loss_running, "n_running": n_running,
+                "feature_bank": self.feature_bank, "human_texts": self.human_texts,
+                "human_stylo": self.human_stylo, "human_emb": self.human_emb,
+                "human_style_emb": self.human_style_emb, "rng": rng_state(self._generator),
+            }, restart_path)
+            clock.saved()
+
+        save(iteration_start, step_start, initialized)
+        for iteration in range(iteration_start, cfg.num_iterations):
             logger.info("=== MultiSPIN Iteration %d/%d ===", iteration + 1, cfg.num_iterations)
 
             # Compute initial feature-matching monitoring signal
-            init_prompts = [" ".join(t.split()[:50]) for t in prompts_pool[:cfg.batch_size]]
-            generated_texts = self._generate_batch(init_prompts)
-            fm_losses = self._compute_feature_matching_loss(generated_texts)
-            logger.info(
-                "  Init monitors | Stylo MSE: %.4f | EMB MMD: %.4f | Style MMD: %.4f",
-                fm_losses["stylo_loss"], fm_losses["emb_mmd"], fm_losses["style_mmd"],
-            )
+            if not initialized:
+                init_prompts = [" ".join(t.split()[:50]) for t in prompts_pool[:cfg.batch_size]]
+                generated_texts = self._generate_batch(init_prompts)
+                fm_losses = self._compute_feature_matching_loss(generated_texts)
+                logger.info(
+                    "  Init monitors | Stylo MSE: %.4f | EMB MMD: %.4f | Style MMD: %.4f",
+                    fm_losses["stylo_loss"], fm_losses["emb_mmd"], fm_losses["style_mmd"],
+                )
+                optimizer.zero_grad()
+                loss_running, n_running = 0.0, 0
+                initialized = True
+                save(iteration, 0, True)
 
             self.model.train()
-            optimizer.zero_grad()
-            loss_running = 0.0
-            n_running = 0
-
-            for step in range(cfg.steps_per_iteration):
+            for step in range(step_start, cfg.steps_per_iteration):
                 # Pick a batch of human references
                 batch_start = (step * cfg.batch_size) % max(1, len(prompts_pool) - cfg.batch_size)
                 human_batch = prompts_pool[batch_start : batch_start + cfg.batch_size]
@@ -508,6 +568,11 @@ class SPINTrainerWithFeatureMonitoring:
 
                 loss_running += float(spin_loss.item())
                 n_running += 1
+                self.training_history.append({
+                    "iteration": iteration + 1, "step": step + 1,
+                    "global_step": iteration * cfg.steps_per_iteration + step + 1,
+                    "spin_loss": float(spin_loss.item()),
+                })
 
                 # Refresh monitoring feature-matching losses periodically
                 if (step + 1) % 100 == 0:
@@ -522,6 +587,11 @@ class SPINTrainerWithFeatureMonitoring:
                     )
                     loss_running = 0.0
                     n_running = 0
+
+                if clock.due() or self._stop_request.requested:
+                    save(iteration, step + 1, True)
+                    if self._stop_request.requested:
+                        raise CheckpointPause("SPIN restart saved after minibatch")
 
             # Save iteration checkpoint
             if cfg.steps_per_iteration % cfg.gradient_accumulation_steps:
@@ -553,6 +623,10 @@ class SPINTrainerWithFeatureMonitoring:
 
             self.ref_model.load_state_dict(self.model.state_dict())
             self.ref_model.eval()
+            step_start, initialized = 0, False
+            save(iteration + 1, 0, False)
+            if self._stop_request.requested:
+                raise CheckpointPause("SPIN restart saved after reference update")
 
             logger.info("Iteration %d complete. Checkpoint saved to %s", iteration + 1, iter_dir)
 

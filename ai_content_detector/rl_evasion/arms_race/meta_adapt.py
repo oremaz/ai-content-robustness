@@ -27,12 +27,19 @@ References:
 from __future__ import annotations
 
 import logging
+import math
 import os
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
 import torch.nn.functional as F
+
+from ..checkpointing import (
+    CheckpointPause, StopRequest, atomic_save, gradient_state, load_checkpoint,
+    model_state, restore_gradients, restore_model, restore_rng, rng_state,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +53,7 @@ class DetectorZoo:
 
     def __init__(self, seed: int = 42):
         self.detectors: Dict[str, callable] = {}
+        self.availability = {}
         self._rng = np.random.default_rng(seed)
 
     def add(self, name: str, detector_fn: callable):
@@ -69,45 +77,88 @@ class DetectorZoo:
         """Build a default detector zoo with available detectors."""
         zoo = cls()
 
+        def add_checked(name, detector_fn):
+            try:
+                probe = " ".join(["A researcher collected observations and compared the measurements with the original records."] * 12)
+                score = float(detector_fn(probe))
+                if not math.isfinite(score) or not 0 <= score <= 1:
+                    raise ValueError(f"Detector returned an invalid AI score: {score}")
+                zoo.add(name, detector_fn)
+                zoo.availability[name] = {"status": "ready"}
+            except Exception as error:
+                zoo.availability[name] = {"status": "unavailable", "reason": str(error)}
+                logger.warning("MAML detector %s unavailable: %s", name, error)
+
+        def unavailable(name, error):
+            zoo.availability[name] = {"status": "unavailable", "reason": str(error)}
+            logger.warning("MAML detector %s unavailable: %s", name, error)
+
         try:
             from ...detectors.text_detectors import BinocularsDetector
             det = BinocularsDetector(device=device)
             if det.is_available():
-                zoo.add("binoculars", lambda t, d=det: d.detect(t).score)
-        except Exception:
-            pass
+                add_checked("binoculars", lambda t, d=det: d.detect(t).score)
+            else:
+                unavailable("binoculars", "Detector reports unavailable")
+        except Exception as error:
+            unavailable("binoculars", error)
 
         try:
             from ...detectors.text_detectors import FastDetectGPTDetector
             det = FastDetectGPTDetector(device=device)
             if det.is_available():
-                zoo.add("fast_detect_gpt", lambda t, d=det: d.detect(t).score)
-        except Exception:
-            pass
+                add_checked("fast_detect_gpt", lambda t, d=det: d.detect(t).score)
+            else:
+                unavailable("fast_detect_gpt", "Detector reports unavailable")
+        except Exception as error:
+            unavailable("fast_detect_gpt", error)
 
         try:
             from ...detectors.text_detectors import DivEyeDetector
             det = DivEyeDetector(device=device)
             if det.is_available():
-                zoo.add("diveye", lambda t, d=det: d.detect(t).score)
-        except Exception:
-            pass
+                add_checked("diveye", lambda t, d=det: d.detect(t).score)
+            else:
+                unavailable("diveye", getattr(det, "_availability_error", None)
+                            or "Authors' classifier and matching Falcon/Gemma resources are required")
+        except Exception as error:
+            unavailable("diveye", error)
 
         try:
             from ..text_evasion.rewards import _build_roberta_detector_reward
             dr = _build_roberta_detector_reward(device)
-            zoo.add("roberta_openai", lambda t, d=dr: 1.0 - d(t))
-        except Exception:
-            pass
+            add_checked("roberta_openai", lambda t, d=dr: 1.0 - d(t))
+        except Exception as error:
+            unavailable("roberta_openai", error)
 
         # Style embedding detector (Rivera Soto et al., 2024)
         try:
             from ...detectors.style_detector import StyleEmbeddingDetector
             det = StyleEmbeddingDetector(device=device)
             if det.is_available():
-                zoo.add("style_embedding", lambda t, d=det: d.detect(t).score)
-        except Exception:
-            pass
+                add_checked("style_embedding", lambda t, d=det: d.detect(t).score)
+            else:
+                unavailable("style_embedding", "Style encoder is unavailable")
+        except Exception as error:
+            unavailable("style_embedding", error)
+
+        from ml_pipeline.utils.utils import _load_index
+        from ...detectors.text_detectors import ModernBERTDetector, TFIDFDetector
+        for entry in _load_index("bench_aitextdetect").values():
+            name = entry["model_name"]
+            if name in zoo.availability:
+                continue
+            try:
+                if entry["artifact_type"] == "hf_dir":
+                    det = ModernBERTDetector(model_name=name, device=device)
+                elif name.startswith("tfidf_"):
+                    det = TFIDFDetector(model_name=name)
+                else:
+                    continue
+                add_checked(name, lambda text, detector=det: detector.detect(text).score)
+                zoo.availability[name]["checkpoint_id"] = entry["checkpoint_id"]
+            except Exception as error:
+                unavailable(name, error)
 
         return zoo
 
@@ -396,114 +447,107 @@ class MAMLAdaptation:
         return fast_weights, evasion_scores
 
     def train(self, prompts: List[str]):
-        """Run full second-order MAML meta-training.
-
-        For each meta-step:
-        1. Sample detectors from the zoo (tasks).
-        2. Split prompts into disjoint support/query splits per episode.
-        3. For each detector, run K differentiable inner-loop steps on SUPPORT
-           to obtain theta'.
-        4. Compute post-adaptation loss L(theta') on QUERY (a different sample),
-           which is the correct MAML bi-level signal.
-        5. Backprop through the full computation graph (including inner loop).
-
-        With first_order=True (FOMAML), step 5 only uses first-order gradients.
-
-        Inner and outer losses use the same score-function policy-gradient
-        objective on different prompt splits.
-        """
+        """Meta-train with restart boundaries after complete detector branches."""
         os.makedirs(self.output_dir, exist_ok=True)
-
         adaptable = _get_adaptable_params(self.model)
         if not adaptable:
             raise RuntimeError(
                 "meta_adapt: no adaptable parameters found. Apply LoRA or set "
                 "requires_grad=True on the parameters you want to meta-learn."
             )
-        if len(self.detector_zoo.detectors) == 0:
+        if not self.detector_zoo.detectors:
             raise ValueError("Meta-training requires a nonempty detector zoo")
         if len(prompts) < 4:
             raise ValueError("Meta-training requires at least four prompts")
-        meta_optimizer = torch.optim.Adam(
-            [param for _, param in adaptable],
-            lr=self.meta_lr,
-        )
-
-        order_str = "FOMAML (first-order)" if self.first_order else "full second-order MAML"
-        logger.info("Starting meta-training with %s, %d outer steps", order_str, self.outer_steps)
-
-        meta_losses_history = []
+        signature = {
+            "prompts": prompts, "detectors": list(self.detector_zoo.detectors),
+            "model": getattr(getattr(self.model, "config", None), "_name_or_path", type(self.model).__name__),
+            "parameters": [(name, list(param.shape)) for name, param in adaptable],
+            "meta_lr": self.meta_lr, "inner_lr": self.inner_lr,
+            "inner_steps": self.inner_steps, "outer_steps": self.outer_steps,
+            "detectors_per_episode": self.detectors_per_episode,
+            "first_order": self.first_order, "gradient_clip": self.gradient_clip,
+            "max_new_tokens": self.max_new_tokens,
+            "rollouts_per_prompt": self.rollouts_per_prompt, "seed": self.seed,
+        }
+        checkpoint = Path(self.output_dir) / "meta_restart.pt"
+        optimizer = torch.optim.Adam([param for _, param in adaptable], lr=self.meta_lr)
         rng = np.random.default_rng(self.seed)
+        state = load_checkpoint(checkpoint, signature)
+        if state is None:
+            state = {"config": signature, "outer_step": 0, "episode": None, "losses": [],
+                     "initial": {name: value.cpu().clone()
+                                 for name, value in self._initial_adaptable_state.items()}}
+        else:
+            restore_model(self.model, state["model"])
+            optimizer.load_state_dict(state["optimizer"])
+            restore_gradients(self.model, state["gradients"])
+            restore_rng(state["rng"])
+            rng.bit_generator.state = state["prompt_rng"]
+            self.detector_zoo._rng.bit_generator.state = state["detector_rng"]
+            self._initial_adaptable_state = state["initial"]
 
-        for outer_step in range(self.outer_steps):
-            meta_optimizer.zero_grad()
+        def save():
+            state.update(model=model_state(self.model), optimizer=optimizer.state_dict(),
+                         gradients=gradient_state(self.model), rng=rng_state(),
+                         prompt_rng=rng.bit_generator.state,
+                         detector_rng=self.detector_zoo._rng.bit_generator.state)
+            atomic_save(state, checkpoint)
 
-            # Sample detector subset (task distribution)
-            sampled_detectors = self.detector_zoo.sample(self.detectors_per_episode)
-
-            # Disjoint support/query split per episode for proper MAML semantics.
-            perm = rng.permutation(len(prompts))
-            half = max(2, len(prompts) // 2)
-            support_prompts = [prompts[i] for i in perm[:half]]
-            query_prompts = [prompts[i] for i in perm[half:half * 2]] or support_prompts
-
-            total_meta_loss = torch.tensor(0.0, device=next(self.model.parameters()).device)
-            step_evasions = []
-
-            for det_name, det_fn in sampled_detectors.items():
-                # Inner loop on SUPPORT -> adapted fast_weights
-                fast_weights, evasion_scores = self._differentiable_inner_loop(
-                    self.model,
-                    det_fn,
-                    support_prompts,
-                    k_steps=self.inner_steps,
+        save()
+        with StopRequest() as stop:
+            while state["outer_step"] < self.outer_steps:
+                if stop.requested:
+                    raise CheckpointPause("MAML restart state saved")
+                if state["episode"] is None:
+                    optimizer.zero_grad()
+                    names = list(self.detector_zoo.sample(self.detectors_per_episode))
+                    perm = rng.permutation(len(prompts))
+                    half = max(2, len(prompts) // 2)
+                    state["episode"] = {
+                        "detectors": names, "next_detector": 0, "loss": 0.0,
+                        "support": [prompts[i] for i in perm[:half]],
+                        "query": [prompts[i] for i in perm[half:half * 2]],
+                    }
+                    save()
+                episode = state["episode"]
+                for index in range(episode["next_detector"], len(episode["detectors"])):
+                    if stop.requested:
+                        raise CheckpointPause("MAML detector branch saved")
+                    detector = self.detector_zoo.detectors[episode["detectors"][index]]
+                    fast_weights, _ = self._differentiable_inner_loop(
+                        self.model, detector, episode["support"], self.inner_steps,
+                    )
+                    loss = self._compute_evasion_loss(
+                        self.model, detector, episode["query"],
+                        fast_weights=fast_weights, num_samples=4,
+                    )
+                    if not torch.isfinite(loss):
+                        raise ValueError("MAML detector branch returned a non-finite loss")
+                    # Linearity of differentiation permits releasing each task graph
+                    # while retaining the exact second-order averaged objective.
+                    (loss / len(episode["detectors"])).backward()
+                    episode["loss"] += loss.item() / len(episode["detectors"])
+                    episode["next_detector"] = index + 1
+                    del loss, fast_weights
+                    save()
+                torch.nn.utils.clip_grad_norm_(
+                    [param for _, param in adaptable], max_norm=self.gradient_clip,
+                    error_if_nonfinite=True,
                 )
-
-                # Post-adaptation loss on QUERY: how well do adapted weights generalize?
-                post_adapt_loss = self._compute_evasion_loss(
-                    self.model, det_fn, query_prompts, fast_weights=fast_weights, num_samples=4,
-                )
-
-                total_meta_loss = total_meta_loss + post_adapt_loss
-                step_evasions.append(np.mean(evasion_scores[-max(1, len(evasion_scores) // 3):]))
-
-            # Average over tasks
-            meta_loss = total_meta_loss / len(sampled_detectors)
-
-            # Backprop the meta-gradient through the full computation graph
-            # For second-order MAML, this computes Hessian-vector products
-            # through the inner loop updates
-            meta_loss.backward()
-
-            # Gradient clipping for stability
-            torch.nn.utils.clip_grad_norm_(
-                [param for _, param in adaptable],
-                max_norm=self.gradient_clip,
-            )
-
-            meta_optimizer.step()
-
-            meta_losses_history.append(meta_loss.item())
-
-            if (outer_step + 1) % 10 == 0:
-                avg_evasion = np.mean(step_evasions)
-                recent_loss = np.mean(meta_losses_history[-10:])
-                logger.info(
-                    "Meta-step %d/%d | Meta-loss: %.4f (avg10: %.4f) | "
-                    "Avg evasion after adapt: %.3f | Detectors: %s",
-                    outer_step + 1, self.outer_steps, meta_loss.item(),
-                    recent_loss, avg_evasion,
-                    list(sampled_detectors.keys()),
-                )
-
-        # Save meta-learned initialization
+                optimizer.step()
+                optimizer.zero_grad()
+                state["losses"].append(episode["loss"])
+                state["outer_step"] += 1
+                state["episode"] = None
+                save()
+                logger.info("Meta-step %d/%d | Meta-loss: %.4f",
+                            state["outer_step"], self.outer_steps, state["losses"][-1])
+        self.training_history = [{"outer_step": index + 1, "meta_loss": loss}
+                                 for index, loss in enumerate(state["losses"])]
         meta_dir = os.path.join(self.output_dir, "meta_init")
         self.model.save_pretrained(meta_dir)
         self.tokenizer.save_pretrained(meta_dir)
-        logger.info(
-            "Meta-learned initialization saved to %s (method: %s)",
-            meta_dir, order_str,
-        )
 
     def measure_adaptation_cost(
         self,
@@ -512,58 +556,80 @@ class MAMLAdaptation:
         prompts: List[str],
         max_steps: int = 100,
         measure_interval: int = 5,
+        evaluation_prompts: Optional[List[str]] = None,
     ) -> Dict:
-        """Measure how quickly the meta-learned model adapts to a new detector.
+        """Measure adaptation on optional disjoint prompts, with step-wise restart."""
+        if not prompts or max_steps < 1 or measure_interval < 1:
+            raise ValueError("Adaptation requires prompts and positive step/measurement budgets")
+        evaluation = prompts if evaluation_prompts is None else evaluation_prompts
+        if not evaluation:
+            raise ValueError("Adaptation evaluation requires prompts")
+        if evaluation_prompts is not None and set(prompts).intersection(evaluation):
+            raise ValueError("Adaptation and evaluation prompts must be disjoint")
+        signature = {"detector": detector_name, "prompts": prompts, "evaluation": evaluation,
+                     "max_steps": max_steps, "measure_interval": measure_interval,
+                     "inner_lr": self.inner_lr, "seed": self.seed,
+                     "max_new_tokens": self.max_new_tokens}
+        checkpoint = Path(self.output_dir) / f"adapt_{detector_name.replace('/', '_')}.pt"
+        optimizer = torch.optim.SGD([p for _, p in _get_adaptable_params(self.model)],
+                                    lr=self.inner_lr)
+        original = model_state(self.model)
+        state = load_checkpoint(checkpoint, signature)
+        if state is None:
+            state = {"config": signature, "step": 0,
+                     "curve": {"steps": [], "evasion": [], "detector": detector_name}}
+        else:
+            restore_model(self.model, state["model"])
+            optimizer.load_state_dict(state["optimizer"])
+            restore_rng(state["rng"])
 
-        Returns adaptation cost curve: evasion score at each measurement point.
-        """
-        device = next(self.model.parameters()).device
+        def save():
+            state.update(model=model_state(self.model), optimizer=optimizer.state_dict(),
+                         rng=rng_state())
+            atomic_save(state, checkpoint)
 
-        # Save current state
-        saved_state = {
-            name: param.clone()
-            for name, param in self.model.named_parameters()
-            if param.requires_grad
-        }
+        def measure(step):
+            self.model.eval()
+            scores = []
+            for index, prompt in enumerate(evaluation[:20]):
+                text, _ = self._sample_completion(
+                    self.model, prompt, None, seed=self.seed + 70_000 + index,
+                )
+                score = float(held_out_detector(text))
+                if not np.isfinite(score) or not 0.0 <= score <= 1.0:
+                    raise ValueError("Held-out detector returned an invalid AI score")
+                scores.append(1.0 - score)
+            state["curve"]["steps"].append(step)
+            state["curve"]["evasion"].append(float(np.mean(scores)))
 
-        curve = {"steps": [], "evasion": [], "detector": detector_name}
-        adaptable = [p for _, p in _get_adaptable_params(self.model)]
-        optimizer = torch.optim.SGD(adaptable, lr=self.inner_lr)
-
-        for step in range(max_steps):
-            if step % measure_interval == 0:
-                # Measure evasion
-                self.model.eval()
-                evasion_scores = []
-                for prompt_idx, p in enumerate(prompts[:20]):
-                    text, _ = self._sample_completion(
-                        self.model, p, None, seed=self.seed + 70_000 + prompt_idx,
+        try:
+            save()
+            with StopRequest() as stop:
+                while state["step"] < max_steps:
+                    if stop.requested:
+                        raise CheckpointPause("Held-out adaptation restart state saved")
+                    step = state["step"]
+                    if step % measure_interval == 0:
+                        measure(step)
+                    self.model.train()
+                    optimizer.zero_grad()
+                    loss = self._compute_evasion_loss(
+                        self.model, held_out_detector, [prompts[step % len(prompts)]],
+                        fast_weights=None, num_samples=1,
                     )
-                    score = float(held_out_detector(text))
-                    evasion_scores.append(1.0 - score)
-
-                mean_evasion = float(np.mean(evasion_scores))
-                curve["steps"].append(step)
-                curve["evasion"].append(mean_evasion)
-                logger.info("  Adaptation step %d: evasion=%.3f", step, mean_evasion)
-
-            self.model.train()
-            step_prompts = [prompts[step % len(prompts)]]
-            loss = self._compute_evasion_loss(
-                self.model, held_out_detector, step_prompts, fast_weights=None, num_samples=1,
-            )
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-        # Restore original state
-        with torch.no_grad():
-            for name, param in self.model.named_parameters():
-                if name in saved_state:
-                    param.copy_(saved_state[name])
-
-        self.adaptation_curves.append(curve)
-        return curve
+                    loss.backward()
+                    optimizer.step()
+                    state["step"] += 1
+                    save()
+                if stop.requested:
+                    raise CheckpointPause("Held-out adaptation restart state saved")
+                if not state["curve"]["steps"] or state["curve"]["steps"][-1] != max_steps:
+                    measure(max_steps)
+                    save()
+        finally:
+            restore_model(self.model, original)
+        self.adaptation_curves.append(state["curve"])
+        return state["curve"]
 
     def compare_with_pre_meta(
         self,
@@ -571,49 +637,31 @@ class MAMLAdaptation:
         detector_name: str,
         prompts: List[str],
         max_steps: int = 100,
+        evaluation_prompts: Optional[List[str]] = None,
     ) -> Dict:
-        """Compare meta-learned adaptation with the exact pre-meta initialization.
-
-        Returns both curves for plotting.
-        """
-        logger.info("Measuring meta-learned adaptation cost...")
+        """Compare both initializations under the same held-out adaptation protocol."""
         meta_curve = self.measure_adaptation_cost(
-            held_out_detector, f"{detector_name}_meta", prompts, max_steps
+            held_out_detector, f"{detector_name}_meta", prompts, max_steps,
+            evaluation_prompts=evaluation_prompts,
         )
-
-        # Compare against the exact pre-meta initialization under the same protocol.
-        logger.info("Measuring pre-meta initialization adaptation cost...")
-        saved_state = {
-            name: param.clone()
-            for name, param in self.model.named_parameters()
-            if param.requires_grad
-        }
-
-        with torch.no_grad():
-            for name, param in self.model.named_parameters():
-                if name in self._initial_adaptable_state:
-                    param.copy_(self._initial_adaptable_state[name])
-
-        pre_meta_curve = self.measure_adaptation_cost(
-            held_out_detector, f"{detector_name}_pre_meta", prompts, max_steps
-        )
-
-        # Restore
-        with torch.no_grad():
-            for name, param in self.model.named_parameters():
-                if name in saved_state:
-                    param.copy_(saved_state[name])
-
+        original = model_state(self.model)
+        try:
+            restore_model(self.model, self._initial_adaptable_state)
+            pre_meta_curve = self.measure_adaptation_cost(
+                held_out_detector, f"{detector_name}_pre_meta", prompts, max_steps,
+                evaluation_prompts=evaluation_prompts,
+            )
+        finally:
+            restore_model(self.model, original)
         return {
-            "meta": meta_curve,
-            "pre_meta": pre_meta_curve,
+            "meta": meta_curve, "pre_meta": pre_meta_curve,
             "speedup": self._compute_speedup(meta_curve, pre_meta_curve),
         }
 
     # Compatibility alias for callers written before the baseline was corrected.
     compare_with_scratch = compare_with_pre_meta
 
-    def _compute_speedup(self, meta_curve: Dict, pre_meta_curve: Dict) -> float:
+    def _compute_speedup(self, meta_curve: Dict, pre_meta_curve: Dict) -> Optional[float]:
         """Compute how much faster meta-learning adapts vs. its initialization.
 
         Defined as: steps_pre_meta_to_threshold / steps_meta_to_threshold
@@ -625,11 +673,11 @@ class MAMLAdaptation:
             for step, evasion in zip(curve["steps"], curve["evasion"]):
                 if evasion >= threshold:
                     return step
-            return curve["steps"][-1] if curve["steps"] else float("inf")
+            return None
 
         meta_steps = steps_to_threshold(meta_curve)
         pre_meta_steps = steps_to_threshold(pre_meta_curve)
 
-        if meta_steps == 0:
-            return float("inf")
+        if meta_steps is None or pre_meta_steps is None or meta_steps == 0:
+            return None
         return pre_meta_steps / meta_steps

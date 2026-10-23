@@ -13,14 +13,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
+import random
+from pathlib import Path
 import logging
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional
 
 import numpy as np
 
+from ..checkpointing import (
+    CheckpointPause, StopRequest, atomic_save, load_checkpoint, restore_rng, rng_state,
+)
 from ..text_evasion.evaluate import evaluate_text_evasion
 from ..text_evasion.rewards import CompositeReward, build_detector_reward_from_name
 from .baselines import (
@@ -206,6 +212,8 @@ class BenchmarkRunner:
         detector_names: Optional[List[str]] = None,
         device: str = "auto",
         heldout_detectors: Optional[List[str]] = None,
+        checkpoint_dir: Optional[str] = None,
+        require_all_detectors: bool = False,
     ):
         self.methods = methods
         self.dataset = dataset
@@ -217,9 +225,14 @@ class BenchmarkRunner:
                 f"heldout_detectors must be disjoint from detector_names; overlap={sorted(overlap)}"
             )
         self.device = device
+        self.require_all_detectors = require_all_detectors
         self.reward_fn = None
         self.heldout_reward_fn = None
         self.results: Dict[str, Dict] = {}
+        self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir is not None else None
+        self._restart = None
+        self._active_method = None
+        self._active_clock = None
 
     def setup_detectors(self):
         """Build both the evaluation ensemble and (optionally) the held-out ensemble."""
@@ -233,6 +246,8 @@ class BenchmarkRunner:
                     rewards.append(dr)
                     logger.info("Loaded %s detector: %s", label, name)
                 except Exception as e:
+                    if self.require_all_detectors:
+                        raise RuntimeError(f"Required {label} detector {name} could not be built") from e
                     logger.warning("Could not load %s detector %s: %s", label, name, e)
             if not rewards:
                 raise RuntimeError(
@@ -249,80 +264,171 @@ class BenchmarkRunner:
         else:
             self.heldout_reward_fn = None
 
+    def _prepare_restart(self):
+        if self.checkpoint_dir is None or self._restart is not None:
+            return
+        attributes = (
+            "_model_name", "_model_id", "_paraphraser_id", "_checkpoint_dir",
+            "_max_new_tokens", "_max_length", "_max_tokens", "_num_beams",
+            "_seed", "_temperature", "_top_p", "_top_k", "_rate", "_instruction",
+        )
+        signature = {
+            "dataset": asdict(self.dataset),
+            "detectors": self.detector_names, "heldout_detectors": self.heldout_detectors,
+            "methods": {
+                method.name: {**method.provenance(), "parameters": {
+                    key: getattr(method, key) for key in attributes if hasattr(method, key)
+                }} for method in self.methods
+            },
+            "scoring": {
+                kind: {
+                    "detectors": [reward.name for reward in getattr(fn, "detector_rewards", [])],
+                    "weights": getattr(fn, "weights", None),
+                    "min_output_tokens": getattr(fn, "min_output_tokens", None),
+                    "semantic_model": getattr(getattr(fn, "semantic_reward", None), "_model_name", None),
+                } for kind, fn in (("eval", self.reward_fn), ("heldout", self.heldout_reward_fn))
+            },
+        }
+        self._restart = load_checkpoint(self.checkpoint_dir / "benchmark_restart.pt", signature)
+        if self._restart is None:
+            self._restart = {"config": signature, "applications": {}, "scores": {},
+                             "results": {}, "method_rng": {}, "elapsed": {}}
+            self._save_restart()
+        else:
+            self.results = self._restart["results"]
+            restore_rng(self._restart["rng"])
+
+    def _save_restart(self):
+        if self._restart is None:
+            return
+        if self._active_clock is not None:
+            elapsed = self._restart["elapsed"]
+            elapsed[self._active_method] = elapsed.get(self._active_method, 0.0) + time.time() - self._active_clock
+            self._active_clock = time.time()
+        self._restart.update(results=self.results, rng=rng_state())
+        atomic_save(self._restart, self.checkpoint_dir / "benchmark_restart.pt")
+
+    def _cached_reward(self, reward_fn, kind):
+        if self._restart is None:
+            return reward_fn
+
+        def score(source, generated):
+            if self._stop_request.requested:
+                raise CheckpointPause("Benchmark generated samples and scores saved")
+            identity = hashlib.sha256(
+                json.dumps([self._active_method, kind, source, generated]).encode()
+            ).hexdigest()
+            scores = self._restart["scores"]
+            if identity not in scores:
+                scores[identity] = reward_fn(source, generated)
+                self._save_restart()
+            return scores[identity]
+
+        return score
+
     def run(self) -> Dict[str, Dict]:
+        with StopRequest() as self._stop_request:
+            return self._run()
+
+    def _run(self) -> Dict[str, Dict]:
         """Run all methods and collect results."""
         if self.reward_fn is None:
             self.setup_detectors()
 
+        self._prepare_restart()
         for method in self.methods:
-            logger.info("=== Evaluating: %s ===", method.name)
-            t0 = time.time()
-            overlap = set(method.optimized_detector_names) & set(self.heldout_detectors)
-            if overlap:
-                raise ValueError(
-                    f"Method {method.name} was optimized against held-out detectors: {sorted(overlap)}"
-                )
-
-            application = self._apply_method(method)
-            if application.status == "skipped":
-                self.results[method.name] = {
-                    "status": "skipped",
-                    "track": application.track,
-                    "reason": application.errors[0]["error"],
-                    "num_attempted": 0,
-                    "num_succeeded": 0,
-                    "num_failed": 0,
-                }
-                logger.warning("Skipping %s: %s", method.name, application.errors[0]["error"])
+            if self._restart is not None and method.name in self.results:
                 continue
-            if not application.generated_texts:
-                self.results[method.name] = {
-                    "status": "failed",
-                    "track": application.track,
-                    "num_attempted": application.attempted,
-                    "num_succeeded": 0,
-                    "num_failed": len(application.errors),
-                    "errors": application.errors,
-                    "wall_time_sec": time.time() - t0,
-                }
-                logger.error("Method %s failed on every attempted sample", method.name)
-                continue
+            if self._stop_request.requested:
+                raise CheckpointPause("Benchmark restart state saved")
+            self._active_method = method.name
+            self._active_clock = time.time() if self._restart is not None else None
+            try:
+                logger.info("=== Evaluating: %s ===", method.name)
+                t0 = time.time()
+                overlap = set(method.optimized_detector_names) & set(self.heldout_detectors)
+                if overlap:
+                    raise ValueError(
+                        f"Method {method.name} was optimized against held-out detectors: {sorted(overlap)}"
+                    )
 
-            metrics = evaluate_text_evasion(
-                generated_texts=application.generated_texts,
-                source_texts=application.source_texts,
-                reward_fn=self.reward_fn,
-            )
-            if self.heldout_reward_fn is not None:
-                heldout_metrics = evaluate_text_evasion(
+                capability = EvasionCapability.REWRITE if self.dataset.ai_texts_available else EvasionCapability.GENERATE
+                if self._restart is not None and capability in method.capabilities:
+                    saved_rng = self._restart["rng"]
+                    loader = getattr(method, "_load", None) or getattr(method, "_load_wordnet", None)
+                    if loader is not None:
+                        loader()
+                    restore_rng(saved_rng)
+                    if method.name in self._restart["method_rng"]:
+                        method._rng.setstate(self._restart["method_rng"][method.name])
+                application = self._apply_method(method)
+                if application.status == "skipped":
+                    self.results[method.name] = {
+                        "status": "skipped",
+                        "track": application.track,
+                        "reason": application.errors[0]["error"],
+                        "num_attempted": 0,
+                        "num_succeeded": 0,
+                        "num_failed": 0,
+                    }
+                    logger.warning("Skipping %s: %s", method.name, application.errors[0]["error"])
+                    self._save_restart()
+                    continue
+                if not application.generated_texts:
+                    self.results[method.name] = {
+                        "status": "failed",
+                        "track": application.track,
+                        "num_attempted": application.attempted,
+                        "num_succeeded": 0,
+                        "num_failed": len(application.errors),
+                        "errors": application.errors,
+                        "wall_time_sec": time.time() - t0,
+                    }
+                    logger.error("Method %s failed on every attempted sample", method.name)
+                    self._save_restart()
+                    continue
+
+                metrics = evaluate_text_evasion(
                     generated_texts=application.generated_texts,
                     source_texts=application.source_texts,
-                    reward_fn=self.heldout_reward_fn,
+                    reward_fn=self._cached_reward(self.reward_fn, "eval"),
                 )
-                metrics["heldout_mean_evasion"] = heldout_metrics["mean_evasion"]
-                metrics["heldout_attack_success_rate"] = heldout_metrics["attack_success_rate"]
-                for k, v in heldout_metrics.items():
-                    if k.startswith("evasion_"):
-                        metrics[f"heldout_{k}"] = v
-            metrics["wall_time_sec"] = time.time() - t0
-            metrics.update({
-                "status": "completed" if not application.errors else "partial",
-                "track": application.track,
-                "num_attempted": application.attempted,
-                "num_succeeded": len(application.generated_texts),
-                "num_failed": len(application.errors),
-                "sample_indices": application.sample_indices,
-                "errors": application.errors,
-            })
-            self.results[method.name] = metrics
+                if self.heldout_reward_fn is not None:
+                    heldout_metrics = evaluate_text_evasion(
+                        generated_texts=application.generated_texts,
+                        source_texts=application.source_texts,
+                        reward_fn=self._cached_reward(self.heldout_reward_fn, "heldout"),
+                    )
+                    metrics["heldout_mean_evasion"] = heldout_metrics["mean_evasion"]
+                    metrics["heldout_attack_success_rate"] = heldout_metrics["attack_success_rate"]
+                    for k, v in heldout_metrics.items():
+                        if k.startswith("evasion_"):
+                            metrics[f"heldout_{k}"] = v
+                metrics["wall_time_sec"] = time.time() - t0
+                metrics.update({
+                    "status": "completed" if not application.errors else "partial",
+                    "track": application.track,
+                    "num_attempted": application.attempted,
+                    "num_succeeded": len(application.generated_texts),
+                    "num_failed": len(application.errors),
+                    "sample_indices": application.sample_indices,
+                    "errors": application.errors,
+                })
+                if self._restart is not None:
+                    metrics["wall_time_sec"] = self._restart["elapsed"].get(method.name, 0.0) + time.time() - self._active_clock
+                self.results[method.name] = metrics
+                self._save_restart()
 
-            logger.info(
-                "  %s: evasion=%.3f, semantic=%.3f, attack_success=%.1f%%",
-                method.name,
-                metrics["mean_evasion"],
-                metrics["mean_semantic_similarity"],
-                metrics["attack_success_rate"] * 100,
-            )
+                logger.info(
+                    "  %s: evasion=%.3f, semantic=%.3f, attack_success=%.1f%%",
+                    method.name,
+                    metrics["mean_evasion"],
+                    metrics["mean_semantic_similarity"],
+                    metrics["attack_success_rate"] * 100,
+                )
+
+            finally:
+                method.unload()
 
         return self.results
 
@@ -349,8 +455,13 @@ class BenchmarkRunner:
                 }],
             )
 
-        application = MethodApplication(status="completed", track=track)
+        previous = self._restart["applications"].get(method.name) if self._restart is not None else None
+        application = MethodApplication(**previous) if previous is not None else MethodApplication(status="completed", track=track)
         for i, (prompt, ai_text) in enumerate(zip(self.dataset.prompts, self.dataset.ai_texts)):
+            if i < application.attempted:
+                continue
+            if getattr(getattr(self, "_stop_request", None), "requested", False):
+                raise CheckpointPause("Benchmark generation restart state saved")
             application.attempted += 1
             try:
                 if ai_available:
@@ -367,6 +478,8 @@ class BenchmarkRunner:
                 application.generated_texts.append(evaded)
                 application.source_texts.append(source)
                 application.sample_indices.append(i)
+            except CheckpointPause:
+                raise
             except Exception as e:
                 logger.warning("Method %s failed on sample %d: %s", method.name, i, e)
                 application.errors.append({
@@ -374,6 +487,12 @@ class BenchmarkRunner:
                     "error_type": type(e).__name__,
                     "error": str(e),
                 })
+            if self._restart is not None:
+                self._restart["applications"][method.name] = asdict(application)
+                local_rng = getattr(method, "_rng", None)
+                if isinstance(local_rng, random.Random):
+                    self._restart["method_rng"][method.name] = local_rng.getstate()
+                self._save_restart()
 
         if application.errors:
             application.status = "partial" if application.generated_texts else "failed"
@@ -437,6 +556,8 @@ class BenchmarkRunner:
                     "num_samples": len(self.dataset),
                     "detectors": self.detector_names,
                     "heldout_detectors": self.heldout_detectors,
+                    "effective_detectors": [reward.name for reward in getattr(self.reward_fn, "detector_rewards", [])],
+                    "effective_heldout_detectors": [reward.name for reward in getattr(self.heldout_reward_fn, "detector_rewards", [])],
                     "method_provenance": {
                         method.name: method.provenance() for method in self.methods
                     },
@@ -461,6 +582,9 @@ def main():
     parser.add_argument("--dataset", type=str, default="hc3", choices=["hc3", "cnn_dailymail"])
     parser.add_argument("--max-samples", type=int, default=200)
     parser.add_argument("--device", type=str, default="auto")
+    parser.add_argument("--require-all-detectors", action="store_true",
+                        help="Fail if any requested detector cannot be built")
+    parser.add_argument("--local-only", action="store_true", help="Exclude remote API baselines")
     parser.add_argument("--output-dir", type=str, default="results/benchmark")
     parser.add_argument(
         "--lightweight", action="store_true",
@@ -489,9 +613,9 @@ def main():
 
     # Build method list
     if args.lightweight:
-        methods = get_lightweight_baselines()
+        methods = get_lightweight_baselines(include_api=not args.local_only)
     else:
-        methods = get_all_baselines(device=args.device, model_name=args.model)
+        methods = get_all_baselines(device=args.device, model_name=args.model, include_api=not args.local_only)
 
     # Add RL methods if checkpoints provided
     if args.grpo_checkpoint:
@@ -506,11 +630,17 @@ def main():
         detector_names=args.detectors,
         heldout_detectors=args.heldout_detectors,
         device=args.device,
+        checkpoint_dir=os.path.join(args.output_dir, "restart"),
+        require_all_detectors=args.require_all_detectors,
     )
     runner.setup_detectors()
     runner.run()
     runner.print_comparison()
     runner.save_results(args.output_dir)
+    if args.require_all_detectors:
+        failed = [name for name, metrics in runner.results.items() if metrics.get("status") == "failed"]
+        if failed:
+            raise RuntimeError(f"Benchmark methods failed; partial results were saved: {failed}")
 
 
 if __name__ == "__main__":

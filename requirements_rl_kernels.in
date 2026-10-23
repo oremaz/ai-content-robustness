@@ -1,0 +1,5 @@
+# Optional kernels for the existing PyTorch 2.6 / CUDA 12.4 GPU environment.
+flash-linear-attention==0.3.2
+fla-core==0.3.2
+einops==0.8.1
+causal-conv1d==1.5.3.post1

@@ -46,6 +46,14 @@ class BaseEvasionMethod(ABC):
             "optimized_detector_names": sorted(self.optimized_detector_names),
         }
 
+    def unload(self):
+        for name in ("_model", "_tokenizer"):
+            if hasattr(self, name):
+                setattr(self, name, None)
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
     def evade(self, text: str) -> str:
         """Transform AI-generated text to evade detection.
 
@@ -205,7 +213,7 @@ class SynonymSubstitutionBaseline(BaseEvasionMethod):
                     synonyms.add(name)
         if not synonyms:
             return None
-        return self._rng.choice(list(synonyms))
+        return self._rng.choice(sorted(synonyms))
 
     def evade(self, text: str) -> str:
         self._load_wordnet()
@@ -296,15 +304,20 @@ class PromptEngineeringBaseline(BaseEvasionMethod):
             full_prompt, return_tensors="pt", truncation=True, max_length=512
         ).to(self._device)
 
-        with torch.no_grad():
-            generator = torch.Generator(device=inputs["input_ids"].device).manual_seed(self._seed)
+        device = inputs["input_ids"].device
+        devices = [device.index] if device.type == "cuda" else []
+        with torch.random.fork_rng(devices=devices), torch.no_grad():
+            generator = torch.Generator(device=device).manual_seed(self._seed)
+            if device.type == "cuda":
+                torch.cuda.set_rng_state(generator.get_state(), device)
+            else:
+                torch.set_rng_state(generator.get_state())
             out = self._model.generate(
                 **inputs,
                 max_new_tokens=self._max_new_tokens,
                 do_sample=True,
                 temperature=0.9,
                 top_p=0.95,
-                generator=generator,
             )
         return self._tokenizer.decode(
             out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
@@ -374,8 +387,14 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
             prompt, return_tensors="pt", truncation=True, max_length=512
         ).to(self._device)
 
-        with torch.no_grad():
-            generator = torch.Generator(device=inputs["input_ids"].device).manual_seed(self._seed)
+        device = inputs["input_ids"].device
+        devices = [device.index] if device.type == "cuda" else []
+        with torch.random.fork_rng(devices=devices), torch.no_grad():
+            generator = torch.Generator(device=device).manual_seed(self._seed)
+            if device.type == "cuda":
+                torch.cuda.set_rng_state(generator.get_state(), device)
+            else:
+                torch.set_rng_state(generator.get_state())
             out = self._model.generate(
                 **inputs,
                 max_new_tokens=self._max_new_tokens,
@@ -383,7 +402,6 @@ class SamplingPerturbationBaseline(BaseEvasionMethod):
                 temperature=self._temperature,
                 top_p=self._top_p,
                 top_k=self._top_k,
-                generator=generator,
             )
         return self._tokenizer.decode(
             out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
@@ -619,7 +637,7 @@ class AdversarialParaphrasingBaseline(BaseEvasionMethod):
         ).strip()
 
 
-def get_all_baselines(device: str = "auto", model_name: str = "Qwen/Qwen3.5-9B-Base") -> List[BaseEvasionMethod]:
+def get_all_baselines(device: str = "auto", model_name: str = "Qwen/Qwen3.5-9B-Base", include_api: bool = True) -> List[BaseEvasionMethod]:
     """Return all baseline evasion methods."""
     methods = [
         VanillaBaseline(),
@@ -629,17 +647,17 @@ def get_all_baselines(device: str = "auto", model_name: str = "Qwen/Qwen3.5-9B-B
         SamplingPerturbationBaseline(model_name=model_name, device=device),
     ]
     # Include OpenRouter if API key is available
-    if os.environ.get("OPENROUTER_API_KEY"):
+    if include_api and os.environ.get("OPENROUTER_API_KEY"):
         methods.append(OpenRouterBaseline())
     return methods
 
 
-def get_lightweight_baselines() -> List[BaseEvasionMethod]:
+def get_lightweight_baselines(include_api: bool = True) -> List[BaseEvasionMethod]:
     """Return baselines that don't require GPU or large models."""
     methods = [
         VanillaBaseline(),
         SynonymSubstitutionBaseline(),
     ]
-    if os.environ.get("OPENROUTER_API_KEY"):
+    if include_api and os.environ.get("OPENROUTER_API_KEY"):
         methods.append(OpenRouterBaseline())
     return methods

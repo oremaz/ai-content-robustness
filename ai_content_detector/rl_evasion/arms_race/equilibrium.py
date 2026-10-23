@@ -19,6 +19,9 @@ Protocol:
 from __future__ import annotations
 
 import json
+import hashlib
+from dataclasses import asdict
+from pathlib import Path
 import logging
 import os
 from typing import Dict, List, Optional
@@ -26,6 +29,10 @@ from typing import Dict, List, Optional
 import numpy as np
 
 from ..config import ArmsRaceConfig, TextEvasionConfig
+from ..checkpointing import (
+    CheckpointPause, StopRequest, atomic_save, load_checkpoint, model_state,
+    restore_model, restore_rng, rng_state,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +49,8 @@ class ArmsRaceExperiment:
         self.train_references: List[str] = []
         self.eval_prompts: List[str] = []
         self.eval_references: List[str] = []
+        self._restart = None
+        self._generation_context = "generation"
 
     def setup(self):
         """Initialize attacker and defender."""
@@ -81,12 +90,17 @@ class ArmsRaceExperiment:
             seed=self.config.seed,
         )
         self.defender.setup()
-        self._warmup_defender()
+        self._restore_restart()
+        if self._restart["phase"] == "warmup":
+            self._warmup_defender()
+            self._restart["phase"] = "before_attack"
+            self._save_restart()
 
     def _warmup_defender(self) -> None:
         n = min(self.config.defender_retrain_samples // 2, len(self.train_prompts))
         if n < 2:
             raise ValueError("Defender warm-up requires at least two training prompt/reference pairs")
+        self._generation_context = "warmup"
         ai_texts = self._generate(self.train_prompts[:n], seed=self.config.seed + 1)
         metrics = self.defender.retrain(
             ai_texts=ai_texts,
@@ -134,33 +148,89 @@ class ArmsRaceExperiment:
             "held-out payoff evaluation; neither is implemented yet"
         )
 
+    def _restore_restart(self):
+        path = Path(self.config.output_dir) / "race_restart.pt"
+        state = load_checkpoint(path, asdict(self.config))
+        manifest = {
+            "train_prompts": self.train_prompts, "train_references": self.train_references,
+            "eval_prompts": self.eval_prompts, "eval_references": self.eval_references,
+        }
+        if state is None:
+            self._restart = {
+                "config": asdict(self.config), "manifest": manifest,
+                "round": 0, "phase": "warmup", "metrics": {}, "history": [],
+            }
+            self._save_restart()
+        else:
+            if state["manifest"] != manifest:
+                raise ValueError("Arms-race restart prompt/reference manifest differs")
+            restore_model(self.attacker.model, state["attacker"])
+            restore_model(self.defender.model, state["defender"])
+            self.defender._round = state["defender_round"]
+            self.history = state["history"]
+            self._restart = state
+            self._update_attacker_detectors()
+            restore_rng(state["rng"])
+
+    def _save_restart(self):
+        self._restart.update(
+            attacker=model_state(self.attacker.model),
+            defender=model_state(self.defender.model),
+            defender_round=self.defender._round,
+            rng=rng_state(), history=self.history,
+        )
+        atomic_save(self._restart, Path(self.config.output_dir) / "race_restart.pt")
+
     def _generate(self, prompts: List[str], seed: int) -> List[str]:
         import torch
 
         device = next(self.attacker.model.parameters()).device
         self.attacker.model.eval()
         generator = torch.Generator(device=device).manual_seed(seed)
-        texts = []
-        for prompt in prompts:
-            inputs = self.attacker.tokenizer(
-                prompt,
-                return_tensors="pt",
-                truncation=True,
-                max_length=self.attacker.config.max_seq_length,
-            ).to(device)
-            with torch.no_grad():
-                generated = self.attacker.model.generate(
-                    **inputs,
-                    max_new_tokens=self.attacker.config.max_new_tokens,
-                    temperature=self.attacker.config.temperature,
-                    top_p=self.attacker.config.top_p,
-                    do_sample=True,
-                    generator=generator,
-                )
-            texts.append(self.attacker.tokenizer.decode(
-                generated[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
-            ))
-        return texts
+        signature = {
+            "prompts": prompts, "seed": seed, "context": self._generation_context,
+            "model": self.attacker.config.generator_model,
+            "max_seq_length": self.attacker.config.max_seq_length,
+            "max_new_tokens": self.attacker.config.max_new_tokens,
+            "temperature": self.attacker.config.temperature,
+            "top_p": self.attacker.config.top_p,
+        }
+        identity = hashlib.sha256(json.dumps(signature, sort_keys=True).encode()).hexdigest()
+        path = Path(self.config.output_dir) / "generation" / f"{identity}.pt"
+        state = load_checkpoint(path, signature)
+        if state is None:
+            state = {"config": signature, "texts": [], "generator": generator.get_state()}
+            atomic_save(state, path)
+        generator.set_state(state["generator"])
+        devices = [device.index if device.index is not None else torch.cuda.current_device()] if device.type == "cuda" else []
+        with StopRequest() as stop:
+            for prompt in prompts[len(state["texts"]):]:
+                if stop.requested:
+                    raise CheckpointPause("Arms-race generation restart state saved")
+                inputs = self.attacker.tokenizer(
+                    prompt, return_tensors="pt", truncation=True,
+                    max_length=self.attacker.config.max_seq_length,
+                ).to(device)
+                # HF generate samples through the device's default generator.
+                # Forking preserves the caller RNG and permits exact sample restart.
+                with torch.random.fork_rng(devices=devices), torch.no_grad():
+                    if device.type == "cuda":
+                        torch.cuda.set_rng_state(generator.get_state(), device)
+                    else:
+                        torch.set_rng_state(generator.get_state())
+                    generated = self.attacker.model.generate(
+                        **inputs, max_new_tokens=self.attacker.config.max_new_tokens,
+                        temperature=self.attacker.config.temperature,
+                        top_p=self.attacker.config.top_p, do_sample=True,
+                    )
+                    generator.set_state(torch.cuda.get_rng_state(device)
+                                        if device.type == "cuda" else torch.get_rng_state())
+                state["texts"].append(self.attacker.tokenizer.decode(
+                    generated[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True,
+                ))
+                state["generator"] = generator.get_state()
+                atomic_save(state, path)
+        return state["texts"]
 
     def _evaluate_defender(self, ai_texts: List[str]) -> Dict[str, float]:
         from ..text_evasion.evaluate import compute_auroc
@@ -202,81 +272,66 @@ class ArmsRaceExperiment:
         }
 
     def run(self):
-        """Execute the full arms race experiment."""
+        """Run paired updates, resuming a completed phase instead of replaying it."""
         cfg = self.config
+        if self._restart is None:
+            self._restore_restart()
+        state = self._restart
+        with StopRequest() as stop:
+            while state["round"] < cfg.num_rounds:
+                if stop.requested:
+                    raise CheckpointPause("Arms-race phase restart state saved")
+                index = state["round"]
+                metrics = state["metrics"]
+                metrics.setdefault("round", index + 1)
+                metrics.setdefault("eval_samples", min(cfg.eval_prompts, len(self.eval_prompts)))
+                evaluation = self.eval_prompts[:cfg.eval_prompts]
+                seed = cfg.seed + 10_000 * index
+                phase = state["phase"]
+                self._generation_context = f"round_{index + 1}_{phase}"
 
-        for round_idx in range(cfg.num_rounds):
-            logger.info(
-                "\n%s\n  ARMS RACE — ROUND %d/%d\n%s",
-                "=" * 60, round_idx + 1, cfg.num_rounds, "=" * 60,
-            )
-
-            round_metrics = {"round": round_idx + 1, "eval_samples": len(self.eval_prompts)}
-
-            eval_prompts = self.eval_prompts[:min(cfg.eval_prompts, len(self.eval_prompts))]
-            pre_attack_texts = self._generate(
-                eval_prompts, seed=cfg.seed + 10_000 * round_idx,
-            )
-            before_attack = self._evaluate_defender(pre_attack_texts)
-
-            # === Attacker phase ===
-            logger.info("--- Attacker phase ---")
-            self.attacker.train(max_steps=cfg.attacker_steps_per_round)
-            post_attack_texts = self._generate(
-                eval_prompts, seed=cfg.seed + 10_000 * round_idx,
-            )
-            after_attack = self._evaluate_defender(post_attack_texts)
-            round_metrics["before_attacker_update"] = before_attack
-            round_metrics["after_attacker_update"] = after_attack
-
-            logger.info(
-                "Attacker update: held-out attack success=%.1f%%, detector accuracy=%.3f",
-                after_attack.get("attack_success_rate", 0) * 100,
-                after_attack.get("accuracy", 0),
-            )
-
-            # === Defender phase ===
-            if self.defender is not None:
-                logger.info("--- Defender phase ---")
-
-                n_train = min(cfg.defender_retrain_samples // 2, len(self.train_prompts))
-                attacker_texts = self._generate(
-                    self.train_prompts[:n_train], seed=cfg.seed + 10_000 * round_idx + 2,
-                )
-                human_refs = self.train_references[:n_train]
-                defender_metrics = self.defender.retrain(
-                    ai_texts=attacker_texts,
-                    human_texts=human_refs,
-                )
-                round_metrics["defender_training"] = defender_metrics
-
-                logger.info(
-                    "Defender retrained: accuracy=%.3f, auroc=%.3f",
-                    defender_metrics.get("accuracy", 0),
-                    defender_metrics.get("auroc", 0),
-                )
-
-                # Update attacker's detector ensemble with the retrained defender
-                # (this closes the adversarial loop).
-                self._update_attacker_detectors()
-            after_defense = self._evaluate_defender(post_attack_texts)
-            round_metrics["after_defender_update"] = after_defense
-            round_metrics["update_effects"] = self._compute_update_effects(
-                before_attack, after_attack, after_defense,
-            )
-
-            # === Record metrics ===
-            self.history.append(round_metrics)
-            self._save_history()
-
-            logger.info(
-                "Round %d complete. Attacker change = %+.4f, defender accuracy change = %+.4f",
-                round_idx + 1,
-                round_metrics["update_effects"]["attacker_success_change"],
-                round_metrics["update_effects"]["defender_accuracy_change"],
-            )
-
-        logger.info("\n%s\n  ARMS RACE COMPLETE\n%s", "=" * 60, "=" * 60)
+                if phase == "before_attack":
+                    texts = self._generate(evaluation, seed=seed)
+                    metrics["before_attacker_update"] = self._evaluate_defender(texts)
+                    state["phase"] = "attacker"
+                elif phase == "attacker":
+                    self.attacker.config.output_dir = os.path.join(
+                        cfg.output_dir, "attacker", f"round_{index + 1}",
+                    )
+                    self.attacker.train(max_steps=cfg.attacker_steps_per_round)
+                    state["phase"] = "after_attack"
+                elif phase == "after_attack":
+                    state["post_attack_texts"] = self._generate(evaluation, seed=seed)
+                    metrics["after_attacker_update"] = self._evaluate_defender(state["post_attack_texts"])
+                    state["phase"] = "generate_defender"
+                elif phase == "generate_defender":
+                    count = min(cfg.defender_retrain_samples // 2, len(self.train_prompts))
+                    state["training_texts"] = self._generate(self.train_prompts[:count], seed=seed + 2)
+                    state["phase"] = "defender"
+                elif phase == "defender":
+                    self.defender._round = index
+                    metrics["defender_training"] = self.defender.retrain(
+                        ai_texts=state["training_texts"],
+                        human_texts=self.train_references[:len(state["training_texts"])],
+                    )
+                    self._update_attacker_detectors()
+                    state["phase"] = "after_defense"
+                elif phase == "after_defense":
+                    metrics["after_defender_update"] = self._evaluate_defender(state["post_attack_texts"])
+                    metrics["update_effects"] = self._compute_update_effects(
+                        metrics["before_attacker_update"], metrics["after_attacker_update"],
+                        metrics["after_defender_update"],
+                    )
+                    self.history.append(dict(metrics))
+                    state["round"] += 1
+                    state["metrics"] = {}
+                    state.pop("post_attack_texts")
+                    state.pop("training_texts")
+                    state["phase"] = "before_attack"
+                else:
+                    raise ValueError(f"Unknown arms-race restart phase: {phase}")
+                self._save_restart()
+                self._save_history()
         self._print_summary()
 
     def _update_attacker_detectors(self):

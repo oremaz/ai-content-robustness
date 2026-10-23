@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
@@ -38,6 +39,13 @@ from PIL import Image
 from ..config import ImageEvasionConfig
 
 logger = logging.getLogger(__name__)
+
+
+def _diffusion_source(model_id):
+    if not Path(model_id).is_dir() and os.environ.get("HF_HUB_OFFLINE", "").lower() in {"1", "true", "yes"}:
+        from huggingface_hub import hf_hub_download
+        return str(Path(hf_hub_download(model_id, "model_index.json", local_files_only=True)).parent)
+    return model_id
 
 
 # ---------------------------------------------------------------------------
@@ -365,7 +373,7 @@ class DDPOImageEvasionTrainer:
         cfg = self.config
 
         self.pipeline = StableDiffusionPipeline.from_pretrained(
-            cfg.diffusion_model,
+            _diffusion_source(cfg.diffusion_model),
             torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
         )
         # Use DDIM scheduler for tractable log-prob computation
@@ -462,7 +470,6 @@ class DDPOImageEvasionTrainer:
     def _encode_prompts(self, prompts: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encode prompts into text embeddings for the pipeline."""
         device = self.pipeline.unet.device
-        generator = torch.Generator(device=device).manual_seed(cfg.seed)
         dtype = self.pipeline.unet.dtype
 
         text_inputs = self.pipeline.tokenizer(
@@ -491,6 +498,11 @@ class DDPOImageEvasionTrainer:
         return prompt_embeds, negative_embeds
 
     def train(self):
+        from ..checkpointing import StopRequest
+        with StopRequest() as self._stop_request:
+            return self._train()
+
+    def _train(self):
         """Run full DDPO-IS training loop.
 
         Two-phase loop per epoch:
@@ -510,67 +522,123 @@ class DDPOImageEvasionTrainer:
         )
 
         device = self.pipeline.unet.device
+        generator = torch.Generator(device=device).manual_seed(cfg.seed)
+        from dataclasses import asdict
+        from ..checkpointing import (
+            CheckpointClock, CheckpointPause, atomic_save, gradient_state,
+            load_checkpoint, model_state, restore_gradients, restore_model,
+            restore_rng, rng_state,
+        )
+        restart_path = os.path.join(cfg.output_dir, "restart.pt")
+        restart = load_checkpoint(restart_path, cfg)
+        self.training_history = [] if restart is None else restart.get("training_history", [])
+        progress = {"epoch": 0, "inner_epoch": 0, "position": 0, "trajectory": None,
+                    "timestep_order": None, "total_loss": 0.0, "total_kl": 0.0, "num_updates": 0}
+        if restart is not None:
+            restore_model(self.pipeline.unet, restart["model"])
+            optimizer.load_state_dict(restart["optimizer"])
+            restore_gradients(self.pipeline.unet, restart["gradients"])
+            self.stat_tracker.__dict__.update(restart["stat_tracker"])
+            self.prompts, self.eval_prompts = restart["prompts"], restart["eval_prompts"]
+            progress = restart["progress"]
+            restore_rng(restart["rng"], generator)
+        clock = CheckpointClock()
 
-        for epoch in range(cfg.num_train_epochs):
+        def save():
+            atomic_save({
+                "config": asdict(cfg), "model": model_state(self.pipeline.unet),
+                "optimizer": optimizer.state_dict(), "gradients": gradient_state(self.pipeline.unet),
+                "stat_tracker": self.stat_tracker.__dict__, "progress": progress,
+                "training_history": self.training_history,
+                "prompts": self.prompts, "eval_prompts": self.eval_prompts,
+                "rng": rng_state(generator),
+            }, restart_path)
+            clock.saved()
+
+        save()
+        for epoch in range(progress["epoch"], cfg.num_train_epochs):
             logger.info("=== DDPO Epoch %d/%d ===", epoch + 1, cfg.num_train_epochs)
 
-            # ---- Sample Phase ----
-            self.pipeline.unet.eval()
+            if progress["trajectory"] is None:
+                # ---- Sample Phase ----
+                self.pipeline.unet.eval()
 
-            # Sample a batch of prompts
-            rng = np.random.default_rng(cfg.seed + epoch)
-            batch_indices = rng.permutation(len(self.prompts))[:cfg.sample_batch_size]
-            batch_prompts = [self.prompts[i] for i in batch_indices]
+                # Sample a batch of prompts
+                rng = np.random.default_rng(cfg.seed + epoch)
+                batch_indices = rng.permutation(len(self.prompts))[:cfg.sample_batch_size]
+                batch_prompts = [self.prompts[i] for i in batch_indices]
 
-            # Encode prompts
-            prompt_embeds, negative_embeds = self._encode_prompts(batch_prompts)
+                # Encode prompts
+                prompt_embeds, negative_embeds = self._encode_prompts(batch_prompts)
 
-            # Generate with trajectory tracking
-            with torch.no_grad():
-                final_latents, all_latents, all_log_probs = pipeline_sample_with_logprob(
-                    pipeline=self.pipeline,
-                    prompt_embeds=prompt_embeds,
-                    negative_prompt_embeds=negative_embeds,
-                    num_inference_steps=cfg.num_inference_steps,
-                    guidance_scale=7.5,
-                    generator=generator,
+                # Generate with trajectory tracking
+                with torch.no_grad():
+                    final_latents, all_latents, all_log_probs = pipeline_sample_with_logprob(
+                        pipeline=self.pipeline,
+                        prompt_embeds=prompt_embeds,
+                        negative_prompt_embeds=negative_embeds,
+                        num_inference_steps=cfg.num_inference_steps,
+                        guidance_scale=7.5,
+                        generator=generator,
+                    )
+
+                # Decode to images and compute rewards
+                images = decode_latents_to_pil(self.pipeline, final_latents)
+                rewards = []
+                for img, prompt in zip(images, batch_prompts):
+                    r = self.reward_fn(img, prompt)
+                    rewards.append(r["total"])
+
+                rewards_arr = np.array(rewards)
+
+                # Compute per-prompt advantages
+                if getattr(cfg, "per_prompt_stat_tracking", True):
+                    advantages = self.stat_tracker.update(batch_prompts, rewards)
+                else:
+                    advantages = (rewards_arr - rewards_arr.mean()) / (rewards_arr.std() + 1e-8)
+
+                advantages_t = torch.tensor(advantages, device=device, dtype=torch.float32)
+                num_timesteps = len(all_log_probs)
+
+                logger.info(
+                    "  Sample phase: mean_reward=%.4f, std_reward=%.4f",
+                    rewards_arr.mean(), rewards_arr.std(),
                 )
 
-            # Decode to images and compute rewards
-            images = decode_latents_to_pil(self.pipeline, final_latents)
-            rewards = []
-            for img, prompt in zip(images, batch_prompts):
-                r = self.reward_fn(img, prompt)
-                rewards.append(r["total"])
-
-            rewards_arr = np.array(rewards)
-
-            # Compute per-prompt advantages
-            if getattr(cfg, "per_prompt_stat_tracking", True):
-                advantages = self.stat_tracker.update(batch_prompts, rewards)
-            else:
-                advantages = (rewards_arr - rewards_arr.mean()) / (rewards_arr.std() + 1e-8)
-
-            advantages_t = torch.tensor(advantages, device=device, dtype=torch.float32)
+                progress["trajectory"] = {
+                    "prompt_embeds": prompt_embeds.detach().cpu(),
+                    "negative_embeds": negative_embeds.detach().cpu(),
+                    "latents": [value.detach().cpu() for value in all_latents],
+                    "log_probs": [value.detach().cpu() for value in all_log_probs],
+                    "advantages": advantages_t.detach().cpu(), "rewards": rewards_arr,
+                    "timesteps": self.pipeline.scheduler.timesteps.cpu(),
+                }
+                save()
+            trajectory = progress["trajectory"]
+            prompt_embeds = trajectory["prompt_embeds"].to(device)
+            negative_embeds = trajectory["negative_embeds"].to(device)
+            all_latents, all_log_probs = trajectory["latents"], trajectory["log_probs"]
+            advantages_t, rewards_arr = trajectory["advantages"].to(device), trajectory["rewards"]
+            self.pipeline.scheduler.set_timesteps(cfg.num_inference_steps, device=device)
+            if not torch.equal(self.pipeline.scheduler.timesteps.cpu(), trajectory["timesteps"]):
+                raise ValueError("DDPO scheduler timesteps differ from restart trajectory")
             num_timesteps = len(all_log_probs)
-
-            logger.info(
-                "  Sample phase: mean_reward=%.4f, std_reward=%.4f",
-                rewards_arr.mean(), rewards_arr.std(),
-            )
+            if self._stop_request.requested:
+                raise CheckpointPause("DDPO sampled trajectory and restart saved")
 
             # ---- Train Phase ----
             self.pipeline.unet.train()
 
-            for inner_epoch in range(num_inner_epochs):
-                # Shuffle timestep order for each inner epoch
-                timestep_order = np.random.permutation(num_timesteps)
+            for inner_epoch in range(progress["inner_epoch"], num_inner_epochs):
+                if progress["timestep_order"] is None:
+                    progress["timestep_order"] = np.random.permutation(num_timesteps)
+                timestep_order = progress["timestep_order"]
+                total_loss, total_kl, num_updates = (
+                    progress["total_loss"], progress["total_kl"], progress["num_updates"]
+                )
 
-                total_loss = 0.0
-                total_kl = 0.0
-                num_updates = 0
-
-                for step_idx in timestep_order:
+                for position in range(progress["position"], len(timestep_order)):
+                    step_idx = timestep_order[position]
                     t = self.pipeline.scheduler.timesteps[step_idx]
                     latents_at_step = all_latents[step_idx].to(device)
                     next_latents = all_latents[step_idx + 1].to(device)
@@ -617,6 +685,13 @@ class DDPOImageEvasionTrainer:
                         optimizer.step()
                         optimizer.zero_grad()
 
+                    progress.update(position=position + 1, total_loss=total_loss,
+                                    total_kl=total_kl, num_updates=num_updates)
+                    if clock.due() or self._stop_request.requested:
+                        save()
+                        if self._stop_request.requested:
+                            raise CheckpointPause("DDPO restart saved after denoising update")
+
                 # Flush remaining gradients
                 if num_updates % cfg.train_batch_size != 0:
                     torch.nn.utils.clip_grad_norm_(
@@ -626,10 +701,19 @@ class DDPOImageEvasionTrainer:
                     optimizer.zero_grad()
 
                 if num_updates > 0:
+                    self.training_history.append({
+                        "epoch": epoch + 1, "inner_epoch": inner_epoch + 1,
+                        "mean_reward": float(rewards_arr.mean()),
+                        "ppo_loss": total_loss / num_updates, "approx_kl": total_kl / num_updates,
+                    })
                     logger.info(
                         "  Inner epoch %d: ppo_loss=%.6f, kl=%.6f",
                         inner_epoch + 1, total_loss / num_updates, total_kl / num_updates,
                     )
+
+                progress.update(inner_epoch=inner_epoch + 1, position=0, timestep_order=None,
+                                total_loss=0.0, total_kl=0.0, num_updates=0)
+                save()
 
             # Log epoch summary
             logger.info(
@@ -642,6 +726,12 @@ class DDPOImageEvasionTrainer:
                 ckpt_dir = os.path.join(cfg.output_dir, f"checkpoint-epoch{epoch+1}")
                 self.pipeline.unet.save_pretrained(ckpt_dir)
                 logger.info("Checkpoint saved to %s", ckpt_dir)
+
+            progress.update(epoch=epoch + 1, inner_epoch=0, position=0, trajectory=None,
+                            timestep_order=None, total_loss=0.0, total_kl=0.0, num_updates=0)
+            save()
+            if self._stop_request.requested:
+                raise CheckpointPause("DDPO restart saved after epoch")
 
         # Save final model
         final_dir = os.path.join(cfg.output_dir, "final")
@@ -657,6 +747,16 @@ class DDPOImageEvasionTrainer:
         purifier would be circular — the attacker could "unlearn" its own
         adversarial signature.
         """
+        from ..checkpointing import StopRequest
+        with StopRequest() as stop:
+            return self._evaluate(num_samples, stop)
+
+    def _evaluate(self, num_samples, stop):
+        from dataclasses import asdict
+        from pathlib import Path
+        from ..checkpointing import (
+            CheckpointPause, atomic_save, evaluation_state, rng_state,
+        )
         self.pipeline.unet.eval()
         results: Dict[str, List[float]] = {"total": [], "evasion": [], "clip": [], "purified_evasion": []}
 
@@ -668,7 +768,7 @@ class DDPOImageEvasionTrainer:
         try:
             from diffusers import StableDiffusionImg2ImgPipeline
             purifier_pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
-                self.config.diffusion_model,
+                _diffusion_source(self.config.diffusion_model),
                 torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
                 safety_checker=None,
             ).to(self.pipeline.unet.device)
@@ -683,33 +783,40 @@ class DDPOImageEvasionTrainer:
             )
             purifier_pipe = None
 
-        # Schedule is documented: forward-noise level strength=0.15 (Saberi et al., ICLR 2024)
-        # with 50 reverse DDIM steps over the same schedule as the attacker.
+        # The independent purifier retains its pretrained img2img scheduler.
         purification_strength = 0.15
         purification_steps = 50
 
-        for prompt in eval_prompts:
+        path = Path(self.config.output_dir) / "evaluation_restart.pt"
+        state = evaluation_state(path, {
+            "config": asdict(self.config), "prompts": eval_prompts,
+            "purifier_available": purifier_pipe is not None,
+            "purification_strength": purification_strength,
+            "purification_steps": purification_steps,
+        }, self.pipeline.unet)
+        for prompt in eval_prompts[len(state["scores"]):]:
+            if stop.requested:
+                raise CheckpointPause("DDPO evaluation saved")
             with torch.no_grad():
                 image = self.pipeline(prompt, num_inference_steps=50).images[0]
-
                 purified_image = None
                 if purifier_pipe is not None:
                     purified_image = purifier_pipe(
-                        prompt=prompt, image=image,
-                        strength=purification_strength,
+                        prompt=prompt, image=image, strength=purification_strength,
                         num_inference_steps=purification_steps,
                     ).images[0]
-
-            r = self.reward_fn(image, prompt)
-
-            for k in ["total", "evasion", "clip"]:
-                results[k].append(r[k])
-
-            if purified_image is not None:
-                r_purified = self.reward_fn(purified_image, prompt)
-                results["purified_evasion"].append(r_purified["evasion"])
-
+            reward = self.reward_fn(image, prompt)
+            purified_reward = self.reward_fn(purified_image, prompt) if purified_image is not None else None
+            state["scores"].append({"reward": reward, "purified": purified_reward})
+            state["rng"] = rng_state()
+            atomic_save(state, path)
+        if stop.requested:
+            raise CheckpointPause("DDPO evaluation saved")
+        for item in state["scores"]:
+            for key in ("total", "evasion", "clip"):
+                results[key].append(item["reward"][key])
+            if item["purified"] is not None:
+                results["purified_evasion"].append(item["purified"]["evasion"])
         if not results["purified_evasion"]:
             del results["purified_evasion"]
-
-        return {f"mean_{k}": float(np.mean(v)) for k, v in results.items()}
+        return {f"mean_{key}": float(np.mean(values)) for key, values in results.items()}

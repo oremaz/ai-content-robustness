@@ -23,15 +23,26 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import logging
 import os
 import sys
+from pathlib import Path
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+def save_evaluation(metrics, output_dir, filename="evaluation.json"):
+    destination = Path(output_dir) / filename
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(".tmp")
+    temporary.write_text(json.dumps(metrics, indent=2) + "\n")
+    temporary.replace(destination)
 
 
 def run_grpo_text(args):
@@ -48,8 +59,10 @@ def run_grpo_text(args):
     trainer = GRPOTextEvasionTrainer(config)
     trainer.setup()
     trainer.train()
+    save_evaluation(trainer.training_history, config.output_dir, "training_history.json")
 
     metrics = trainer.evaluate()
+    save_evaluation(metrics, config.output_dir)
     from .text_evasion.evaluate import print_evaluation_report
     print_evaluation_report(metrics, "GRPO Text Evasion")
 
@@ -68,6 +81,7 @@ def run_multispin(args):
     trainer = MultiSPINTrainer(config)
     trainer.setup()
     trainer.train()
+    save_evaluation(trainer.training_history, config.output_dir, "training_history.json")
 
 
 def run_ddpo_image(args):
@@ -83,8 +97,10 @@ def run_ddpo_image(args):
     trainer = DDPOImageEvasionTrainer(config)
     trainer.setup()
     trainer.train()
+    save_evaluation(trainer.training_history, config.output_dir, "training_history.json")
 
     metrics = trainer.evaluate()
+    save_evaluation(metrics, config.output_dir)
     from .image_evasion.evaluate import print_image_evaluation_report
     print_image_evaluation_report(metrics, "DDPO Image Evasion")
 
@@ -118,6 +134,8 @@ def run_meta_adapt(args):
     model_name = args.model or "Qwen/Qwen3.5-9B-Base"
     output_dir = args.output_dir or "results/meta_adapt"
     outer_steps = args.epochs or 100
+    from .config import seed_everything
+    seed_everything(42)
 
     logger.info("Loading model %s for meta-learning...", model_name)
 
@@ -128,6 +146,7 @@ def run_meta_adapt(args):
     dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
         model_name, torch_dtype=dtype, device_map="auto", trust_remote_code=True,
+        attn_implementation="eager",
     )
 
     # LoRA: try "all-linear" first, fall back for hybrid architectures
@@ -147,8 +166,8 @@ def run_meta_adapt(args):
         model = get_peft_model(model, lora_config)
 
     # Build detector zoo
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    zoo = DetectorZoo.build_default(device=device)
+    zoo = DetectorZoo.build_default(device="cpu")
+    save_evaluation(zoo.availability, output_dir, "detector_availability.json")
     logger.info("Detector zoo has %d detectors", len(zoo.detectors))
     if len(zoo.detectors) < 2:
         raise RuntimeError(
@@ -159,8 +178,36 @@ def run_meta_adapt(args):
     logger.info("Reserved detector before meta-training: %s", held_out_name)
 
     # Load prompts
-    ds = load_dataset("cnn_dailymail", "3.0.0", split="train")
-    prompts = [" ".join(t.split()[:50]) for t in ds["article"][:500] if len(t.split()) > 30]
+    ds = load_dataset("abisee/cnn_dailymail", "3.0.0", split="train")
+    prompts, seen = [], set()
+    for row in ds:
+        words = row["article"].split()
+        prompt = " ".join(words[:50])
+        if len(words) <= 30 or prompt in seen:
+            continue
+        prompts.append(prompt)
+        seen.add(prompt)
+        if len(prompts) == 700:
+            break
+    if len(prompts) != 700:
+        raise ValueError("MAML requires 500 training, 100 adaptation and 100 independent evaluation prompts")
+    meta_prompts, adaptation_prompts, evaluation_prompts = prompts[:500], prompts[500:600], prompts[600:]
+    os.makedirs(output_dir, exist_ok=True)
+    manifest = {
+        "dataset": "abisee/cnn_dailymail", "configuration": "3.0.0", "split": "train", "seed": 42,
+        "meta_training": [hashlib.sha256(prompt.encode()).hexdigest() for prompt in meta_prompts],
+        "adaptation": [hashlib.sha256(prompt.encode()).hexdigest() for prompt in adaptation_prompts],
+        "evaluation": [hashlib.sha256(prompt.encode()).hexdigest() for prompt in evaluation_prompts],
+        "held_out_detector": held_out_name, "training_detectors": sorted(zoo.detectors),
+    }
+    manifest_path = os.path.join(output_dir, "prompt_manifest.json")
+    if os.path.isfile(manifest_path):
+        with open(manifest_path) as handle:
+            if json.load(handle) != manifest:
+                raise ValueError("MAML prompt or detector partition changed since the recorded run")
+    else:
+        with open(manifest_path, "w") as handle:
+            json.dump(manifest, handle, indent=2)
 
     # Run meta-learning
     maml = MAMLAdaptation(
@@ -175,11 +222,20 @@ def run_meta_adapt(args):
         first_order=args.first_order,
         output_dir=output_dir,
     )
-    maml.train(prompts)
+    maml.train(meta_prompts)
+    save_evaluation(maml.training_history, output_dir, "training_history.json")
 
     logger.info("Measuring adaptation cost to held-out detector: %s", held_out_name)
-    comparison = maml.compare_with_pre_meta(held_out_fn, held_out_name, prompts[:100])
-    logger.info("Speedup: %.2fx", comparison["speedup"])
+    comparison = maml.compare_with_pre_meta(
+        held_out_fn, held_out_name, adaptation_prompts,
+        evaluation_prompts=evaluation_prompts,
+    )
+    with open(os.path.join(output_dir, "adaptation_comparison.json"), "w") as handle:
+        json.dump(comparison, handle, indent=2)
+    if comparison["speedup"] is None:
+        logger.info("Adaptation speedup is not estimable from the observed threshold crossings")
+    else:
+        logger.info("Speedup: %.2fx", comparison["speedup"])
 
 
 def run_benchmark(args):
@@ -241,8 +297,8 @@ def run_smoke_test(args):
 
     try:
         from ..detectors.text_detectors import DivEyeDetector
-        DivEyeDetector(scoring_model="gpt2", device="cpu")
-        print("   DivEye constructor: OK (inference still requires a fitted classifier)")
+        DivEyeDetector(device="cpu")
+        print("   DivEye constructor: OK (inference requires the authors' classifier, Falcon and Gemma)")
     except Exception as e:
         print(f"   DivEye detector: FAILED ({e})")
 

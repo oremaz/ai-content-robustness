@@ -7,6 +7,7 @@ The composite reward combines evasion, semantic preservation, and quality.
 from __future__ import annotations
 
 import logging
+from collections import OrderedDict
 from typing import Callable, Dict, List, Optional
 
 import numpy as np
@@ -57,6 +58,7 @@ class SemanticSimilarityReward:
         self._device = device
         self._model = None
         self._tokenizer = None
+        self._embedding_cache = OrderedDict()
 
     def _load(self):
         if self._model is not None:
@@ -93,6 +95,39 @@ class SemanticSimilarityReward:
         emb_src = self._embed(source)
         emb_gen = self._embed(generated)
         return float(np.dot(emb_src.flatten(), emb_gen.flatten()))
+
+    def batch(self, sources: List[str], generated: List[str]) -> List[float]:
+        if len(sources) != len(generated):
+            raise ValueError("Semantic sources and completions must be aligned")
+        if not sources:
+            return []
+        self._load()
+        texts = list(dict.fromkeys([*sources, *generated]))
+        embeddings = {}
+        missing = []
+        for text in texts:
+            if text in self._embedding_cache:
+                embeddings[text] = self._embedding_cache[text]
+                self._embedding_cache.move_to_end(text)
+            else:
+                missing.append(text)
+        for start in range(0, len(missing), 16):
+            selected = missing[start:start + 16]
+            prefixed = [f"query: {text}" if "e5" in self._model_name.lower() else text for text in selected]
+            tokens = self._tokenizer(prefixed, return_tensors="pt", truncation=True,
+                                     max_length=512, padding=True).to(self._device)
+            with torch.no_grad():
+                hidden = self._model(**tokens).last_hidden_state
+                mask = tokens["attention_mask"].unsqueeze(-1).to(hidden.dtype)
+                pooled = ((hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)).cpu().numpy()
+            pooled = pooled / (np.linalg.norm(pooled, axis=1, keepdims=True) + 1e-8)
+            for text, embedding in zip(selected, pooled):
+                embeddings[text] = embedding.copy()
+                self._embedding_cache[text] = embeddings[text]
+                if len(self._embedding_cache) > 4096:
+                    self._embedding_cache.popitem(last=False)
+        return [float(np.dot(embeddings[source].flatten(), embeddings[text].flatten()))
+                for source, text in zip(sources, generated)]
 
 
 class CompositeReward:
@@ -214,7 +249,7 @@ def _build_roberta_detector_reward(device: str) -> DetectorReward:
 
         pipe = pipeline(
             "text-classification",
-            model="roberta-base-openai-detector",
+            model="openai-community/roberta-base-openai-detector",
             device=0 if device == "cuda" or (device == "auto" and torch.cuda.is_available()) else -1,
         )
 
