@@ -131,7 +131,7 @@ class EfficientNetDetector(BaseDetector):
 
 
 class CLIPImageDetector(BaseDetector):
-    """CLIP-based classifier trained on ArtiFact — best cross-dataset generalizer."""
+    """CLIP-based classifier trained on ArtiFact."""
 
     name = "CLIP Classifier"
     modality = "image"
@@ -282,81 +282,6 @@ class DINOv2Detector(BaseDetector):
             score=ai_score,
             label=DetectionResult.label_from_score(ai_score),
             details={"prob_fake": float(probs[0]), "prob_real": float(probs[1])},
-        )
-
-
-# ===========================================================================
-# 4. SigLIP-2 deepfake detector (HuggingFace)
-# ===========================================================================
-
-
-class SigLIPDetector(BaseDetector):
-    """SigLIP-2 based deepfake/AI-image detector from HuggingFace.
-
-    Uses a fine-tuned SigLIP-2 vision transformer for binary classification.
-    """
-
-    name = "SigLIP-2 Detector"
-    modality = "image"
-
-    def __init__(
-        self,
-        model_id: str = "prithivMLmods/deepfake-detector-model-v1",
-        device: str = "auto",
-    ):
-        self._model_id = model_id
-        self._device_spec = device
-        self._pipe = None
-        self._available: Optional[bool] = None
-
-    def _load(self):
-        if self._pipe is not None:
-            return
-        try:
-            import torch
-            from transformers import pipeline
-
-            device_idx = 0 if (self._device_spec == "auto" and torch.cuda.is_available()) else -1
-            if self._device_spec not in ("auto", "cpu", "cuda"):
-                device_idx = int(self._device_spec.split(":")[-1]) if ":" in self._device_spec else -1
-
-            self._pipe = pipeline(
-                "image-classification",
-                model=self._model_id,
-                device=device_idx,
-            )
-            self._available = True
-        except Exception as e:
-            logger.warning("SigLIPDetector unavailable: %s", e)
-            self._available = False
-
-    def is_available(self) -> bool:
-        if self._available is None:
-            self._available = _check_hf_image_config(self, self._model_id)
-        return bool(self._available)
-
-    def detect(self, content: Union[Image.Image, np.ndarray]) -> DetectionResult:
-        self._load()
-        if not self._available:
-            raise RuntimeError("SigLIP pipeline not available")
-
-        if isinstance(content, np.ndarray):
-            content = Image.fromarray(
-                (content * 255).astype(np.uint8) if content.max() <= 1.0 else content.astype(np.uint8)
-            )
-
-        results = self._pipe(content)
-
-        # Parse results — format: [{"label": "Real/Fake", "score": 0.99}, ...]
-        label_scores = {r["label"].lower(): r["score"] for r in results}
-        ai_score = float(
-            label_scores.get("fake", label_scores.get("ai", label_scores.get("synthetic", 0.5)))
-        )
-        return DetectionResult(
-            score=ai_score,
-            label="ai" if ai_score >= 0.5 else "human",
-            detector_name=self.name,
-            details={"raw": label_scores},
         )
 
 

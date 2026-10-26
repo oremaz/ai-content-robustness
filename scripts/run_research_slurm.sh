@@ -26,6 +26,22 @@ export HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
 export NLTK_DATA="$repo_root/.venv/nltk_data"
 export PATH="$repo_root/.venv/bin:$PATH"
 export TRITON_CACHE_DIR="$repo_root/.venv/cache/triton"
+if [[ "${1:-}" == "--watermark-removal-attack" || "${1:-}" == "--watermark-removal-owner" ]]; then
+    removal_input=${2:?Supply a removal task or evaluator manifest}
+    removal_source=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["source"])' "$removal_input")
+    export PYTHONPATH="$removal_source" PYTHONDONTWRITEBYTECODE=1
+    if [[ "$1" == "--watermark-removal-attack" ]]; then
+        exec srun uv --no-cache run --no-sync python -m ai_content_detector.watermarking.removal "$removal_input"
+    fi
+    exec srun uv --no-cache run --no-sync python "$removal_source/scripts/watermark_removal.py" run "$removal_input" "${3:?Supply a case}" "${4:?Supply a stage}"
+fi
+if [[ "${1:-}" == "--watermark" ]]; then
+    manifest=${2:?Supply a watermark experiment manifest}
+    source_root=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["source"])' "$manifest")
+    export PYTHONPATH="$source_root"
+    export PYTHONDONTWRITEBYTECODE=1
+    exec srun uv --no-cache run --no-sync python "$source_root/scripts/watermark_experiments.py" run "$manifest" "${3:?Supply a watermark stage}"
+fi
 if [[ "${1:-}" == "--profile-rl-optimizations" ]]; then
     module load cuda/12.4.1
     export CC=/usr/bin/gcc CXX=/usr/bin/g++ CUDAHOSTCXX=/usr/bin/g++

@@ -88,7 +88,7 @@ def validate_prerequisites(stage):
                        "tiiuae/falcon-7b-instruct", "openai-community/roberta-base-openai-detector"]
         if stage == "ddpo_image":
             required = ["stable-diffusion-v1-5/stable-diffusion-v1-5", "openai/clip-vit-base-patch32",
-                        "prithivMLmods/deepfake-detector-model-v1", "Gustavosta/Stable-Diffusion-Prompts"]
+                        "Gustavosta/Stable-Diffusion-Prompts"]
         else:
             required = [*text_models, "abisee/cnn_dailymail", "intfloat/e5-base-v2"]
             if stage in COMPARISON_STAGES:

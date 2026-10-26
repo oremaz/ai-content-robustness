@@ -84,7 +84,7 @@ def make_ddpo(path, monkeypatch, interrupt_after=None):
     seed_everything(42)
     trainer = module.DDPOImageEvasionTrainer(ImageEvasionConfig(
         output_dir=str(path), num_train_epochs=2, num_inference_steps=6,
-        sample_batch_size=2, train_batch_size=4,
+        sample_batch_size=2, train_batch_size=4, kl_coeff=0.0, reward_reference_weight=0.0,
     ))
     model = ToyPolicy()
     scheduler = SimpleNamespace(

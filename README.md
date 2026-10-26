@@ -46,6 +46,28 @@ today's samples?" It is also "does it continue to work on samples optimized
 against it, including samples from prompts and detectors that training never
 saw?"
 
+## Watermarking experiments
+
+The [watermarking protocol](docs/watermarking.md) integrates official TextSeal on
+Qwen3.5-4B-Base, released DistSeal generator checkpoints for RAR-XL and
+UViT-H/DC-AE, and an experimental DistSeal-inspired Qwen adaptation with a
+learned latent embedder, text-only message extractor and weight distillation.
+It evaluates watermark removal with and without the original generator weights,
+alongside detection, false positives and quality. The experiment CLI is
+`scripts/watermark_experiments.py`; GPU work runs through Slurm using the project
+`uv` environment and frozen source snapshots. Optional pinned dependencies are
+in `requirements_watermarking.in`.
+The earlier green-list distillation branch was canceled. The replacement first
+tests message recovery from actual autoregressively generated text; that
+validation gates student training and the subsequent removal experiments.
+The [unknown-watermark literature review](docs/watermark_removal_literature.md)
+limits removal to clean-checkpoint merging and clean-data continued training.
+`scripts/watermark_removal.py` prepares separate attacker contracts and owner
+evaluation jobs. Training workers receive no clean reference weights or
+watermark secrets; the owner evaluates all fixed, hashed artifacts afterward.
+Clean training supports LoRA and full-parameter updates. Native image fitting
+uses 800 classes and reports results on the 200 classes excluded from fitting.
+
 ## Essential vocabulary
 
 | Term | Meaning in this project |
@@ -290,9 +312,15 @@ R_{\mathrm{text}} = 0.6R_{\mathrm{evasion}}
                   + 0.1R_{\mathrm{quality}}.
 $$
 
-The image default combines detector evasion and CLIP prompt alignment with
-weights `0.7` and `0.3`. Its aesthetic weight is zero because no trained
-aesthetic model is bundled. Missing or invalid detector rewards fail clearly.
+The image reward is `0.64 * evasion + 0.26 * CLIP alignment + 0.10 * reference`.
+Reference similarity is `1 / (1 + mean_KL / scale)`, where conditional KL compares
+stochastic DDIM transitions with initial SD1.5, averaged over latent coordinates
+and stochastic timesteps for each image. All three components are bounded in
+`[0, 1]` before joint advantage normalization; there is no extra direct KL loss.
+The dedicated experiment freezes the scale from a training-only probe and then
+restarts the main attacker from initial SD1.5. See the
+[reference reward protocol](docs/image_reference_reward.md) for calibration,
+observed-scale diagnostics and the distinction from exact KL regularization.
 
 ### One example used by the three text methods
 
@@ -411,15 +439,160 @@ continuation pairs without detector queries. Both generate normally afterwards. 
 
 1. **Generate** images from prompts, storing each image's sequence of denoising
    decisions (50 steps by default).
-2. **Score** the final images: 70% detector evasion reward (one minus the mean
-   detector AI score) and 30% CLIP prompt alignment.
+2. **Score** the final images and their trajectories: 64% detector evasion,
+   26% CLIP prompt alignment and 10% bounded initial-model reference similarity.
 3. **Update** the generator's UNet LoRA weights to make decisions associated with
    above-baseline rewards more likely, and those with below-baseline rewards less
-   likely. DDPO-IS uses a clipped policy-gradient objective to limit updates.
+   likely. DDPO-IS uses a clipped policy-gradient objective. The reference reward
+   is computed during rollout with initial SD1.5 evaluated with LoRA disabled.
+   Deterministic terminal transitions are excluded from policy updates and KL.
 
 Repeat this loop to favor images that evade the detectors while matching the
 prompt. "More human-like" means lower detector AI scores here; human-perceived
 realism and image quality are not guaranteed.
+
+The DDPO default defender is now DDA. The original ArtiFact-trained EfficientNet
+and CLIP classifiers remain available as baselines. The unvalidated third-party
+SigLIP detector has been removed. `DDADetector` loads the pinned official model
+and source described by `results/research_workflow/image_dda/resources/provenance.json`.
+Its native preprocessing uses a 336-pixel center crop and CLIP normalization.
+`CommunityForensicsDetector` is also exported, with pinned official 224/384
+checkpoints, native resizing and ImageNet normalization. It loads lazily and is
+not included in the DDA experiment, reward ensemble, or automatic downloads.
+
+The removal passed 26 focused image detector, numerical, DDPO and configuration
+tests. Streamlit startup also passed with detector availability mocked as
+unavailable; model loading and scoring were not exercised by that smoke check.
+
+### Official DDA benchmark and one SD1.5 round
+
+The dedicated driver evaluates official DDA on the existing ArtiFact holdout,
+CIFAKE and Shoes without local detector training. It then warms official DDA on
+1,000 base-SD1.5 outputs paired with ArtiFact real images. An internal 80/20 split
+reserves 200 pairs for validation; DDPO uses only the 800 fitting prompts.
+After 50 DDPO epochs, one defender update uses fresh attacked outputs on the
+same fitting pool. Both defender fits use three epochs and learning rate 2e-5,
+updating only DDA LoRA and classifier parameters and selecting validation loss.
+
+The 500 evaluation prompts and 500 ArtiFact holdout real images remain excluded
+from fitting. Before/after scoring reuses saved base and attacked images. For
+the race, both classes are resized to 200 pixels before the DDA center crop to
+control resolution differences. The benchmark preserves native preprocessing.
+This is supervised adaptation of released DDA, not a reproduction of its original
+aligned-data training. Community Forensics is intentionally unused.
+
+```bash
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py prepare
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py submit MANIFEST
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py report MANIFEST
+```
+
+The revised attacker first runs one training-only probe epoch without reference
+reward, measures per-image KL after its updates, and fixes the reference scale
+to the median positive measurement. Probe weights are discarded. The main
+attacker still starts from initial SD1.5 and runs 50 epochs. Calibration,
+effective configuration and component variation diagnostics are retained.
+
+For an existing chain, `replace-attack PREVIOUS_MANIFEST` creates a new frozen
+run that adopts its preparation, benchmark and warm-up jobs. `submit MANIFEST
+--held` submits only replacement attacker and defense jobs for dependency checks
+before swapping the old pending jobs. It never cancels adopted jobs on a
+submission failure. The
+[replacement live report](docs/image_reference_reward_results.md) is separate
+from reports still written by the running original prerequisites.
+
+The five jobs use `qos_gpu_h100-t3`: an eight-hour benchmark allocation and
+four-hour allocations for preparation, warm-up, attack and defense. Dependencies
+prevent attack before warm-up and defense before completed DDPO training. Frozen
+source copies, model revisions, image identities, restart state and per-stage
+receipts are retained. Preparation includes a real GPU forward/backward smoke
+check before the production benchmark or race can start. The
+[live image report](docs/image_reference_reward_results.md) links the run's measured tables, CSV
+and attacker curves; submitted work is not reported as a completed experiment.
+
+Image workflow validation passed 51 focused tests covering native preprocessing,
+AI-score direction, initial-reference KL and its gradients, deterministic DDIM
+transitions, bounded rewards, probe-scale selection, data splits, preservation
+of adopted Slurm jobs, reporting and checkpoint recovery.
+The existing notebook signal-forwarding test stalled and was excluded from this
+completed test run (`-k 'not papermill'`). Official DDA also passed a strict
+537-key CPU checkpoint load. The real GPU smoke check and experimental metrics
+are recorded by the submitted preparation and experiment jobs.
+
+### Long SD1.5 attacker experiment
+
+The current DDPO run trains SD1.5 UNet LoRA against the warmed DDA defender for
+12,800 generated training images, retaining checkpoints at 6,400 and 12,800.
+It uses eight images per rollout, historical prompt statistics after at least
+16 observations, and reward weights 0.64 evasion, 0.26 CLIP and 0.10 bounded
+initial-model reference similarity. Training and evaluation share the same
+float32 latent-trajectory DDIM sampler.
+
+The immutable prompt split contains 800 training, 200 validation and 500 test
+prompts. Validation every 800 training images selects checkpoints while requiring
+at least 95% of initial mean CLIP alignment. Final evaluation compares the
+validation-selected checkpoint with initial SD1.5 on the held-out test prompts.
+Community Forensics is unused.
+
+One defender update is queued after final attacker evaluation. It reuses the
+existing `research.defend()` workflow: the same selected attacker generates
+1,000 fitting images, with 800 paired with ArtiFact real images for training and
+200 pairs for validation. Warmed DDA receives three epochs of LoRA/head training
+at learning rate 2e-5. Before and after updating, the defender is scored on the
+exact saved base, attacked and human test images. Both fixed 0.5 and the warmed
+defender's validation threshold are retained. The before/after report is linked
+from [the defender update results](docs/image_defender_update_results.md).
+
+```bash
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py attach-defender PARENT_MANIFEST
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py submit DEFENDER_MANIFEST --held
+```
+
+The standalone defender submission adopts the existing final evaluation job as
+its dependency, validates its `test.json` completion receipt, and leaves the
+original manifest and frozen source unchanged. Its generation adapter loads the
+selected long-run checkpoint and saved test images; training and evaluation
+remain in the existing implementation.
+If Slurm has purged the completed parent from its active controller, submission
+can retain verified successful accounting and the matching completion receipt
+instead of creating an invalid native dependency. The worker still checks the
+parent receipt before training.
+
+Defender integration passed 43 focused image tests, including shared workflow
+reuse, identical before/after image sets, generation-only sampling, adopted
+completion receipts, restart contracts and reporting. The GPU defender update
+is exercised by the queued job after its predecessor completes.
+Worker-entry regression checks also exercise the adopted receipt through the
+actual job runner, including failed or mismatched parent receipts.
+
+[Concise long-run findings](docs/image_attacker_ablation_summary.md) distinguish
+raw evasion gains from checkpoints meeting the CLIP requirement. Refresh with:
+
+```bash
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/report_image_attacker_summary.py MANIFEST
+```
+
+The run and final evaluation remain on regular H100 QoS with checkpoint recovery.
+Automatic pre/post reporting jobs are canceled. Reporting is refreshed manually;
+the frozen running source, checkpoint configuration and dependency receipts are
+preserved for recovery and final evaluation. Conclusions remain limited to this
+seed, defender and prompt distribution.
+
+An additional evaluation-only job can score a saved long-run checkpoint on the
+same 500 held-out prompts and noise seeds, reusing the completed initial-model
+baseline and human scores. It performs no attacker or defender training:
+
+```bash
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py evaluate-checkpoint PARENT_MANIFEST CHECKPOINT
+PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py submit EVALUATION_MANIFEST --held
+```
+
+This job requests one hour on regular H100 QoS and records evasion, CLIP
+alignment/retention, AUROC and human false positives. Results are linked from
+[the additional checkpoint evaluation](docs/image_final_checkpoint_test_results.md).
+This is a post-hoc test of a requested checkpoint; it does not replace the
+original validation-selected attacker or select further checkpoints using test
+scores.
 
 ### MAML fast adaptation
 
@@ -518,8 +691,9 @@ or non-convergence.
 
 The experiment records paired repeated-update measurements, not a Nash equilibrium
 or a Nash gap. `RADARDefender` is only a compatibility alias; this is not the
-RADAR alternating paraphraser and detector algorithm. Image arms-race mode is
-intentionally rejected because an adaptive image defender is not implemented.
+RADAR alternating paraphraser and detector algorithm. The generic image
+arms-race entry point remains rejected; the dedicated DDA image driver above
+implements the specified single-round SD1.5 protocol separately.
 
 ## Evaluation and leakage controls
 

@@ -58,7 +58,7 @@ def cache_model(model_name):
     if info.library_name == "diffusers":
         offline_check(f"import torch; from diffusers import StableDiffusionPipeline; StableDiffusionPipeline.from_pretrained({str(path)!r}, local_files_only=True, torch_dtype=torch.float32)")
     else:
-        offline_check(f"from transformers import AutoConfig,AutoTokenizer,AutoImageProcessor; cfg=AutoConfig.from_pretrained({model_name!r},local_files_only=True,trust_remote_code={not model_name.startswith('tiiuae/')!r}); loader=AutoImageProcessor if 'siglip' in cfg.model_type else AutoTokenizer; loader.from_pretrained({model_name!r},local_files_only=True,trust_remote_code={not model_name.startswith('tiiuae/')!r})")
+        offline_check(f"from transformers import AutoConfig,AutoTokenizer; AutoConfig.from_pretrained({model_name!r},local_files_only=True,trust_remote_code={not model_name.startswith('tiiuae/')!r}); AutoTokenizer.from_pretrained({model_name!r},local_files_only=True,trust_remote_code={not model_name.startswith('tiiuae/')!r})")
     return {"revision": info.sha, "path": str(path), "weight_files": sum(1 for _ in path.rglob("*.safetensors")), "offline_ready": True}
 
 
@@ -189,8 +189,7 @@ def prepare_rl(manifest):
     models = ["Qwen/Qwen3.5-9B-Base", "tiiuae/falcon-7b", "tiiuae/falcon-7b-instruct",
               "openai-community/roberta-base-openai-detector", "intfloat/e5-base-v2",
               "rrivera1849/LUAR-MUD", "tuner007/pegasus_paraphrase",
-              "stable-diffusion-v1-5/stable-diffusion-v1-5", "openai/clip-vit-base-patch32",
-              "prithivMLmods/deepfake-detector-model-v1"]
+              "stable-diffusion-v1-5/stable-diffusion-v1-5", "openai/clip-vit-base-patch32"]
     for name in models:
         record(manifest, name, lambda name=name: cache_model(name))
     record(manifest, "abisee/cnn_dailymail", lambda: cache_dataset("abisee/cnn_dailymail", "3.0.0"))

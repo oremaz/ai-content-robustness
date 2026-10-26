@@ -15,7 +15,6 @@ from .image_detectors import (
     EfficientNetDetector,
     CLIPImageDetector,
     DINOv2Detector,
-    SigLIPDetector,
     FrequencyDetector,
     MLEPDetector,
     PatchBasedClassifier,
@@ -23,6 +22,7 @@ from .image_detectors import (
     DenoisingTrajectoryDetector,
 )
 from .style_detector import StyleEmbeddingDetector
+from .published_image import DDADetector, CommunityForensicsDetector
 from .ensemble import EnsembleAggregator, DetectionResult, BaseDetector
 
 __all__ = [
@@ -43,11 +43,12 @@ __all__ = [
     "EfficientNetDetector",
     "CLIPImageDetector",
     "DINOv2Detector",
-    "SigLIPDetector",
     "FrequencyDetector",
     "MLEPDetector",
     "PatchBasedClassifier",
     "WaRPADDetector",
     "DenoisingTrajectoryDetector",
     "StyleEmbeddingDetector",
+    "DDADetector",
+    "CommunityForensicsDetector",
 ]

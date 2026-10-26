@@ -83,12 +83,13 @@ class TestImageEvasionConfig:
 
     def test_reward_weights_sum_to_one(self):
         cfg = ImageEvasionConfig()
-        total = cfg.reward_evasion_weight + cfg.reward_clip_weight + cfg.reward_aesthetic_weight
+        total = cfg.reward_evasion_weight + cfg.reward_clip_weight + cfg.reward_aesthetic_weight + cfg.reward_reference_weight
         assert total == pytest.approx(1.0)
+        assert cfg.kl_coeff == 0
 
     def test_detector_names(self):
         cfg = ImageEvasionConfig()
-        assert "efficientnet_b4" in cfg.detector_names
+        assert cfg.detector_names == ["dda"]
 
 
 class TestArmsRaceConfig:

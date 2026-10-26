@@ -2,7 +2,7 @@
 
 Detects whether text or images are likely AI-generated using an ensemble
 of internal (bench-aitextdetect, bench-imai-artifact) and external
-(Binoculars, Fast-DetectGPT, DivEye, SigLIP-2) detectors.
+(Binoculars, Fast-DetectGPT, DivEye) detectors.
 
 Usage:
     streamlit run ai_content_detector/app.py
@@ -95,7 +95,6 @@ def load_image_detectors():
         EfficientNetDetector,
         CLIPImageDetector,
         DINOv2Detector,
-        SigLIPDetector,
         FrequencyDetector,
         MLEPDetector,
         PatchBasedClassifier,
@@ -107,7 +106,6 @@ def load_image_detectors():
         EfficientNetDetector(),
         CLIPImageDetector(),
         DINOv2Detector(),
-        SigLIPDetector(),
         FrequencyDetector(),
         MLEPDetector(),
         WaRPADDetector(),
@@ -338,10 +336,8 @@ def about_tab():
 **Image Detectors:**
 - **EfficientNet-B4-NS** — Trained on ArtiFact (25 generators, 200x200).
   Best in-domain accuracy from `bench-imai-artifact`.
-- **CLIP Classifier** — Best cross-dataset generalizer from the same benchmark.
+- **CLIP Classifier** - ArtiFact-trained classifier with weak external transfer.
 - **DINOv2 ViT-B** — Self-supervised ViT pretrained on diverse data.
-- **SigLIP-2 Detector** — HuggingFace pipeline for deepfake detection
-  using Google's SigLIP-2 vision transformer.
 - **WaRPAD** and **Denoising Trajectory** (NeurIPS 2025) - Image
   detectors based on high-frequency perturbation robustness and diffusion
   recovery trajectories.

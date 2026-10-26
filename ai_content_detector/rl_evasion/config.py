@@ -146,6 +146,14 @@ class ImageEvasionConfig:
     num_train_epochs: int = 50
     train_batch_size: int = 4
     sample_batch_size: int = 8
+    rollout_batches: int = 1
+    samples_per_prompt: int = 1
+    advantage_mode: str = "legacy"
+    prompt_stat_min_count: int = 2
+    advantage_clip: Optional[float] = None
+    diagnostic_logging: bool = False
+    validation_interval: int = 0
+    adapter_save_interval: int = 10
     num_inference_steps: int = 50
     learning_rate: float = 1e-5
     kl_coeff: float = 0.0
@@ -157,14 +165,21 @@ class ImageEvasionConfig:
     stat_tracking_buffer_size: int = 32  # buffer size for running stats
 
     # Reward weights
-    reward_evasion_weight: float = 0.7
-    reward_clip_weight: float = 0.3
+    reward_evasion_weight: float = 0.64
+    reward_clip_weight: float = 0.26
     reward_aesthetic_weight: float = 0.0
+    reward_reference_weight: float = 0.1
+    reference_kl_scale: float = 1.0
+    measure_updated_reference_kl: bool = False
+    measure_reference_kl: bool = False
 
     # Detector ensemble
     detector_names: List[str] = field(
-        default_factory=lambda: ["efficientnet_b4", "clip_classifier", "siglip_detector"]
+        default_factory=lambda: ["dda"]
     )
+    dda_checkpoint: Optional[str] = None
+    dda_source: Optional[str] = None
+    clip_reward_model: str = "openai/clip-vit-base-patch32"
 
     # Prompts
     prompt_dataset: str = "Gustavosta/Stable-Diffusion-Prompts"

@@ -53,6 +53,12 @@ def _diffusion_source(model_id):
 # ---------------------------------------------------------------------------
 
 
+def previous_ddim_timestep(scheduler, timestep):
+    if hasattr(scheduler, "previous_timestep"):
+        return int(scheduler.previous_timestep(timestep))
+    return timestep - scheduler.config.num_train_timesteps // scheduler.num_inference_steps
+
+
 def ddim_step_with_logprob(
     scheduler,
     unet,
@@ -63,6 +69,7 @@ def ddim_step_with_logprob(
     prev_sample: Optional[torch.Tensor] = None,
     eta: float = 1.0,
     generator: Optional[torch.Generator] = None,
+    return_stats: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Perform one DDIM denoising step and return (next_latents, log_prob).
 
@@ -78,19 +85,21 @@ def ddim_step_with_logprob(
     """
     # Classifier-free guidance: concat unconditional + conditional
     latent_input = torch.cat([latents] * 2)
-    t_input = torch.tensor([timestep] * 2, device=latents.device)
+    t_input = torch.full((latent_input.shape[0],), timestep, device=latents.device, dtype=torch.long)
+    latent_input = scheduler.scale_model_input(latent_input, timestep) if hasattr(scheduler, "scale_model_input") else latent_input
+    latent_input = latent_input.to(getattr(unet, "dtype", latents.dtype))
 
     noise_pred = unet(latent_input, t_input, encoder_hidden_states=prompt_embeds).sample
 
     # Classifier-free guidance split
     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+    noise_pred = (noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)).float()
 
-    prev_timestep = int(scheduler.previous_timestep(timestep))
-    alpha_prod_t = scheduler.alphas_cumprod[timestep].to(latents.device, latents.dtype)
+    prev_timestep = previous_ddim_timestep(scheduler, timestep)
+    alpha_prod_t = scheduler.alphas_cumprod[timestep].to(latents.device, torch.float32)
     alpha_prod_t_prev = (
-        scheduler.alphas_cumprod[prev_timestep].to(latents.device, latents.dtype)
-        if prev_timestep >= 0 else scheduler.final_alpha_cumprod.to(latents.device, latents.dtype)
+        scheduler.alphas_cumprod[prev_timestep].to(latents.device, torch.float32)
+        if prev_timestep >= 0 else scheduler.final_alpha_cumprod.to(latents.device, torch.float32)
     )
     beta_prod_t = 1.0 - alpha_prod_t
     prediction_type = scheduler.config.prediction_type
@@ -110,11 +119,10 @@ def ddim_step_with_logprob(
     if scheduler.config.clip_sample:
         pred_original = pred_original.clamp(-scheduler.config.clip_sample_range, scheduler.config.clip_sample_range)
 
-    variance = scheduler._get_variance(timestep, prev_timestep).to(latents.device, latents.dtype)
+    variance = scheduler._get_variance(timestep, prev_timestep).to(latents.device, torch.float32)
     std = eta * variance.sqrt()
     direction = (1.0 - alpha_prod_t_prev - std.square()).clamp(min=0.0).sqrt() * pred_epsilon
     mu = alpha_prod_t_prev.sqrt() * pred_original + direction
-    std_for_logprob = std.clamp(min=1e-6)
 
     if prev_sample is not None:
         # Training phase: compute log_prob of the given sample under current policy
@@ -127,11 +135,95 @@ def ddim_step_with_logprob(
         sample = mu + std * noise
 
     # Gaussian log-probability: -0.5 * ||x - mu||^2 / sigma^2 - 0.5 * d * log(2pi * sigma^2)
-    log_prob = -((sample.detach() - mu) ** 2) / (2.0 * std_for_logprob.square())
-    log_prob = log_prob - torch.log(std_for_logprob) - 0.5 * np.log(2.0 * np.pi)
-    log_prob = log_prob.mean(dim=tuple(range(1, log_prob.ndim)))
+    if float(std) == 0:
+        log_prob = torch.zeros(latents.shape[0], device=latents.device, dtype=torch.float32)
+    else:
+        std_float = std.float()
+        log_prob = -(sample.detach().float() - mu.float()).square() / (2 * std_float.square())
+        log_prob = log_prob - std_float.log() - 0.5 * np.log(2.0 * np.pi)
+        log_prob = log_prob.mean(dim=tuple(range(1, log_prob.ndim)))
 
+    if return_stats:
+        return sample, log_prob, mu.float(), std.float()
     return sample, log_prob
+
+
+def initial_model_kl(unet, scheduler, latents, timestep, prompt_embeds, mean, std, reduction="mean", guidance_scale=7.5):
+    """Conditional Gaussian KL per latent coordinate, current policy to initial SD."""
+    if float(std) <= 0:
+        raise ValueError("KL is undefined for a changed deterministic DDIM transition")
+    unet.disable_adapters()
+    try:
+        with torch.no_grad():
+            _, _, reference_mean, reference_std = ddim_step_with_logprob(
+                scheduler, unet, latents, timestep, prompt_embeds,
+                prev_sample=latents, return_stats=True, guidance_scale=guidance_scale,
+            )
+    finally:
+        unet.enable_adapters()
+    if not torch.equal(std, reference_std):
+        raise ValueError("Initial and attacker transition variances differ")
+    values = ((mean - reference_mean).square() / (2 * std.square())).flatten(1).mean(1)
+    if reduction == "none":
+        return values
+    if reduction != "mean":
+        raise ValueError("KL reduction must be mean or none")
+    return values.mean()
+
+
+def reference_similarity_reward(kl, scale):
+    if not np.isfinite(scale) or scale <= 0:
+        raise ValueError("Reference KL scale must be finite and positive")
+    values = torch.as_tensor(kl)
+    if not torch.isfinite(values).all() or (values < 0).any():
+        raise ValueError("Reference KL must be finite and nonnegative")
+    return torch.reciprocal(1 + values / scale)
+
+
+def component_statistics(values, weight):
+    values = np.asarray(values, dtype=float)
+    return {"mean": float(values.mean()), "min": float(values.min()), "max": float(values.max()),
+            "std": float(values.std()), "weighted_std": float(weight * values.std()),
+            "weighted_range": float(weight * np.ptp(values))}
+
+
+def rollout_prompt_indices(count, size, repeats, seed):
+    if repeats < 1 or size % repeats or size // repeats > count:
+        raise ValueError("Rollout must contain whole prompt groups from the training pool")
+    return np.repeat(np.random.default_rng(seed).permutation(count)[:size // repeats], repeats)
+
+
+def grouped_advantages(prompts, rewards):
+    prompts, rewards = np.asarray(prompts), np.asarray(rewards, dtype=float)
+    advantages = np.zeros_like(rewards)
+    for prompt in np.unique(prompts):
+        mask = prompts == prompt
+        if mask.sum() < 2:
+            raise ValueError("Grouped advantages need at least two images per prompt")
+        values = rewards[mask]
+        advantages[mask] = (values - values.mean()) / (values.std() + 1e-8)
+    return advantages
+
+
+@torch.no_grad()
+def trajectory_initial_kl(pipeline, latents, prompt_embeds, negative_embeds):
+    combined = torch.cat([negative_embeds, prompt_embeds])
+    values = []
+    for index, timestep in enumerate(pipeline.scheduler.timesteps):
+        t = int(timestep)
+        previous = previous_ddim_timestep(pipeline.scheduler, t)
+        if float(pipeline.scheduler._get_variance(t, previous)) <= 0:
+            continue
+        current = latents[index].to(pipeline.unet.device)
+        _, _, mean, std = ddim_step_with_logprob(
+            pipeline.scheduler, pipeline.unet, current, t, combined,
+            prev_sample=latents[index + 1].to(pipeline.unet.device), return_stats=True,
+        )
+        values.append(initial_model_kl(pipeline.unet, pipeline.scheduler, current, t, combined,
+                                       mean, std, reduction="none"))
+    if not values:
+        raise ValueError("Reference KL needs at least one stochastic transition")
+    return torch.stack(values).mean(0)
 
 
 def pipeline_sample_with_logprob(
@@ -141,6 +233,7 @@ def pipeline_sample_with_logprob(
     num_inference_steps: int = 50,
     guidance_scale: float = 7.5,
     generator: Optional[torch.Generator] = None,
+    reference_kl_collector: Optional[List[torch.Tensor]] = None,
 ) -> Tuple[torch.Tensor, List[torch.Tensor], List[torch.Tensor]]:
     """Run full denoising pipeline, returning trajectory of latents and log-probs.
 
@@ -160,7 +253,7 @@ def pipeline_sample_with_logprob(
     latents = torch.randn(
         (prompt_embeds.shape[0], unet.config.in_channels, 64, 64),
         device=device,
-        dtype=prompt_embeds.dtype,
+        dtype=torch.float32,
         generator=generator,
     )
     latents = latents * scheduler.init_noise_sigma
@@ -171,7 +264,7 @@ def pipeline_sample_with_logprob(
     all_log_probs = []
 
     for t in scheduler.timesteps:
-        next_latents, log_prob = ddim_step_with_logprob(
+        result = ddim_step_with_logprob(
             scheduler=scheduler,
             unet=unet,
             latents=latents,
@@ -179,7 +272,13 @@ def pipeline_sample_with_logprob(
             prompt_embeds=combined_embeds,
             guidance_scale=guidance_scale,
             generator=generator,
+            return_stats=reference_kl_collector is not None,
         )
+        next_latents, log_prob = result[:2]
+        if reference_kl_collector is not None and float(result[3]) > 0:
+            values = initial_model_kl(unet, scheduler, latents, int(t), combined_embeds,
+                                      result[2], result[3], reduction="none", guidance_scale=guidance_scale)
+            reference_kl_collector.append(values.detach())
         all_latents.append(next_latents.detach().clone())
         all_log_probs.append(log_prob.detach())
         latents = next_latents
@@ -268,6 +367,7 @@ class CompositeImageReward:
         detector_rewards: List[ImageDetectorReward],
         weights: Optional[Dict[str, float]] = None,
         aesthetic_scorer=None,
+        clip_model_id="openai/clip-vit-base-patch32",
     ):
         self.detector_rewards = detector_rewards
         self.weights = weights or {"evasion": 0.5, "clip": 0.3, "aesthetic": 0.2}
@@ -276,6 +376,7 @@ class CompositeImageReward:
         if self.weights.get("aesthetic", 0.0) > 0 and aesthetic_scorer is None:
             raise ValueError("A nonzero aesthetic weight requires an aesthetic_scorer")
         self.aesthetic_scorer = aesthetic_scorer
+        self.clip_model_id = clip_model_id
         self._clip_model = None
         self._clip_processor = None
 
@@ -284,13 +385,14 @@ class CompositeImageReward:
         try:
             if self._clip_model is None:
                 from transformers import CLIPProcessor, CLIPModel
-                self._clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-                self._clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+                self._clip_model = CLIPModel.from_pretrained(self.clip_model_id)
+                self._clip_processor = CLIPProcessor.from_pretrained(self.clip_model_id)
                 self._clip_model.eval()
                 if torch.cuda.is_available():
                     self._clip_model = self._clip_model.cuda()
 
-            inputs = self._clip_processor(text=[prompt], images=image, return_tensors="pt")
+            inputs = self._clip_processor(text=[prompt], images=image, return_tensors="pt", truncation=True,
+                                         max_length=self._clip_model.config.text_config.max_position_embeddings)
             if torch.cuda.is_available():
                 inputs = {k: v.cuda() for k, v in inputs.items()}
             with torch.no_grad():
@@ -345,12 +447,23 @@ class DDPOImageEvasionTrainer:
 
     def __init__(self, config: Optional[ImageEvasionConfig] = None):
         self.config = config or ImageEvasionConfig()
+        if self.config.kl_coeff and self.config.reward_reference_weight:
+            raise ValueError("Choose a reference reward or a direct KL penalty, not both")
+        if not 0 <= self.config.reward_reference_weight <= 1:
+            raise ValueError("Reference reward weight must be in [0, 1]")
+        if not np.isfinite(self.config.reference_kl_scale) or self.config.reference_kl_scale <= 0:
+            raise ValueError("Reference KL scale must be finite and positive")
         self.pipeline = None
         self.reward_fn = None
         self.prompts = None
         self.stat_tracker = PerPromptStatTracker(
             buffer_size=getattr(self.config, "stat_tracking_buffer_size", 32),
+            min_count=self.config.prompt_stat_min_count,
         )
+        if self.config.advantage_mode not in {"legacy", "batch", "group"}:
+            raise ValueError("Unknown image advantage mode")
+        if self.config.rollout_batches < 1 or self.config.sample_batch_size < 1:
+            raise ValueError("Rollout batch counts must be positive")
 
     def setup(self):
         """Load diffusion model, apply LoRA, set up rewards."""
@@ -374,7 +487,7 @@ class DDPOImageEvasionTrainer:
 
         self.pipeline = StableDiffusionPipeline.from_pretrained(
             _diffusion_source(cfg.diffusion_model),
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+            torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
         )
         # Use DDIM scheduler for tractable log-prob computation
         self.pipeline.scheduler = DDIMScheduler.from_config(
@@ -384,6 +497,9 @@ class DDPOImageEvasionTrainer:
         if torch.cuda.is_available():
             self.pipeline = self.pipeline.to("cuda")
 
+        self.pipeline.vae.requires_grad_(False)
+        self.pipeline.text_encoder.requires_grad_(False)
+        self.pipeline.unet.requires_grad_(False)
         # Apply LoRA to UNet
         lora_config = LoraConfig(
             r=cfg.lora_rank,
@@ -392,6 +508,10 @@ class DDPOImageEvasionTrainer:
             task_type=None,
         )
         self.pipeline.unet.add_adapter(lora_config)
+        for parameter in self.pipeline.unet.parameters():
+            if parameter.requires_grad:
+                parameter.data = parameter.data.float()
+        self.pipeline.unet.enable_gradient_checkpointing()
 
         trainable = sum(p.numel() for p in self.pipeline.unet.parameters() if p.requires_grad)
         total = sum(p.numel() for p in self.pipeline.unet.parameters())
@@ -402,14 +522,14 @@ class DDPOImageEvasionTrainer:
         from ai_content_detector.detectors.image_detectors import (
             EfficientNetDetector,
             CLIPImageDetector,
-            SigLIPDetector,
         )
+        from ai_content_detector.detectors.published_image import DDADetector
 
         detector_rewards = []
         detector_map = {
             "efficientnet_b4": EfficientNetDetector,
             "clip_classifier": CLIPImageDetector,
-            "siglip_detector": SigLIPDetector,
+            "dda": lambda: DDADetector(checkpoint=self.config.dda_checkpoint, dda_source=self.config.dda_source),
         }
 
         for name in self.config.detector_names:
@@ -429,6 +549,7 @@ class DDPOImageEvasionTrainer:
 
         self.reward_fn = CompositeImageReward(
             detector_rewards=detector_rewards,
+            clip_model_id=self.config.clip_reward_model,
             weights={
                 "evasion": self.config.reward_evasion_weight,
                 "clip": self.config.reward_clip_weight,
@@ -564,38 +685,62 @@ class DDPOImageEvasionTrainer:
                 self.pipeline.unet.eval()
 
                 # Sample a batch of prompts
-                rng = np.random.default_rng(cfg.seed + epoch)
-                batch_indices = rng.permutation(len(self.prompts))[:cfg.sample_batch_size]
+                batch_indices = rollout_prompt_indices(len(self.prompts), cfg.sample_batch_size * cfg.rollout_batches,
+                                                       cfg.samples_per_prompt, cfg.seed + epoch)
                 batch_prompts = [self.prompts[i] for i in batch_indices]
 
                 # Encode prompts
-                prompt_embeds, negative_embeds = self._encode_prompts(batch_prompts)
-
-                # Generate with trajectory tracking
-                with torch.no_grad():
-                    final_latents, all_latents, all_log_probs = pipeline_sample_with_logprob(
-                        pipeline=self.pipeline,
-                        prompt_embeds=prompt_embeds,
-                        negative_prompt_embeds=negative_embeds,
-                        num_inference_steps=cfg.num_inference_steps,
-                        guidance_scale=7.5,
-                        generator=generator,
-                    )
-
-                # Decode to images and compute rewards
-                images = decode_latents_to_pil(self.pipeline, final_latents)
-                rewards = []
-                for img, prompt in zip(images, batch_prompts):
-                    r = self.reward_fn(img, prompt)
-                    rewards.append(r["total"])
-
-                rewards_arr = np.array(rewards)
+                chunks, components = [], []
+                for start in range(0, len(batch_prompts), cfg.sample_batch_size):
+                    prompts_chunk = batch_prompts[start:start + cfg.sample_batch_size]
+                    prompt_embeds, negative_embeds = self._encode_prompts(prompts_chunk)
+                    reference_kls = [] if cfg.reward_reference_weight or cfg.measure_reference_kl or cfg.measure_updated_reference_kl else None
+                    with torch.no_grad():
+                        final_latents, all_latents, all_log_probs = pipeline_sample_with_logprob(
+                            pipeline=self.pipeline,
+                            prompt_embeds=prompt_embeds,
+                            negative_prompt_embeds=negative_embeds,
+                            num_inference_steps=cfg.num_inference_steps,
+                            guidance_scale=7.5,
+                            generator=generator,
+                            reference_kl_collector=reference_kls,
+                        )
+                    images = decode_latents_to_pil(self.pipeline, final_latents)
+                    components.extend(self.reward_fn(img, prompt) for img, prompt in zip(images, prompts_chunk))
+                    if reference_kls is not None and not reference_kls:
+                        raise ValueError("No stochastic reference KL measurements were collected")
+                    chunks.append({"prompt": prompt_embeds.detach().cpu(), "negative": negative_embeds.detach().cpu(),
+                                   "latents": [v.detach().cpu() for v in all_latents],
+                                   "log_probs": [v.detach().cpu() for v in all_log_probs],
+                                   "kl": torch.stack(reference_kls).mean(0).cpu() if reference_kls is not None else None})
+                prompt_embeds = torch.cat([c["prompt"] for c in chunks])
+                negative_embeds = torch.cat([c["negative"] for c in chunks])
+                all_latents = [torch.cat([c["latents"][t] for c in chunks]) for t in range(len(chunks[0]["latents"]))]
+                all_log_probs = [torch.cat([c["log_probs"][t] for c in chunks]) for t in range(len(chunks[0]["log_probs"]))]
+                rewards_arr = np.asarray([r["total"] for r in components], dtype=float)
+                reward_statistics = {"base": component_statistics(rewards_arr, 1.0)}
+                if chunks[0]["kl"] is not None:
+                    raw_kl = torch.cat([c["kl"] for c in chunks])
+                    similarity = reference_similarity_reward(raw_kl, cfg.reference_kl_scale).cpu().numpy()
+                    rewards_arr = rewards_arr + cfg.reward_reference_weight * similarity
+                    reward_statistics.update(reference=component_statistics(similarity, cfg.reward_reference_weight),
+                                             raw_kl=component_statistics(raw_kl.cpu().numpy(), 1.0))
+                for key, weight in (("evasion", cfg.reward_evasion_weight), ("clip", cfg.reward_clip_weight)):
+                    if all(key in item for item in components):
+                        reward_statistics[key] = component_statistics([item[key] for item in components], weight)
+                if not np.isfinite(rewards_arr).all():
+                    raise FloatingPointError("Nonfinite combined image reward")
+                rewards = rewards_arr.tolist()
 
                 # Compute per-prompt advantages
-                if getattr(cfg, "per_prompt_stat_tracking", True):
+                if cfg.advantage_mode == "group":
+                    advantages = grouped_advantages(batch_prompts, rewards)
+                elif cfg.advantage_mode == "legacy" and getattr(cfg, "per_prompt_stat_tracking", True):
                     advantages = self.stat_tracker.update(batch_prompts, rewards)
                 else:
                     advantages = (rewards_arr - rewards_arr.mean()) / (rewards_arr.std() + 1e-8)
+                if cfg.advantage_clip is not None:
+                    advantages = np.clip(advantages, -cfg.advantage_clip, cfg.advantage_clip)
 
                 advantages_t = torch.tensor(advantages, device=device, dtype=torch.float32)
                 num_timesteps = len(all_log_probs)
@@ -611,7 +756,8 @@ class DDPOImageEvasionTrainer:
                     "latents": [value.detach().cpu() for value in all_latents],
                     "log_probs": [value.detach().cpu() for value in all_log_probs],
                     "advantages": advantages_t.detach().cpu(), "rewards": rewards_arr,
-                    "timesteps": self.pipeline.scheduler.timesteps.cpu(),
+                    "reward_statistics": reward_statistics,
+                    "timesteps": self.pipeline.scheduler.timesteps.cpu(), "prompts": batch_prompts,
                 }
                 save()
             trajectory = progress["trajectory"]
@@ -631,24 +777,31 @@ class DDPOImageEvasionTrainer:
 
             for inner_epoch in range(progress["inner_epoch"], num_inner_epochs):
                 if progress["timestep_order"] is None:
-                    progress["timestep_order"] = np.random.permutation(num_timesteps)
+                    stochastic = [index for index, timestep in enumerate(self.pipeline.scheduler.timesteps)
+                                  if not hasattr(self.pipeline.scheduler, "_get_variance") or
+                                  float(self.pipeline.scheduler._get_variance(
+                                      int(timestep), previous_ddim_timestep(self.pipeline.scheduler, int(timestep)))) > 0]
+                    steps = np.random.permutation(stochastic)
+                    progress["timestep_order"] = [int(t) + batch * num_timesteps
+                                                  for batch in range(cfg.rollout_batches) for t in steps]
                 timestep_order = progress["timestep_order"]
                 total_loss, total_kl, num_updates = (
                     progress["total_loss"], progress["total_kl"], progress["num_updates"]
                 )
 
                 for position in range(progress["position"], len(timestep_order)):
-                    step_idx = timestep_order[position]
+                    batch_idx, step_idx = divmod(int(timestep_order[position]), num_timesteps)
+                    selection = slice(batch_idx * cfg.sample_batch_size, (batch_idx + 1) * cfg.sample_batch_size)
                     t = self.pipeline.scheduler.timesteps[step_idx]
-                    latents_at_step = all_latents[step_idx].to(device)
-                    next_latents = all_latents[step_idx + 1].to(device)
-                    old_log_probs = all_log_probs[step_idx].to(device)
+                    latents_at_step = all_latents[step_idx][selection].to(device)
+                    next_latents = all_latents[step_idx + 1][selection].to(device)
+                    old_log_probs = all_log_probs[step_idx][selection].to(device)
 
                     # Combined embeds for CFG
-                    combined_embeds = torch.cat([negative_embeds, prompt_embeds])
+                    combined_embeds = torch.cat([negative_embeds[selection], prompt_embeds[selection]])
 
                     # Recompute log-prob under current policy
-                    _, current_log_probs = ddim_step_with_logprob(
+                    step_kwargs = dict(
                         scheduler=self.pipeline.scheduler,
                         unet=self.pipeline.unet,
                         latents=latents_at_step,
@@ -657,21 +810,39 @@ class DDPOImageEvasionTrainer:
                         guidance_scale=7.5,
                         prev_sample=next_latents,
                     )
+                    if kl_coeff:
+                        _, current_log_probs, current_mean, transition_std = ddim_step_with_logprob(
+                            **step_kwargs, return_stats=True,
+                        )
+                        kl_penalty = initial_model_kl(
+                            self.pipeline.unet, self.pipeline.scheduler, latents_at_step, int(t),
+                            combined_embeds, current_mean, transition_std,
+                        )
+                    else:
+                        _, current_log_probs = ddim_step_with_logprob(**step_kwargs)
+                        kl_penalty = current_log_probs.new_zeros(())
 
                     # Importance ratio in log space
                     log_ratio = current_log_probs - old_log_probs
                     ratio = torch.exp(log_ratio)
 
                     # Clipped PPO objective
-                    unclipped = -advantages_t * ratio
-                    clipped = -advantages_t * torch.clamp(ratio, 1.0 - clip_range, 1.0 + clip_range)
+                    unclipped = -advantages_t[selection] * ratio
+                    clipped = -advantages_t[selection] * torch.clamp(ratio, 1.0 - clip_range, 1.0 + clip_range)
                     ppo_loss = torch.mean(torch.maximum(unclipped, clipped))
 
-                    # KL penalty (optional regularization against base model)
-                    kl_penalty = torch.mean(log_ratio ** 2) * 0.5  # approximate KL
                     loss = ppo_loss + kl_coeff * kl_penalty
+                    if cfg.diagnostic_logging:
+                        diagnostics = progress.setdefault("diagnostics", [])
+                        diagnostics.append({"clip_fraction": float(((ratio - 1).abs() > clip_range).float().mean()),
+                                            "log_ratio_abs": float(log_ratio.detach().abs().mean()),
+                                            "approx_kl": float((torch.exp(log_ratio.detach()) - 1 - log_ratio.detach()).mean())})
+                    if not torch.isfinite(loss):
+                        raise FloatingPointError("Nonfinite DDPO objective; last safe restart retained")
 
-                    (loss / cfg.train_batch_size).backward()
+                    accumulation = min(cfg.train_batch_size,
+                                       len(timestep_order) - (position // cfg.train_batch_size) * cfg.train_batch_size)
+                    (loss / accumulation).backward()
 
                     total_loss += ppo_loss.item()
                     total_kl += kl_penalty.item()
@@ -679,9 +850,11 @@ class DDPOImageEvasionTrainer:
 
                     # Gradient accumulation
                     if num_updates % cfg.train_batch_size == 0:
-                        torch.nn.utils.clip_grad_norm_(
-                            self.pipeline.unet.parameters(), max_norm=1.0,
+                        norm = torch.nn.utils.clip_grad_norm_(
+                            self.pipeline.unet.parameters(), max_norm=1.0, error_if_nonfinite=True,
                         )
+                        if cfg.diagnostic_logging:
+                            progress["diagnostics"][-1]["gradient_norm"] = float(norm)
                         optimizer.step()
                         optimizer.zero_grad()
 
@@ -695,20 +868,36 @@ class DDPOImageEvasionTrainer:
                 # Flush remaining gradients
                 if num_updates % cfg.train_batch_size != 0:
                     torch.nn.utils.clip_grad_norm_(
-                        self.pipeline.unet.parameters(), max_norm=1.0,
+                        self.pipeline.unet.parameters(), max_norm=1.0, error_if_nonfinite=True,
                     )
                     optimizer.step()
                     optimizer.zero_grad()
 
                 if num_updates > 0:
-                    self.training_history.append({
+                    record = {
                         "epoch": epoch + 1, "inner_epoch": inner_epoch + 1,
                         "mean_reward": float(rewards_arr.mean()),
-                        "ppo_loss": total_loss / num_updates, "approx_kl": total_kl / num_updates,
-                    })
+                        "ppo_loss": total_loss / num_updates, "direct_kl_loss": total_kl / num_updates,
+                        "initial_model_kl": trajectory.get("reward_statistics", {}).get("raw_kl", {}).get("mean", 0.0),
+                        "reward_statistics": trajectory.get("reward_statistics", {}),
+                        "reference_kl_scale": cfg.reference_kl_scale,
+                        "sampled_images": len(rewards_arr),
+                        "advantage_mean": float(advantages_t.mean()), "advantage_std": float(advantages_t.std(unbiased=False)),
+                    }
+                    if cfg.diagnostic_logging:
+                        measurements = progress.pop("diagnostics", [])
+                        record["optimization"] = {key: float(np.mean([v[key] for v in measurements if key in v]))
+                                                   for key in {key for v in measurements for key in v}}
+                    if cfg.measure_updated_reference_kl:
+                        self.pipeline.unet.eval()
+                        measured = trajectory_initial_kl(self.pipeline, all_latents, prompt_embeds, negative_embeds)
+                        record["updated_initial_kl_per_sample"] = measured.cpu().tolist()
+                        self.pipeline.unet.train()
+                    self.training_history.append(record)
                     logger.info(
-                        "  Inner epoch %d: ppo_loss=%.6f, kl=%.6f",
-                        inner_epoch + 1, total_loss / num_updates, total_kl / num_updates,
+                        "  Inner epoch %d: ppo_loss=%.6f, reference_KL=%.6g, reference_reward=%.4f, direct_kl_loss=%.6g",
+                        inner_epoch + 1, total_loss / num_updates, record["initial_model_kl"],
+                        record["reward_statistics"].get("reference", {}).get("mean", 0.0), total_kl / num_updates,
                     )
 
                 progress.update(inner_epoch=inner_epoch + 1, position=0, timestep_order=None,
@@ -722,9 +911,14 @@ class DDPOImageEvasionTrainer:
             )
 
             # Save checkpoint
-            if (epoch + 1) % 10 == 0:
+            callback = getattr(self, "validation_callback", None)
+            if callback is not None and cfg.validation_interval and (epoch + 1) % cfg.validation_interval == 0:
+                self.pipeline.unet.eval()
+                with torch.no_grad():
+                    callback(self, epoch + 1)
+            if (epoch + 1) % cfg.adapter_save_interval == 0:
                 ckpt_dir = os.path.join(cfg.output_dir, f"checkpoint-epoch{epoch+1}")
-                self.pipeline.unet.save_pretrained(ckpt_dir)
+                self._save_adapter(ckpt_dir)
                 logger.info("Checkpoint saved to %s", ckpt_dir)
 
             progress.update(epoch=epoch + 1, inner_epoch=0, position=0, trajectory=None,
@@ -735,8 +929,12 @@ class DDPOImageEvasionTrainer:
 
         # Save final model
         final_dir = os.path.join(cfg.output_dir, "final")
-        self.pipeline.unet.save_pretrained(final_dir)
+        self._save_adapter(final_dir)
         logger.info("DDPO training complete. Final model saved to %s", final_dir)
+
+    def _save_adapter(self, directory):
+        save = getattr(self.pipeline.unet, "save_lora_adapter", self.pipeline.unet.save_pretrained)
+        save(directory)
 
     def evaluate(self, num_samples: int = 50) -> Dict[str, float]:
         """Evaluate the trained model's evasion capability.

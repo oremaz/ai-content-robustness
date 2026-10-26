@@ -312,6 +312,27 @@ the detector will not fabricate a default.
 
 ## How the image detectors work
 
+### DDA and Community Forensics
+
+`DDADetector` loads the released NeurIPS 2025 DDA classifier: DINOv2 ViT-L/14
+with rank-8 LoRA and a binary head. The official checkpoint and DINOv2/DDA
+source revisions are pinned in the image experiment resource manifest. Native
+inference uses a 336-pixel center crop with zero padding for smaller images and
+CLIP normalization. Its sigmoid output is oriented `1 = fake`. The SD1.5 race
+explicitly resizes both classes to 200 pixels before that crop.
+
+`CommunityForensicsDetector` loads the authors' released CVPR 2025 ViT-S
+checkpoints through `timm`, with strict state loading. The 224 model resizes
+the short side to 256; the 384 model resizes it to 440, then center crops to the
+model's input size and uses ImageNet normalization. The sigmoid output is
+`1 = fake`. Revisions are pinned, availability checks are local-only, and model
+weights load lazily. This detector is not used in the current experiment.
+
+Both return classifier probabilities, without claiming calibration or resistance
+to adaptive attacks. See the [paper review](docs/image_defenders.md),
+[DDA code](https://github.com/roy-ch/Dual-Data-Alignment), and
+[Community Forensics code](https://github.com/JeongsooP/Community-Forensics).
+
 ### EfficientNet (supervised baseline)
 
 `EfficientNetDetector` uses convolutional features to classify real and generated
@@ -351,19 +372,6 @@ according to the fitted classifier. Without that classifier, DINOv2 alone does
 not assign authorship labels. This differs from `WaRPADDetector`, which compares
 DINOv2 representations without fitting an authorship classifier. Requires the
 internal `bench_imai_artifact` DINOv2 checkpoint.
-
-### SigLIP image classifier
-
-`SigLIPDetector` loads a configured Hugging Face image-classification checkpoint,
-intended to use SigLIP-2 visual representations fine-tuned for real-versus-fake
-classification. Training is supplied by the checkpoint; this wrapper performs
-inference through the image-classification pipeline.
-
-The score is the pipeline probability for a label named `fake`, `ai`, or
-`synthetic` (checked in that order, ignoring case). Higher means more AI-like
-according to that checkpoint. If no recognized label exists, the implementation
-returns `0.5`. Labels use a `0.5` threshold, without an `uncertain` band. Requires
-the configured model and weights.
 
 ### Patch-based classifier
 
