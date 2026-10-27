@@ -1,944 +1,125 @@
-# AI Content Detection and Evasion Research
+# AI Content Robustness
 
-This subproject is a research workbench for three related questions:
+A research workbench for measuring how AI-content detectors respond to adaptive
+text and image generators, and whether retraining recovers detection. It also
+contains watermarking and removal experiments with separate attacker and owner
+roles. A Streamlit app exposes the detector interface for interactive scoring.
 
-1. Can a model distinguish AI-generated content from human-created content?
-2. Can a generator learn to evade that detector while preserving the requested
-   meaning or image prompt?
-3. What happens when the detector is retrained on the attacker's new outputs?
+The central experiment is a controlled loop: train a generator against a detector,
+evaluate on reserved prompts, retrain the detector on fresh training outputs,
+and score the same saved evaluation texts again. Scores measure statistical
+patterns, not proof of authorship.
 
-It supports text and image detectors, detector ensembles, text and image evasion
-methods, repeated attacker and defender updates, leakage-aware benchmarks, and a
-Streamlit scoring application.
+## Results and scope
 
-AI-content detection is statistical evidence, not proof of authorship. A score
-can change with language, topic, generator, decoding settings, image processing,
-and adversarial rewriting. Use this project to run controlled experiments or to
-assist review, not as the sole basis for a consequential decision.
+The [retained results](docs/research_results.md) evaluate Qwen3.5-9B-Base LoRA
+attackers on 500 generated texts and 500 human passages. Evasion is the fraction
+of generated texts with AI score below 0.5:
 
-The bibliography is in [`references.bib`](ai_content_detector/references.bib). This README explains
-the experimental workflow; the [detector catalogue](DETECTORS.md) explains
-individual detection methods without requiring the reader to first read those
-papers.
+| Target | Attacker updates | Evasion before defender update | After one defender update |
+|---|---:|---:|---:|
+| Gemma | 1,213 | 77.2% | 0.2% |
+| ModernBERT-large | 1,487 | 96.8% | 1.0% |
+| Seven-detector ensemble | 502 | 94.8% | 0.4% |
 
-## The problem in plain language
+Before and after use identical saved texts. Training budgets differ, so the rows
+are not a matched-budget comparison. The experiment shows recovery against fixed
+attackers; another adaptive attacker round remains untested. Base-generator
+retention and individual ensemble members expose additional tradeoffs in the
+report. Semantic similarity does not certify factual accuracy.
 
-AI generators leave patterns, but no single pattern is universal. A text model
-might produce unusually predictable token sequences. An image generator might
-leave frequency artifacts or react differently to denoising. A supervised
-classifier can learn such patterns from examples, while a zero-shot detector can
-derive a statistic from a pretrained model without training a new classifier.
+Watermarking is a separate line of work. See the [protocol](docs/watermarking.md)
+and [removal review](docs/watermark_removal_literature.md) for TextSeal, released
+DistSeal image checkpoints, and the experimental latent text adaptation.
+Pending jobs are not completed results.
 
-An adaptive attacker makes the problem harder. It observes a detector score and
-changes the generator to lower that score. A defender can then retrain on these
-new evasive samples. This repository represents that loop as:
+## Read the code
 
-```text
-prompt -> generator -> candidate content -> detector -> AI score
-             ^                              |
-             |________ evasion reward ______|
+| Component | Start here | What to inspect |
+|---|---|---|
+| Detector contract | [ensemble.py](ai_content_detector/detectors/ensemble.py) | AI score direction, uncertainty, aggregation and resource release |
+| Text statistics | [likelihood_text.py](ai_content_detector/detectors/likelihood_text.py) | Binoculars and Fast-DetectGPT score calculations |
+| Image detector | [warpad.py](ai_content_detector/detectors/warpad.py) | Feature extraction, raw statistics and threshold semantics |
+| Text training lifecycle | [grpo_trainer.py](ai_content_detector/rl_evasion/text_evasion/grpo_trainer.py) | Setup, explicit backend selection and evaluation |
+| Text optimization | [grpo_optimization.py](ai_content_detector/rl_evasion/text_evasion/grpo_optimization.py) | TRL updates, reference state and the explicit fallback |
+| Diffusion mathematics | [diffusion_policy.py](ai_content_detector/rl_evasion/image_evasion/diffusion_policy.py) | Transition log probabilities, reference KL and trajectories |
+| Paired defender evaluation | [workflow.py](ai_content_detector/rl_evasion/defender_comparison/workflow.py) | Saved-text reuse and resumable experiment phases |
+| Watermark removal | [watermark_removal.py](scripts/watermark_removal.py) | Attacker contracts, source snapshots and owner evaluation jobs |
 
-fixed evaluation set -> measure attacker -> retrain defender -> measure again
-```
+The [evasion package guide](ai_content_detector/rl_evasion/README.md) and
+[watermarking package guide](ai_content_detector/watermarking/README.md) explain
+which workflow to inspect and where its evaluation boundaries sit.
 
-The key experimental question is therefore not only "does the detector work on
-today's samples?" It is also "does it continue to work on samples optimized
-against it, including samples from prompts and detectors that training never
-saw?"
+For a short first pass, read the detector contract and paired evaluation workflow,
+then inspect one detector. The [detector catalogue](DETECTORS.md) distinguishes
+published implementations from local heuristics. The [full research guide](docs/research_guide.md)
+retains method explanations, equations, examples, commands and historical validation records.
 
-## Watermarking experiments
+## Run
 
-The [watermarking protocol](docs/watermarking.md) integrates official TextSeal on
-Qwen3.5-4B-Base, released DistSeal generator checkpoints for RAR-XL and
-UViT-H/DC-AE, and an experimental DistSeal-inspired Qwen adaptation with a
-learned latent embedder, text-only message extractor and weight distillation.
-It evaluates watermark removal with and without the original generator weights,
-alongside detection, false positives and quality. The experiment CLI is
-`scripts/watermark_experiments.py`; GPU work runs through Slurm using the project
-`uv` environment and frozen source snapshots. Optional pinned dependencies are
-in `requirements_watermarking.in`.
-The earlier green-list distillation branch was canceled. The replacement first
-tests message recovery from actual autoregressively generated text; that
-validation gates student training and the subsequent removal experiments.
-The [unknown-watermark literature review](docs/watermark_removal_literature.md)
-limits removal to clean-checkpoint merging and clean-data continued training.
-`scripts/watermark_removal.py` prepares separate attacker contracts and owner
-evaluation jobs. Training workers receive no clean reference weights or
-watermark secrets; the owner evaluates all fixed, hashed artifacts afterward.
-Clean training supports LoRA and full-parameter updates. Native image fitting
-uses 800 classes and reports results on the 200 classes excluded from fitting.
-
-## Essential vocabulary
-
-| Term | Meaning in this project |
-|---|---|
-| **Detector** | A component that maps text or an image to an AI-oriented score and a label. |
-| **Supervised detector** | A classifier trained on labeled human and AI examples. It needs a fitted checkpoint. |
-| **Zero-shot detector** | A method that computes a statistic using pretrained models without fitting a task-specific detector classifier. It can still require large model weights and a threshold. |
-| **Raw statistic** | The detector's native measurement, such as a likelihood ratio, curvature, cosine similarity, or anomaly score. |
-| **Calibration** | Learning a mapping from scores to probabilities on a separate representative validation set. |
-| **Evasion attack** | A rewrite or generator update intended to reduce detection while retaining useful content. |
-| **Attacker** | The generator or transformation being optimized. |
-| **Defender** | The detector being evaluated or retrained. |
-| **Held-out** | Data or a detector excluded from training and used only to test generalization. |
-| **Checkpoint** | Saved trained weights or a fitted classical model. Large project checkpoints are not stored in git. |
-
-## Quickstart
-
-Run every command from the repository root. The project uses the root `uv`
-environment and expects `PYTHONPATH=.` for module imports.
-
-### 1. Create the environment
+Use Python 3.11+ and run from this repository's root:
 
 ```bash
 uv venv
-source .venv/bin/activate
 uv pip install -r requirements.txt
 uv run python -m spacy download en_core_web_sm
-```
-
-On the CUDA 12.4 research VM, install the GPU environment instead:
-
-```bash
-uv pip install -r requirements_gpu.in
-```
-
-For Qwen3.5 RL on the Jean Zay H100 environment, optional linear-attention and
-causal-convolution kernels avoid the slow PyTorch fallbacks. Keep the installed
-PyTorch/CUDA versions and build the convolution extension against that stack:
-
-```bash
-module load cuda/12.4.1
-export CC=/usr/bin/gcc CXX=/usr/bin/g++ CUDAHOSTCXX=/usr/bin/g++
-uv pip install ninja wheel
-CAUSAL_CONV1D_FORCE_BUILD=TRUE MAX_JOBS=4 TORCH_CUDA_ARCH_LIST=9.0 \
-  uv pip install --no-build-isolation --no-deps -r requirements_rl_kernels.in
-```
-
-Run GPU validation inside Slurm. The official prebuilt convolution wheels failed
-the ABI import check with this PyTorch build. The kernel pins and native build
-preserve PyTorch 2.6/CUDA 12.4 rather than upgrading the experiment environment.
-
-The standard installation is enough for the CPU and mock-based test suite. Most
-large detectors and all meaningful training runs need downloaded Hugging Face
-weights, project checkpoints, and usually a GPU. On macOS, XGBoost also requires
-an OpenMP runtime such as `libomp`.
-
-### 2. Check imports and wiring
-
-```bash
 PYTHONPATH=. uv run python -m ai_content_detector.rl_evasion.run_experiments \
   --experiment smoke_test
+PYTHONPATH=. uv run streamlit run ai_content_detector/app.py
 ```
 
-This is deliberately lightweight. It checks imports, configuration objects,
-reward plumbing, and trainer construction. It does not download or run every
-large model.
+The smoke test checks CPU wiring, not real-model accuracy. Most detectors need
+external weights or fitted checkpoints. Training needs the appropriate GPU stack.
+The applications install the shared `ml_pipeline` package from a pinned Git commit
+in [ML Playground](https://github.com/oremaz/ml-playground).
 
-### 3. Run the focused test suite
+Use [GPU setup](docs/research_guide.md#1-create-the-environment) for the existing
+CUDA and Qwen kernel pins, [resource requirements](docs/research_guide.md#required-models-and-external-resources)
+for weights and authentication, and [experiment commands](docs/research_guide.md#running-experiments)
+for GRPO, SPIN, DDPO, MAML and benchmarks. Watermarking has its own optional
+requirements and Slurm commands in the protocol above.
+
+A lightweight detector example needs no weights:
+
+```python
+from PIL import Image
+from ai_content_detector.detectors import FrequencyDetector
+
+result = FrequencyDetector().detect(Image.new("RGB", (256, 256), "gray"))
+print(result.score, result.label, result.details)
+```
+
+This is an interface example using a synthetic image, not a detection benchmark.
+
+## Evaluation and reproducibility
+
+Prompt splits are deterministic and fixed before training. MAML separates support
+and query prompts; query prompts contribute to training. Benchmark manifests
+check row alignment and reject declared held-out detector overlap. Attack
+checkpoints do not yet record training sample IDs, so sample-level overlap cannot
+be rejected automatically. See [evaluation controls](docs/research_guide.md#evaluation-and-leakage-controls).
+
+Existing CLI names, configuration defaults, seeds and checkpoint paths are
+preserved. `text_detectors.py` and `image_detectors.py` retain their public imports;
+implementations live in smaller method-specific modules. Serialized detector
+classes retain their historical module identities.
+
+Slurm workflows use saved manifests and frozen source directories. Resume the
+original run using its original manifest, snapshot, environment and artifacts.
+Do not substitute a new run's configuration when reproducing a recorded result.
+The [defender protocol](docs/defender_comparison.md) documents retained checkpoints
+and continuation; the watermarking protocol documents its source snapshots.
+
+## Tests
 
 ```bash
 PYTHONPATH=. uv run python -m pytest ai_content_detector/tests -q
 ```
 
-These tests validate formulas, tensor shapes, label conventions, split
-contracts, failure behavior, seeding, and leakage controls using CPU-scale
-fixtures and mocks.
-
-### 4. Launch the scoring app
-
-```bash
-PYTHONPATH=. uv run streamlit run ai_content_detector/app.py
-```
-
-Open the URL printed by Streamlit, select the text or image tab, choose the
-available detectors, provide content, and run the analysis. The app reports why
-a detector is unavailable. It does not replace a missing checkpoint with a
-heuristic result. At least one usable detector is required.
-
-The app treats text shorter than 50 characters as too short for reliable use.
-Some individual methods impose stronger requirements. For example,
-Disrupt-and-Recover defaults to at least 35 words.
-
-### 5. Run a small benchmark
-
-Once Hugging Face downloads are available, the following command downloads 20
-HC3 examples and runs CPU-compatible attack baselines against a RoBERTa
-detector. It is a practical pipeline check, not a publishable benchmark:
-
-```bash
-PYTHONPATH=. uv run python \
-  -m ai_content_detector.rl_evasion.benchmarking.benchmark \
-  --dataset hc3 \
-  --max-samples 20 \
-  --lightweight \
-  --detectors roberta_classifier \
-  --output-dir results/benchmark_quickstart
-```
-
-`--lightweight` changes the attack methods, not the scoring stack. This command
-still downloads the RoBERTa detector, the E5 semantic encoder, HC3, and NLTK
-resources. Use the smoke test and unit tests for an offline CPU check.
-
-HC3 contains aligned prompts, human answers, and ChatGPT answers. The
-CNN/DailyMail option contains prompts and human continuations but no stored AI
-continuations, so it can evaluate generation methods but skips rewrite-only
-methods that require an existing AI text.
-
-## Repository map
-
-```text
-ai_content_detector/
-├── app.py                              # Streamlit text and image UI
-├── detectors/
-│   ├── ensemble.py                    # Detector interface and aggregation
-│   ├── text_detectors.py              # Text detectors
-│   ├── image_detectors.py             # Image detectors
-│   └── style_detector.py              # LUAR few-shot style detector
-├── rl_evasion/
-│   ├── config.py                      # Reproducible experiment configs
-│   ├── run_experiments.py             # Unified experiment CLI
-│   ├── text_evasion/                  # GRPO, SPIN, rewards, features
-│   ├── image_evasion/                 # DDPO training and evaluation
-│   ├── arms_race/                     # Repeated adaptation and MAML
-│   └── benchmarking/                  # Datasets, baselines, runner
-├── references.bib
-└── tests/
-```
-
-Internal supervised detectors reuse checkpoint loading and model wrappers from
-`ml_pipeline/`. Shared checkpoint behavior should remain there rather than being
-duplicated in this subproject.
-
-## Detector interface and score semantics
-
-Every detector implements `BaseDetector`:
-
-```python
-result = detector.detect(content)
-
-result.score          # float in [0, 1], oriented so larger means more AI-like
-result.label          # "human", "ai", "uncertain", or "error" in an ensemble
-result.detector_name  # runtime detector name
-result.details        # raw statistic, thresholds, semantics, or failure context
-```
-
-`is_available()` checks dependencies, model configuration, support data, and
-checkpoints. `unload()` releases known model references and clears CUDA cache
-when possible. Heavy models are loaded lazily.
-
-### A score is not automatically a probability
-
-All public scores use the same direction, with `0` more human-like and `1` more
-AI-like. That common range makes display and aggregation convenient, but it does
-not give every number the same interpretation.
-
-- `classifier_probability` comes from a fitted classifier's softmax or
-  `predict_proba`. It is still only as reliable as that classifier's data.
-- `calibrated_probability` means a separate calibrator was fitted on labeled
-  validation examples.
-- `uncalibrated_*` means the value is a normalized or monotonic display score.
-  It preserves ordering but must not be read as confidence.
-- A raw statistic and its decision threshold are retained in `details` when a
-  paper method makes its decision in the raw space.
-
-For illustration, suppose Binoculars computes a raw ratio of `0.77`. Its
-display transform is `sigmoid((0.9015 - raw) / 0.05)`, which maps `0.77` to
-`0.93` and the paper threshold itself to exactly `0.5`, and
-`details["score_semantics"]` is `uncalibrated_monotonic_transform`. Nothing was
-fitted; the map was chosen to put `0.5` at the threshold so the display score
-stays readable around the decision point. Read `0.93` as "further below the
-threshold than `0.60` would be", not as "93 percent probability".
-
-Inspect `result.details["score_semantics"]` whenever it is present.
-
-The generic three-way helper labels scores at least `0.65` as `ai`, at most
-`0.35` as `human`, and the interval between them as `uncertain`. Methods with a
-native paper threshold make their label from the raw paper statistic instead,
-which is why Binoculars and Fast-DetectGPT never return `uncertain`.
-
-### Ensemble behavior
-
-`EnsembleAggregator` runs all selected detectors independently. Its default
-weighted average is
-
-$$
-S_{\mathrm{ensemble}} = \sum_{j=1}^{m} \tilde{w}_j S_j,
-\qquad
-\tilde{w}_j = \frac{w_j}{\sum_k w_k}.
-$$
-
-For illustration, suppose three equally weighted detectors return the following
-outputs. These are hypothetical scores, not measured results:
-
-| detector | score | label |
-| --- | --- | --- |
-| Binoculars | 0.067 | human |
-| TF-IDF + logistic regression | 0.62 | uncertain |
-| ModernBERT | 0.83 | ai |
-
-The average is `(0.067 + 0.62 + 0.83) / 3 = 0.506`, but the aggregate **label**
-comes from votes, not from that number: one `ai` vote and one `human` vote
-cancel, so the label is `uncertain` even though the score sits above `0.5`. The
-two rules answer different questions, which is why `aggregate_score` and
-`aggregate_label` are reported separately.
-
-Without a fitted logistic calibrator, this is an uncalibrated normalized score
-and the label comes from detector votes. With a calibrator fitted on disjoint
-labeled validation data, the aggregate is reported as a calibrated probability
-and the label comes from a `0.5` cut. An empty ensemble, a calibration set with
-one class, and a run in which every detector fails all raise clear errors. A
-failure from one detector appears in the per-detector results with label `error`
-and is excluded from the aggregate.
-
-## Detector catalogue
-
-See the [text and image detector catalogue](DETECTORS.md) for individual methods,
-worked illustrations, formulas, and implementation requirements. The sections
-below focus on evasion, adaptation, and evaluation.
-
-## Evasion methods
-
-### The reward design
-
-Text and image attacks optimize more than detector evasion. If the only reward
-were `1 - detector_score`, a generator could emit empty or irrelevant content.
-The text configuration therefore combines detector evasion, semantic
-similarity, and a length and quality term:
-
-$$
-R_{\mathrm{text}} = 0.6R_{\mathrm{evasion}}
-                  + 0.3R_{\mathrm{semantic}}
-                  + 0.1R_{\mathrm{quality}}.
-$$
-
-The image reward is `0.64 * evasion + 0.26 * CLIP alignment + 0.10 * reference`.
-Reference similarity is `1 / (1 + mean_KL / scale)`, where conditional KL compares
-stochastic DDIM transitions with initial SD1.5, averaged over latent coordinates
-and stochastic timesteps for each image. All three components are bounded in
-`[0, 1]` before joint advantage normalization; there is no extra direct KL loss.
-The dedicated experiment freezes the scale from a training-only probe and then
-restarts the main attacker from initial SD1.5. See the
-[reference reward protocol](docs/image_reference_reward.md) for calibration,
-observed-scale diagnostics and the distinction from exact KL regularization.
-
-### One example used by the three text methods
-
-The text methods below use the same illustrative item. Generated completions,
-detector scores, similarities, and rewards are hypothetical examples, not
-measured results. Dataset loading and prompt construction are described in the
-implementation; this question-and-answer item is for explanation only:
-
-- **Prompt:** `Explain why sourdough bread rises.`
-- **Human reference** (illustrative): `Wild yeast and bacteria eat
-  the sugars in the flour and give off carbon dioxide, and the gluten network
-  traps that gas. In the oven the starch sets, so the loaf keeps the shape the
-  gas gave it.`
-- **Detector:** any detector that returns an AI-oriented score in $[0, 1]$, for
-  example `BinocularsDetector`. Lower means less AI-like according to that detector.
-
-### GRPO text evasion
-
-The model learns from rewards on its own generated continuations. This
-implementation still uses training prompts and human reference continuations
-from a corpus: the references supply semantic-similarity and length rewards.
-It does not require pre-labelled preference pairs.
-
-`GRPOTextEvasionTrainer` samples `grpo_num_generations = 4` completions for the
-prompt and scores each with the reward above (including the length term):
-
-| completion | detector score | semantic | reward |
-| --- | --- | --- | --- |
-| "Sourdough rises because wild yeast ferments the sugars in flour and produces carbon dioxide gas, which expands inside the dough during baking." | 0.81 | 0.94 | 0.48 |
-| "Bakers mix water and starter into the flour, and tiny organisms consume the sugars and exhale gas that inflates the dough." | 0.44 | 0.91 | 0.69 |
-| "It rises." | not scored | not scored | 0.00 (too short) |
-| "The leavening cultures feed on the flour, the dough traps the gas they emit, and heat fixes the risen structure." | 0.52 | 0.93 | 0.64 |
-
-The reward is normalized **inside the group**, so each completion is compared
-with the group mean: $A_i = (r_i - \bar{r}) / \sigma_r$. The best completion gets a
-positive advantage and the worst a negative one, encouraging higher-reward
-continuations. Outputs shorter than 20 whitespace-separated words receive zero
-reward before detector or semantic scoring. Semantic and length rewards further
-discourage irrelevant or degenerate outputs, without guaranteeing quality.
-
-No critic and no value network: the group average replaces them. The native
-TRL arguments are saved in `trl_training_arguments.json`; its existing default
-KL coefficient is `beta=0`. The dataclass's `grpo_kl_coeff=0.05` applies only to
-the disabled manual fallback. The generator is adapted with LoRA.
-The method is called GRPO only when the TRL implementation is available; the
-local fallback is explicitly named group-normalized REINFORCE and is disabled
-by default.
-
-### SPIN with feature monitoring
-
-No reward and no detector: the model learns from its own samples plus the human
-continuation.
-
-`SPINTrainerWithFeatureMonitoring` alternates two steps on the same item.
-
-1. **Generate.** The current model writes its own continuation, typically with a
-   high temperature so it drifts: `Sourdough rises due to the activity of yeast
-   and bacteria present in the starter, which metabolize sugars into gas during
-   fermentation, causing the dough to expand as it bakes.`
-2. **Prefer.** The human continuation is `chosen`, the generated one is
-   `rejected`, and the loss raises the human continuation's relative
-   log-probability:
-
-$$
-\mathcal{L}_{\mathrm{SPIN}} = -\mathbb{E}\left[\log \sigma\left(\beta\left(
-  \left[\log \pi_\theta(y_h) - \log \pi_{\mathrm{ref}}(y_h)\right]
-- \left[\log \pi_\theta(y_g) - \log \pi_{\mathrm{ref}}(y_g)\right]\right)\right)\right].
-$$
-
-With $\beta = 0.1$ (`beta_spin`), the update simply moves probability mass
-toward "wild yeast and bacteria" phrasing and away from the flat textbook
-sentence, without any detector ever being called during training. The frozen
-reference snapshot advances after each SPIN iteration. Log-probabilities are
-conditional on the prompt and cover the continuation only, so prompt tokens do
-not dominate the signal.
-
-Stylometric statistics, E5 embeddings, LUAR style embeddings, and learned probe
-features are monitoring outputs. They are not gradient losses because decoding
-text breaks a differentiable path from those features back to model parameters.
-`MultiSPINTrainer` remains as a compatibility alias.
-
-### Adversarial paraphrasing
-
-No training at all: the detector is called at every generated token.
-
-`AdversarialParaphrasingBaseline` rewrites the example text token by token. At
-each position it takes the candidates from top-p `0.99`, keeps at most top-k
-`50`, decodes the partial paraphrase for each one, and asks the detector to
-score it.
-
-An illustrative candidate comparison (assuming the guidance detector can score
-these short prefixes):
-
-| candidate token | partial paraphrase | detector score |
-| --- | --- | --- |
-| "Wild" | `Wild` | 0.46 |
-| "Naturally" | `Naturally` | 0.38 |
-| "The" | `The` | 0.79 |
-| "In" | `In` | 0.71 |
-
-The lowest score wins, so the step commits to "Naturally", and the search
-continues from that prefix. The detector is in the loop at every token, which is
-why this is far more expensive than ordinary sampling and why it requires a real
-guidance detector.
-
-The benchmark also includes simpler controls: no transformation, neural
-paraphrasing, WordNet synonym substitution, human-style prompt instructions,
-high-temperature sampling, and optional OpenRouter generation.
-
-GRPO queries detectors during training; SPIN trains on human/generated
-continuation pairs without detector queries. Both generate normally afterwards. Adversarial paraphrasing pays at every token of every generation.
-
-### DDPO image evasion
-
-`DDPOImageEvasionTrainer` fine-tunes a diffusion image generator in three steps:
-
-1. **Generate** images from prompts, storing each image's sequence of denoising
-   decisions (50 steps by default).
-2. **Score** the final images and their trajectories: 64% detector evasion,
-   26% CLIP prompt alignment and 10% bounded initial-model reference similarity.
-3. **Update** the generator's UNet LoRA weights to make decisions associated with
-   above-baseline rewards more likely, and those with below-baseline rewards less
-   likely. DDPO-IS uses a clipped policy-gradient objective. The reference reward
-   is computed during rollout with initial SD1.5 evaluated with LoRA disabled.
-   Deterministic terminal transitions are excluded from policy updates and KL.
-
-Repeat this loop to favor images that evade the detectors while matching the
-prompt. "More human-like" means lower detector AI scores here; human-perceived
-realism and image quality are not guaranteed.
-
-The DDPO default defender is now DDA. The original ArtiFact-trained EfficientNet
-and CLIP classifiers remain available as baselines. The unvalidated third-party
-SigLIP detector has been removed. `DDADetector` loads the pinned official model
-and source described by `results/research_workflow/image_dda/resources/provenance.json`.
-Its native preprocessing uses a 336-pixel center crop and CLIP normalization.
-`CommunityForensicsDetector` is also exported, with pinned official 224/384
-checkpoints, native resizing and ImageNet normalization. It loads lazily and is
-not included in the DDA experiment, reward ensemble, or automatic downloads.
-
-The removal passed 26 focused image detector, numerical, DDPO and configuration
-tests. Streamlit startup also passed with detector availability mocked as
-unavailable; model loading and scoring were not exercised by that smoke check.
-
-### Official DDA benchmark and one SD1.5 round
-
-The dedicated driver evaluates official DDA on the existing ArtiFact holdout,
-CIFAKE and Shoes without local detector training. It then warms official DDA on
-1,000 base-SD1.5 outputs paired with ArtiFact real images. An internal 80/20 split
-reserves 200 pairs for validation; DDPO uses only the 800 fitting prompts.
-After 50 DDPO epochs, one defender update uses fresh attacked outputs on the
-same fitting pool. Both defender fits use three epochs and learning rate 2e-5,
-updating only DDA LoRA and classifier parameters and selecting validation loss.
-
-The 500 evaluation prompts and 500 ArtiFact holdout real images remain excluded
-from fitting. Before/after scoring reuses saved base and attacked images. For
-the race, both classes are resized to 200 pixels before the DDA center crop to
-control resolution differences. The benchmark preserves native preprocessing.
-This is supervised adaptation of released DDA, not a reproduction of its original
-aligned-data training. Community Forensics is intentionally unused.
-
-```bash
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py prepare
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py submit MANIFEST
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py report MANIFEST
-```
-
-The revised attacker first runs one training-only probe epoch without reference
-reward, measures per-image KL after its updates, and fixes the reference scale
-to the median positive measurement. Probe weights are discarded. The main
-attacker still starts from initial SD1.5 and runs 50 epochs. Calibration,
-effective configuration and component variation diagnostics are retained.
-
-For an existing chain, `replace-attack PREVIOUS_MANIFEST` creates a new frozen
-run that adopts its preparation, benchmark and warm-up jobs. `submit MANIFEST
---held` submits only replacement attacker and defense jobs for dependency checks
-before swapping the old pending jobs. It never cancels adopted jobs on a
-submission failure. The
-[replacement live report](docs/image_reference_reward_results.md) is separate
-from reports still written by the running original prerequisites.
-
-The five jobs use `qos_gpu_h100-t3`: an eight-hour benchmark allocation and
-four-hour allocations for preparation, warm-up, attack and defense. Dependencies
-prevent attack before warm-up and defense before completed DDPO training. Frozen
-source copies, model revisions, image identities, restart state and per-stage
-receipts are retained. Preparation includes a real GPU forward/backward smoke
-check before the production benchmark or race can start. The
-[live image report](docs/image_reference_reward_results.md) links the run's measured tables, CSV
-and attacker curves; submitted work is not reported as a completed experiment.
-
-Image workflow validation passed 51 focused tests covering native preprocessing,
-AI-score direction, initial-reference KL and its gradients, deterministic DDIM
-transitions, bounded rewards, probe-scale selection, data splits, preservation
-of adopted Slurm jobs, reporting and checkpoint recovery.
-The existing notebook signal-forwarding test stalled and was excluded from this
-completed test run (`-k 'not papermill'`). Official DDA also passed a strict
-537-key CPU checkpoint load. The real GPU smoke check and experimental metrics
-are recorded by the submitted preparation and experiment jobs.
-
-### Long SD1.5 attacker experiment
-
-The current DDPO run trains SD1.5 UNet LoRA against the warmed DDA defender for
-12,800 generated training images, retaining checkpoints at 6,400 and 12,800.
-It uses eight images per rollout, historical prompt statistics after at least
-16 observations, and reward weights 0.64 evasion, 0.26 CLIP and 0.10 bounded
-initial-model reference similarity. Training and evaluation share the same
-float32 latent-trajectory DDIM sampler.
-
-The immutable prompt split contains 800 training, 200 validation and 500 test
-prompts. Validation every 800 training images selects checkpoints while requiring
-at least 95% of initial mean CLIP alignment. Final evaluation compares the
-validation-selected checkpoint with initial SD1.5 on the held-out test prompts.
-Community Forensics is unused.
-
-One defender update is queued after final attacker evaluation. It reuses the
-existing `research.defend()` workflow: the same selected attacker generates
-1,000 fitting images, with 800 paired with ArtiFact real images for training and
-200 pairs for validation. Warmed DDA receives three epochs of LoRA/head training
-at learning rate 2e-5. Before and after updating, the defender is scored on the
-exact saved base, attacked and human test images. Both fixed 0.5 and the warmed
-defender's validation threshold are retained. The before/after report is linked
-from [the defender update results](docs/image_defender_update_results.md).
-
-```bash
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py attach-defender PARENT_MANIFEST
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py submit DEFENDER_MANIFEST --held
-```
-
-The standalone defender submission adopts the existing final evaluation job as
-its dependency, validates its `test.json` completion receipt, and leaves the
-original manifest and frozen source unchanged. Its generation adapter loads the
-selected long-run checkpoint and saved test images; training and evaluation
-remain in the existing implementation.
-If Slurm has purged the completed parent from its active controller, submission
-can retain verified successful accounting and the matching completion receipt
-instead of creating an invalid native dependency. The worker still checks the
-parent receipt before training.
-
-Defender integration passed 43 focused image tests, including shared workflow
-reuse, identical before/after image sets, generation-only sampling, adopted
-completion receipts, restart contracts and reporting. The GPU defender update
-is exercised by the queued job after its predecessor completes.
-Worker-entry regression checks also exercise the adopted receipt through the
-actual job runner, including failed or mismatched parent receipts.
-
-[Concise long-run findings](docs/image_attacker_ablation_summary.md) distinguish
-raw evasion gains from checkpoints meeting the CLIP requirement. Refresh with:
-
-```bash
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/report_image_attacker_summary.py MANIFEST
-```
-
-The run and final evaluation remain on regular H100 QoS with checkpoint recovery.
-Automatic pre/post reporting jobs are canceled. Reporting is refreshed manually;
-the frozen running source, checkpoint configuration and dependency receipts are
-preserved for recovery and final evaluation. Conclusions remain limited to this
-seed, defender and prompt distribution.
-
-An additional evaluation-only job can score a saved long-run checkpoint on the
-same 500 held-out prompts and noise seeds, reusing the completed initial-model
-baseline and human scores. It performs no attacker or defender training:
-
-```bash
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py evaluate-checkpoint PARENT_MANIFEST CHECKPOINT
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/image_experiments.py submit EVALUATION_MANIFEST --held
-```
-
-This job requests one hour on regular H100 QoS and records evasion, CLIP
-alignment/retention, AUROC and human false positives. Results are linked from
-[the additional checkpoint evaluation](docs/image_final_checkpoint_test_results.md).
-This is a post-hoc test of a requested checkpoint; it does not replace the
-original validation-selected attacker or select further checkpoints using test
-scores.
-
-### MAML fast adaptation
-
-`MAMLAdaptation` learns text attacker LoRA starting weights that work well after
-five updates against a detector. Each iteration samples up to three detectors.
-Every detector branch starts from the **same weights θ**, practices on *support*
-prompts, then computes a loss on different *query* prompts using that same
-detector. For example:
-
-```mermaid
-flowchart TD
-    S["Same starting weights θ"] --> B["Binoculars: 5 updates on support prompts"]
-    S --> R["RoBERTa: 5 updates on support prompts"]
-    S --> F["Fast-DetectGPT: 5 updates on support prompts"]
-    B --> BQ["Adapted weights θ′B: query loss against Binoculars"]
-    R --> RQ["Adapted weights θ′R: query loss against RoBERTa"]
-    F --> FQ["Adapted weights θ′F: query loss against Fast-DetectGPT"]
-    BQ --> M["Average the three query losses"]
-    RQ --> M
-    FQ --> M
-    M --> U["Backpropagate through practice updates; update original θ once"]
-    U --> N["Next iteration starts from updated θ"]
-```
-
-**Support prompts determine the adaptation; query prompts determine how to
-improve its starting point.** Query prompts contribute to training, not final
-independent evaluation. The adapted branch weights are discarded; the shared
-starting weights are retained and saved as `meta_init`.
-
-The CLI evaluates adaptation to a held-out detector against the exact pre-meta
-starting weights. By default, second-order MAML differentiates through the
-practice gradients; `--first-order` uses FOMAML to reduce compute and memory.
-
-MAML checks the default detector families and all registered text notebook
-classifiers. A detector joins the pool only after producing a finite AI score
-on a startup probe. `detector_availability.json` records every candidate and
-unavailable resource; `prompt_manifest.json` records the actual training pool
-and the held-out detector. Style Embedding needs labeled support centroids;
-DivEye uses the authors' released 83-feature DivEye/BiScope classifier and its
-matching Falcon-7B and Gemma-1.1-2B-Instruct extractors. Gemma access must be
-enabled on Hugging Face or an authorized local checkpoint supplied.
-
-Frozen MAML detectors run on CPU, reserving the single H100 for the trainable
-generator and its second-order graph. The Slurm controller requests 96 physical
-CPUs for this stage to provide host memory for the expanded pool. The original
-100 episodes, five inner updates and at most three tasks per episode remain.
-
-### Repeated attacker and defender adaptation
-
-Both sides move, so a single attacker or a single retrain is not the story.
-
-`ArmsRaceExperiment` runs `num_rounds` rounds on a fixed evaluation prompt split
-that neither side trains on. Before round 1, the initial generator produces
-continuations on training prompts to warm up the defender against matched human
-references. Warm-up uses the existing defender budget (up to 2,000 total examples,
-3 epochs by default), with an internal 80/20 training/validation split and the
-best validation-loss checkpoint retained. The attacker is not updated during
-warm-up. The warmed-up defender enters the attacker reward ensemble before the
-first attacker update. Warm-up checkpoints are saved under `defender/warmup/`
-and its internal validation metrics in `defender_warmup.json`; race rounds keep
-their numbering starting at 1. The race reuses the attacker's held-out prompt
-split (`TextEvasionConfig.evaluation_fraction`, default 0.2).
-
-Warm-up protocol and configuration checks were validated with
-`PYTHONPATH=. uv run --with pytest python -m pytest ai_content_detector/tests/test_equilibrium_math.py ai_content_detector/tests/test_config.py -q`.
-Full GPU training was not validated locally. GRPO contract test collection was
-blocked locally by PyArrow requiring NumPy 2.0 or newer while NumPy 1.26.3 was
-installed.
-
-Within each round it takes three paired
-measurements on the *same* prompts with the *same* sampling seed:
-
-| measurement point | what it means |
-| --- | --- |
-| before attacker update | the attacker's current evasion against the current defender |
-| after attacker update | how much the attacker gained |
-| after defender update | how much of that gain the defender recovered |
-
-The attacker step budget is enforced. `AdaptiveClassifierDefender` then
-retrains a RoBERTa classifier on fresh attacker outputs paired with matched
-human references, and the retrained detector is pushed back into the attacker's
-detector ensemble, which closes the loop. The following numbers are illustrative,
-not verified results from a recorded run. Each value is `attack_success_rate`:
-the fraction of generated evaluation texts with defender AI probability below
-0.5. Higher values mean more successful evasion.
-
-| round | before attacker | after attacker | after defender |
-| --- | --- | --- | --- |
-| 1 | 0.18 | 0.71 | 0.49 |
-| 2 | 0.31 | 0.83 | 0.62 |
-| 3 | 0.44 | 0.88 | 0.71 |
-
-In this example, attacker updates increase evasion, while defender updates reduce
-it by 22, 21, and 17 percentage points. These numbers do not establish convergence
-or non-convergence.
-
-The experiment records paired repeated-update measurements, not a Nash equilibrium
-or a Nash gap. `RADARDefender` is only a compatibility alias; this is not the
-RADAR alternating paraphraser and detector algorithm. The generic image
-arms-race entry point remains rejected; the dedicated DDA image driver above
-implements the specified single-round SD1.5 protocol separately.
-
-## Evaluation and leakage controls
-
-### Data flow
-
-Text and image prompt sets are split deterministically before training. The
-evaluation portion is immutable. MAML additionally separates support prompts,
-used for inner adaptation, from query prompts, used for its meta-objective.
-
-Benchmark datasets validate one-to-one alignment between prompts, AI texts,
-human references, and sample identifiers. They record a source revision when
-the dataset exposes one. Trained GRPO and SPIN checkpoints record method,
-optimized detector names, and seed metadata. The benchmark rejects an attack
-checkpoint whose optimized detector names overlap declared held-out detectors.
-Training sample IDs are not yet stored in attack checkpoints, so sample-level
-overlap cannot yet be rejected automatically.
-
-Methods declare whether they rewrite an existing text, generate a new text from
-a prompt, or support both. Incompatible dataset and method pairs are reported as
-skipped. Failed transformations are counted and excluded; the original text is
-never substituted as a successful evasion output.
-
-### Metrics
-
-- **AUROC** measures how often a random AI example receives a higher score than
-  a random human example across all thresholds. It requires both classes.
-- **False-positive rate (FPR)** is the fraction of human examples incorrectly
-  labeled AI at a threshold.
-- **True-positive rate (TPR)** is the fraction of AI examples correctly labeled
-  AI at that threshold.
-- **TPR at a target FPR** uses the best empirically achievable threshold at or
-  below the requested FPR. It does not interpolate an unattainable operating
-  point.
-- **Attack success rate** is the fraction of generated examples whose mean
-  evasion reward exceeds `0.5`, equivalently whose mean detector AI score is
-  below `0.5`. It does not require that the original example was first detected.
-- **Semantic similarity** or **CLIP alignment** checks that successful evasion
-  did not simply discard the requested content.
-
-Empty, misaligned, non-finite, and invalid single-class metric inputs are
-rejected rather than turned into plausible-looking results.
-
-### Feature and notebook leakage controls
-
-`FeatureBank` selects probes on a group-disjoint validation partition and fits
-its scaler on training data only. The explainability notebook assigns stable
-document identifiers before paragraph expansion, uses document-disjoint train,
-validation, and test sets, restores sentence segmentation, labels SHAP direction
-for the actual class, and reserves test data for final evaluation.
-
-## Running experiments
-
-The unified entry point is:
-
-```bash
-PYTHONPATH=. uv run python -m ai_content_detector.rl_evasion.run_experiments \
-  --experiment <name>
-```
-
-| Experiment | Example | Main requirement and output |
-|---|---|---|
-| Smoke test | `--experiment smoke_test` | CPU wiring check; no training |
-| GRPO text | `--experiment grpo_text --model Qwen/Qwen3.5-9B-Base --epochs 3` | Local causal LM, TRL, detectors, GPU; saves a final adapter and metadata |
-| SPIN | `--experiment multispin --epochs 5` | Local causal LM, CNN/DailyMail, GPU; saves one checkpoint per iteration |
-| DDPO image | `--experiment ddpo_image --epochs 50` | Stable Diffusion, image detectors, GPU; saves diffusion LoRA checkpoints |
-| Arms race | `--experiment arms_race --modality text --rounds 10` | Working text attacker and adaptive defender; saves round history |
-| Meta-adaptation | `--experiment meta_adapt --epochs 100` | At least two functioning detectors, LoRA model, GPU; saves `meta_init` |
-| Benchmark | `--experiment benchmark --dataset hc3 --epochs 200` | Here `--epochs` is used as the maximum sample count; saves benchmark JSON |
-
-Shared options are `--model`, `--epochs`, `--rounds`, `--modality`,
-`--first-order`, `--dataset`, and `--output-dir`. Configuration dataclasses in
-`rl_evasion/config.py` expose the remaining learning rates, batch sizes, reward
-weights, prompt splits, seeds, and checkpoint intervals.
-
-For finer benchmark control, including explicit held-out detectors and
-checkpoints, call the benchmark module directly:
-
-```bash
-PYTHONPATH=. uv run python \
-  -m ai_content_detector.rl_evasion.benchmarking.benchmark \
-  --dataset hc3 \
-  --max-samples 200 \
-  --detectors binoculars fast_detect_gpt \
-  --heldout-detectors diveye \
-  --grpo-checkpoint results/text_evasion/grpo/final \
-  --output-dir results/benchmark
-```
-
-OpenRouter baselines are added only when `OPENROUTER_API_KEY` is present. API
-failures are counted as failures and never fall back to returning the prompt.
-
-## Required models and external resources
-
-| Component | What must be supplied |
-|---|---|
-| ModernBERT and TF-IDF | Artifacts under the existing `ml_pipeline` `bench_aitextdetect` checkpoint registry |
-| EfficientNet, CLIP, and DINOv2 classifiers | Artifacts under `bench_imai_artifact` |
-| Binoculars and Fast-DetectGPT | Their Hugging Face causal language models; CUDA is required by availability checks |
-| DivEye | Authors' released XGBoost classifier, Falcon-7B and gated Gemma-1.1-2B-Instruct; all frozen during inference |
-| Disrupt-and-Recover | Recovery callable or OpenAI-compatible API, plus a BERTScore transformer checkpoint |
-| IPAD | Phi-3 base model, three released adapters, and a large GPU |
-| LUAR style detector | LUAR weights plus task-specific human and AI support sets |
-| MLEP | Trained ResNet-50 classifier checkpoint |
-| WaRPAD | DINOv2 ViT-L/14 weights, plus a validation threshold or calibrator for classification |
-| Denoising trajectory | Stable Diffusion and CLIP ViT-L/14 weights |
-| GRPO, SPIN, MAML, and DDPO | Local trainable base models, datasets, functioning reward detectors, and GPU memory |
-
-Useful optional environment variables are:
-
-```bash
-export OPENROUTER_API_KEY=...   # OpenRouter benchmark or D&R recovery
-export OPENAI_API_KEY=...       # OpenAI-compatible D&R recovery
-export OPENAI_BASE_URL=...      # Alternate OpenAI-compatible endpoint
-export DR_RECOVERY_MODEL=...    # Recovery model ID for D&R
-```
-
-Do not commit keys. Model and dataset downloads also require network access and,
-for gated models, the provider's authentication and license acceptance.
-
-## Extending the project
-
-### Add a detector
-
-1. Subclass `BaseDetector` in the appropriate detector module.
-2. Set `name` and `modality`.
-3. Implement `detect()` and return a `DetectionResult` with an AI-oriented score.
-4. Put the native statistic, threshold, class order, and `score_semantics` in
-   `details`.
-5. Implement a truthful `is_available()` and rely on `unload()` or extend its
-   resource list for heavy state.
-6. Add focused tests for boundary decisions, batches, missing resources, label
-   ordering, and score direction.
-7. Register it in the app or experiment detector zoo only after its dependencies
-   and failure behavior are explicit.
-
-### Add an evasion method
-
-Declare whether it rewrites existing content or generates from prompts. Preserve
-sample identifiers in training metadata, record every detector optimized by the
-method, and separate training data from final evaluation. A failed example must
-remain a failed example rather than being replaced by the unmodified input.
-
-
-## Retained experiments on Jean Zay
-
-The retained attacker is `Qwen/Qwen3.5-9B-Base`, adapted with LoRA against
-Gemma, ModernBERT-large, or the mean score of all seven warmed detectors.
-The retained final checkpoints are Gemma at 1,213 updates, ModernBERT at
-1,487, and the ensemble at 502. Their step-500 snapshots are also retained.
-A separate RoBERTa step-500 attacker documents the limits of selecting one
-apparently successful checkpoint.
-
-| Attacker target | Saved updates | Evaluation texts | Evasion at threshold 0.5 |
-| --- | ---: | ---: | ---: |
-| Gemma | 1,213 | 500 | 77.2% |
-| ModernBERT-large | 1,487 | 500 | 96.8% |
-| Seven-detector ensemble | 502 | 500 | 94.8% |
-| RoBERTa, diagnostic subset | 500 | 100 | 98.0% |
-
-The RoBERTa diagnostic trajectory later fell to 93% at update 550 and 36%
-at 600 on the same 100 prompts. Its full 500-text evaluation at 600 gave
-39.2%. Only its step-500 model is retained; later measurements document the
-fluctuation. A peak does not establish stable convergence. The three long
-runs used different training budgets, so their final scores are not a
-matched-budget ranking of defender architectures. The ensemble evaluation
-was performed at 502, rather than exactly 500.
-
-The [results report](docs/research_results.md) contains the retained tables,
-training curves, RoBERTa trajectory, and their source CSVs and vector SVGs.
-Other experiment reports and discarded RL checkpoints have been removed.
-Notebook models, model/dataset caches, warmed detectors and recorded data
-partitions remain available as execution prerequisites.
-
-The completed experiment performed **one defender update only** for each of the
-three retained long-run attackers. Each job generates outputs on the existing
-1,000 fitting prompts and retrains its warmed defender(s) with the existing
-supervised protocol. The 500 evaluation prompts remain excluded from training.
-Post-defense evaluation reuses exactly the saved attack texts, making the
-before/after comparison attributable to the defender update. There is no new
-attacker training and no second round in these jobs.
-
-```bash
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/retained_races.py prepare
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/retained_races.py submit NEW_MANIFEST
-PYTHONPATH=. uv --no-cache run --no-sync python scripts/architecture_races.py release NEW_MANIFEST
-```
-
-All three completed successfully in one development allocation, with no requeue:
-
-| Defender | Evasion before update | Evasion after update | Human false positives after | Allocation time |
-| --- | ---: | ---: | ---: | --- |
-| Gemma | 77.2% | 0.2% | 0.2% | 47m35s |
-| ModernBERT-large | 96.8% | 1.0% | 0.4% | 41m45s |
-| Seven-detector ensemble | 94.8% | 0.4% | 0.0% | 1h31m13s |
-
-These comparisons reuse the same 500 saved attack texts and 500 human passages
-at threshold 0.5. Detection recovers against the fixed attackers; resistance to
-another adaptive RL attack remains untested.
-
-The updated defenders are also evaluated on the original 500 reserved
-base-Qwen outputs and 500 human passages, without generating or training
-again. The results report compares their detection and human false-positive
-rates with the original warmed detectors, including every ensemble member.
-This separate check measures whether learning the RL outputs preserves
-detection of the base generator.
-
-All three base-model checks completed successfully:
-
-| Updated branch | Base detection before update | Base detection after update | Human false positives after |
-| --- | ---: | ---: | ---: |
-| Gemma | 100.0% | 100.0% | 0.2% |
-| ModernBERT-large | 99.0% | 90.2% | 0.4% |
-| Seven-detector ensemble | 100.0% | 98.4% | 0.0% |
-
-ModernBERT loses some base-model detection at the fixed threshold. Inside the
-ensemble, TF-IDF falls from 88.6% to 28.2% base detection, with 7.0% human false
-positives and AUROC 0.6158. Recovery against the fixed RL attacker therefore
-does not guarantee retention on base outputs, even when the ensemble remains
-strong. The report includes every member and before/after figures.
-
-The three independent jobs each used one H100 and two-hour development
-allocations. They save generation, defender optimizer and phase progress,
-then requeue after a checkpointed pause. Shared `metrics.csv` rows identify
-the branch, phase and historical attacker budget. See the
-[defender-update protocol](docs/defender_comparison.md) for exact checkpoints,
-job identities, splits and continuation behavior. The report selection is
-explicit, so surviving prerequisite receipts cannot reintroduce discarded
-experiments into the Markdown report.
-
-## Validation status
-
-The retained-attacker defender workflow passed **44 focused tests in 111.55
-seconds** in this checkout. They cover zero new attacker updates, interrupted
-phase recovery, saved-text evaluation without regeneration, reserved-prompt
-validation, cached metric alignment and report selection. The retained source
-checkpoint hashes, all warmed-defender identities and the cached initial metrics
-were also checked against the original completed evaluations before release.
-All three GPU jobs subsequently completed with exit code zero. The completed
-defender checkpoints, identical evaluation-row alignment, and 36 unique shared
-metric rows were checked against the saved outputs.
-
-The additional base-model evaluation and its shared submission/reporting paths
-passed 26 focused tests in 417.35 seconds. These check use of saved base outputs
-and updated weights, completed-result reuse, rejection of changed inputs or
-checkpoints, and separate before/after base-model reporting. The three scoring
-jobs completed with exit code zero, no restart, and runtimes of 2m54s, 1m40s
-and 5m50s for Gemma, ModernBERT and the ensemble respectively. All 500 paired
-evaluation identities and 24 unique shared base-metric rows were verified.
+CPU fixtures and mocks check score semantics, formulas, splits, failure behavior
+and restart contracts. GPU training, external APIs and real-model inference need
+their recorded resources. Historical test receipts in the guide describe their
+original checkouts rather than certifying the current environment.
+
+The [2026-10-27 cleanup checks](docs/cleanup_validation.md) record the current
+validation results, CPU/kernel workarounds and pending-job preservation checks.
