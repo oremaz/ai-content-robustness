@@ -2,6 +2,11 @@
 
 The implementation studies four families:
 
+For the separate hosted-model threat model with exposed token probabilities,
+see the [TextSeal API attack experiment](textseal_api_attacks.md). It compares
+direct resampling, confidence-based smoothing and BIRA response rewriting on the
+original TextSeal/Qwen sampler, with no student training.
+
 The removal protocol treats the watermark technology as unknown to the
 attacker. The [literature review and shortlist](watermark_removal_literature.md)
 select two model-level families: clean-checkpoint merging when clean weights
@@ -32,6 +37,19 @@ Text fitting and validation are split by question ID within the original removal
 partition, with no owner training or test documents supplied to the worker.
 These text data cover HC3 questions and do not establish removal across languages
 or arbitrary domains. Image quality uses CLIP alignment rather than 50K-image FID.
+
+The latent-strength comparison freezes each training configuration and compares
+it on disjoint question groups from the existing validation partition. Its test
+partition is not used to choose a configuration. Increased KL budgets can change
+generated-text quality, so the validation report includes reference-model
+perplexity alongside detection. The comparison chooses the teacher with highest
+validation detection against base outputs, breaking ties by reference-model
+perplexity, and then compares its distilled student against the original student
+on the same validation groups. Among new candidates, only the chosen student is
+evaluated on the test partition; the original student's existing test result is
+retained. The stronger teachers failed the original 0.60 autoregressive
+bit-accuracy gate; the independent detection-based selection is recorded as a
+separate exploratory criterion, not as a passed original gate.
 
 ```bash
 PYTHONPATH=. uv run --no-sync python scripts/watermark_removal.py prepare \

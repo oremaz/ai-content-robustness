@@ -120,6 +120,7 @@ def prepare(images_path, text_path):
 
 
 def link_or_copy(source, destination):
+    source = Path(source).resolve(strict=True)
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     if not destination.exists():

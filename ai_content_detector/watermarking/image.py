@@ -6,6 +6,7 @@ import gc
 import io
 import json
 from pathlib import Path
+import shutil
 
 import numpy as np
 from PIL import Image
@@ -111,6 +112,38 @@ def summarize(rows, null, threshold, attack_thresholds=None):
             "other_classes": metrics([r for r in rows if r["label"] != 0], [r for r in null if r["label"] != 0])}
 
 
+def encode_fitting_latents(rows, output, encode, stop, chunk_size=128):
+    latent_path = output / "fitting_latents.pt"
+    if latent_path.exists():
+        return torch.load(latent_path, weights_only=True)
+    chunks = output / "fitting_latents_chunks"
+    chunks.mkdir(exist_ok=True)
+    values = []
+    position = 0
+    while position < len(rows):
+        path = chunks / f"{position:08d}.pt"
+        if path.exists():
+            chunk = torch.load(path, weights_only=True)
+            if not 0 < len(chunk) <= min(chunk_size, len(rows) - position):
+                raise ValueError("Invalid fitting latent chunk")
+        else:
+            batch = []
+            for row in rows[position:position + chunk_size]:
+                batch.append(encode(row).cpu())
+                if stop.requested:
+                    break
+            chunk = torch.cat(batch)
+            atomic_save(chunk, path)
+        values.append(chunk)
+        position += len(chunk)
+        if stop.requested:
+            raise CheckpointPause(f"Image fitting latents saved at {position}/{len(rows)}")
+    encoded = torch.cat(values)
+    atomic_save(encoded, latent_path)
+    shutil.rmtree(chunks)
+    return encoded
+
+
 def fit_clean(manifest, family, generator, decoder, stop, callback):
     from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor
     config = manifest["image_training"]
@@ -122,21 +155,13 @@ def fit_clean(manifest, family, generator, decoder, stop, callback):
     data = json.loads(Path(manifest["data"]).read_text())["images"]
     size = 256 if family == "rar" else 512
     transform = Compose([Resize(size), CenterCrop(size), ToTensor()])
-    latent_path = output / "fitting_latents.pt"
-    if latent_path.exists():
-        encoded = torch.load(latent_path, weights_only=True)
-    else:
-        from distseal.modules.lora_helper import apply_lora_to_linear, mark_only_lora_as_trainable
-        values = []
-        with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
-            for row in data["train"]:
-                path = row["path"] if isinstance(row, dict) else row
-                with Image.open(path) as image:
-                    tensor = transform(image.convert("RGB")).unsqueeze(0).cuda()
-                latent = decoder.encode(tensor if family == "rar" else tensor*2-1)
-                values.append(latent.cpu())
-        encoded = torch.cat(values)
-        atomic_save(encoded, latent_path)
+    def encode(row):
+        path = row["path"] if isinstance(row, dict) else row
+        with Image.open(path) as image:
+            tensor = transform(image.convert("RGB")).unsqueeze(0).cuda()
+        return decoder.encode(tensor if family == "rar" else tensor*2-1)
+    with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+        encoded = encode_fitting_latents(data["train"], output, encode, stop)
     # The decoder is a component of the released pipeline; no original generator,
     # watermark key or detector is used by this optimization.
     if config.get("mode") == "full":
@@ -147,6 +172,7 @@ def fit_clean(manifest, family, generator, decoder, stop, callback):
         inject_lora(generator, config["lora_rank"])
         parameters = [p for p in generator.parameters() if p.requires_grad]
     else:
+        from distseal.modules.lora_helper import apply_lora_to_linear, mark_only_lora_as_trainable
         apply_lora_to_linear(generator, r=config["lora_rank"], lora_alpha=32, target_linear_modules=("",))
         parameters = list(mark_only_lora_as_trainable(generator))
     optimizer = torch.optim.AdamW(parameters, lr=config["lr"], weight_decay=0., foreach=False)

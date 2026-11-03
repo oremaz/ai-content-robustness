@@ -17,11 +17,14 @@ for their exact relationship and current experiment status.
 | [backbones.py](backbones.py) | Native released model backbones and checkpoint state |
 | [removal.py](removal.py) | Attacker tasks, artifact integrity and owner evaluation gating |
 | [preflight.py](preflight.py) | Resource and environment checks before experiments |
+| [text_attacks.py](text_attacks.py) | Scheme-agnostic BIRA, top-k resampling and smoothing primitives |
 
 Start with the protocol and removal contracts before following an individual
 training worker. [watermark_experiments.py](../../scripts/watermark_experiments.py)
 and [watermark_removal.py](../../scripts/watermark_removal.py) prepare manifests
 and frozen source snapshots; their commands are in the protocol above.
+The separate [TextSeal API protocol](../../docs/textseal_api_attacks.md) describes
+blind rewriting and simulated probability access on the original sampler.
 
 ## What the comparison means
 
@@ -38,6 +41,12 @@ account. The owner evaluates only after attack artifacts have been frozen.
 Validation and final evaluation remain separate from clean-data fitting.
 
 ## Checks and reproduction
+
+The [released BIRA replication](../../docs/bira_replication.md) adds a standard
+Llama control and Qwen3.5-9B rewriting. The stronger latent Qwen student is
+evaluated with BIRA, probability resampling and smoothing. The naturalness
+diagnostic no longer blocks attack execution after the matched base control
+also failed it. Pending jobs are not results.
 
 From the repository root:
 

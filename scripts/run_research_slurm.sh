@@ -42,6 +42,25 @@ if [[ "${1:-}" == "--watermark" ]]; then
     export PYTHONDONTWRITEBYTECODE=1
     exec srun uv --no-cache run --no-sync python "$source_root/scripts/watermark_experiments.py" run "$manifest" "${3:?Supply a watermark stage}"
 fi
+if [[ "${1:-}" == "--latent-sweep-validation" ]]; then
+    config=${2:?Supply a validation configuration}
+    source_root=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["source"])' "$config")
+    script=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["script"])' "$config")
+    export PYTHONPATH="$source_root" PYTHONDONTWRITEBYTECODE=1
+    exec srun uv --no-cache run --no-sync python "$script" "$config"
+fi
+if [[ "${1:-}" == "--latent-sweep-selection" ]]; then
+    config=${2:?Supply a selection configuration}
+    script=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["script"])' "$config")
+    export PYTHONDONTWRITEBYTECODE=1
+    exec srun uv --no-cache run --no-sync python "$script" "$config"
+fi
+if [[ "${1:-}" == "--latent-sweep-train-selected" ]]; then
+    config=${2:?Supply a teacher-selection configuration}
+    script=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["script"])' "$config")
+    export PYTHONDONTWRITEBYTECODE=1
+    exec srun uv --no-cache run --no-sync python "$script" "$config"
+fi
 if [[ "${1:-}" == "--profile-rl-optimizations" ]]; then
     module load cuda/12.4.1
     export CC=/usr/bin/gcc CXX=/usr/bin/g++ CUDAHOSTCXX=/usr/bin/g++

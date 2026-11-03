@@ -33,6 +33,21 @@ and [removal review](docs/watermark_removal_literature.md) for TextSeal, release
 DistSeal image checkpoints, and the experimental latent text adaptation.
 Pending jobs are not completed results.
 
+The [TextSeal API attack protocol](docs/textseal_api_attacks.md) compares direct
+top-k probability resampling, confidence-based smoothing (Findings EMNLP 2025),
+and BIRA rewriting (ICML 2026), with an ordinary paraphrasing control. This uses
+the original sampler-level TextSeal outputs, not a distilled student.
+
+The [released BIRA replication and Qwen extensions](docs/bira_replication.md)
+use the authors' standard Llama instruct checkpoint and a Qwen3.5-9B extension.
+The stronger latent Qwen student receives BIRA, probability resampling and
+smoothing, with detection and quality evaluated separately. The same protocol
+can target an earlier student checkpoint with `--latent-manifest` and `--latent-only`.
+Use `--quality-only --quality-model base` for a matched unwatermarked base-model
+control, without submitting removal attacks.
+`--quality-model teacher` checks the original watermarked teacher with its
+saved embedder; all standalone quality probes now use the frozen original sampler settings.
+
 ## Read the code
 
 | Component | Start here | What to inspect |
@@ -107,6 +122,10 @@ classes retain their historical module identities.
 Slurm workflows use saved manifests and frozen source directories. Resume the
 original run using its original manifest, snapshot, environment and artifacts.
 Do not substitute a new run's configuration when reproducing a recorded result.
+Image clean training saves encoded fitting data in resumable chunks and records
+training state for continuation after a Slurm warning signal.
+Watermark-removal staging resolves model-cache symlinks before linking files into
+the run's sealed inputs.
 The [defender protocol](docs/defender_comparison.md) documents retained checkpoints
 and continuation; the watermarking protocol documents its source snapshots.
 

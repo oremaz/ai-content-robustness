@@ -1,5 +1,11 @@
 """Discrete-channel gradients and inference contracts for the latent text experiment."""
 
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+import sys
+
 import pytest
 import torch
 from torch import nn
@@ -10,6 +16,69 @@ from ai_content_detector.watermarking.latent_text import (
 )
 from ai_content_detector.watermarking.protocol import DEFAULT_STAGES, LATENT_STAGES, STAGES
 from ai_content_detector.watermarking.text import forward_kl
+
+
+def test_sweep_calibration_and_validation_are_disjoint():
+    path = Path(__file__).resolve().parents[2] / 'scripts/latent_sweep_validation.py'
+    spec = importlib.util.spec_from_file_location('latent_sweep_validation_test', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    calibration, evaluation = module.validation_partitions([{'id': str(i)} for i in range(8)])
+    assert [row['id'] for row in calibration] == ['0', '1', '2', '3']
+    assert [row['id'] for row in evaluation] == ['4', '5', '6', '7']
+    calibration, evaluation = module.validation_partitions([{'id': x} for x in ('a', 'b', 'c', 'a')])
+    assert {row['id'] for row in calibration}.isdisjoint(row['id'] for row in evaluation)
+    assert sum(row['id'] == 'a' for row in calibration) == 2
+    with pytest.raises(ValueError, match='disjoint'):
+        module.validation_partitions([{'id': 'same'}, {'id': 'same'}])
+
+
+def test_student_selection_uses_validation_detection_then_quality():
+    path = Path(__file__).resolve().parents[2] / 'scripts/latent_sweep_selection.py'
+    spec = importlib.util.spec_from_file_location('latent_sweep_selection_test', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    def candidate(rate, perplexity, n=128):
+        return {'evaluation_documents': n, 'against_base': {'detection': {'rate': rate}},
+                'quality': {'reference_generation_perplexity': perplexity}}
+    values = {'baseline': candidate(.4, 3), 'first': candidate(.5, 5), 'second': candidate(.5, 4)}
+    assert module.select_candidate(values) == 'second'
+    values['second']['evaluation_documents'] = 64
+    with pytest.raises(ValueError, match='sizes differ'):
+        module.select_candidate(values)
+
+
+def test_teacher_selection_can_keep_baseline_without_training(tmp_path, monkeypatch):
+    scripts = Path(__file__).resolve().parents[2]/'scripts'
+    monkeypatch.syspath_prepend(str(scripts))
+    path = scripts/'latent_sweep_train_selected.py'
+    spec = importlib.util.spec_from_file_location('latent_sweep_train_selected_test', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    def sha(p):
+        import hashlib
+        return hashlib.sha256(p.read_bytes()).hexdigest()
+    candidates = {}
+    for label, rate in [('baseline', .6), ('strength_070', .5)]:
+        receipt, result = tmp_path/f'{label}_receipt.json', tmp_path/f'{label}_result.json'
+        receipt.write_text(json.dumps({'status': 'completed'}))
+        result.write_text(json.dumps({'split': 'validation only', 'evaluation_documents': 128,
+                                      'against_base': {'detection': {'rate': rate}, 'false_positive': {'rate': 0}},
+                                      'quality': {'reference_generation_perplexity': 4}}))
+        candidates[label] = {'receipt': str(receipt), 'results': str(result)}
+    config = {'directory': str(tmp_path), 'script_sha256': sha(path),
+              'selection_helper': str(scripts/'latent_sweep_selection.py'),
+              'selection_helper_sha256': sha(scripts/'latent_sweep_selection.py'), 'candidates': candidates}
+    config_path = tmp_path/'config.json'
+    config_path.write_text(json.dumps(config))
+    module.run(config_path)
+    assert json.loads((tmp_path/'teacher_selection.json').read_text())['selected'] == 'baseline'
+
+
+def test_teacher_selection_cli_starts():
+    path = Path(__file__).resolve().parents[2]/'scripts/latent_sweep_train_selected.py'
+    result = subprocess.run([sys.executable, str(path), '--help'], capture_output=True, text=True)
+    assert result.returncode == 0
 
 
 def test_dense_distillation_is_forward_kl_with_valid_token_normalization():

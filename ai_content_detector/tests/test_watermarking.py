@@ -95,6 +95,24 @@ def test_image_domain_metrics_use_matching_negative_classes():
     assert result["other_classes"]["false_positive"]["rate"] == 0.
 
 
+@pytest.mark.parametrize("top_p", [.95, 1.])
+def test_official_ordinary_sampler_matches_hf_nucleus_distribution(official, monkeypatch, top_p):
+    from textseal.watermarking.generator import WmGenerator
+    from transformers import TopPLogitsWarper
+    logits = torch.randn(4, 257, generator=torch.Generator().manual_seed(123)) * 2
+    captured = []
+    def capture(probabilities, num_samples):
+        captured.append(probabilities.clone())
+        return torch.zeros((len(probabilities), num_samples), dtype=torch.long)
+    monkeypatch.setattr(torch, "multinomial", capture)
+    generator = object.__new__(WmGenerator)
+    generator.sample_next(logits, None, temperature=.8, top_p=top_p)
+    native = torch.zeros_like(logits).scatter(-1, logits.argsort(descending=True), captured[0])
+    hf = TopPLogitsWarper(top_p)(torch.zeros((4, 1), dtype=torch.long), logits/.8).softmax(-1)
+    torch.testing.assert_close(native, hf, atol=2e-7, rtol=2e-6)
+    assert torch.equal(generator.sample_next(logits, None, temperature=0.), logits.argmax(-1))
+
+
 def test_qwen_hybrid_cache_matches_full_prefix(monkeypatch):
     import inspect
     from transformers.models.qwen3_5 import modeling_qwen3_5 as qwen

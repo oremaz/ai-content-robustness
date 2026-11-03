@@ -4,6 +4,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -13,9 +14,49 @@ from ai_content_detector.watermarking.protocol import file_hash, write_json
 from ai_content_detector.watermarking.removal import (
     artifact_hashes, load_fitting, merge_state, text_bridge, validate_task, verify_artifact,
 )
+from ai_content_detector.rl_evasion.checkpointing import CheckpointPause
+from ai_content_detector.watermarking.image import encode_fitting_latents
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_link_or_copy_resolves_relative_source_symlink(tmp_path):
+    spec = importlib.util.spec_from_file_location("removal_link_test", ROOT / "scripts/watermark_removal.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    source = tmp_path / "cache" / "snapshot" / "model.bin"
+    source.parent.mkdir(parents=True)
+    blob = tmp_path / "cache" / "blobs" / "weights"
+    blob.parent.mkdir()
+    blob.write_bytes(b"weights")
+    source.symlink_to("../blobs/weights")
+    destination = tmp_path / "inputs" / "model.bin"
+    module.link_or_copy(source, destination)
+    assert destination.read_bytes() == b"weights"
+    assert not destination.is_symlink()
+
+
+def test_fitting_latents_resume_after_signal(tmp_path):
+    stop = SimpleNamespace(requested=False)
+    calls = []
+
+    def encode(row):
+        calls.append(row)
+        if row == 4:
+            stop.requested = True
+        return torch.tensor([[row]])
+
+    with pytest.raises(CheckpointPause):
+        encode_fitting_latents(list(range(9)), tmp_path, encode, stop, chunk_size=3)
+    assert calls == [0, 1, 2, 3, 4]
+    stop.requested = False
+    result = encode_fitting_latents(list(range(9)), tmp_path, encode, stop, chunk_size=3)
+    assert calls == list(range(9))
+    assert result.squeeze().tolist() == list(range(9))
+    assert not (tmp_path / "fitting_latents_chunks").exists()
+    encode_fitting_latents(list(range(9)), tmp_path, encode, stop, chunk_size=3)
+    assert calls == list(range(9))
 
 
 @pytest.fixture
