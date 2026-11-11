@@ -1,0 +1,427 @@
+{
+  "DETECTORS.md": {
+    "source_sha256": "35c9e02d18f4748c1d50eae434248da056740396d64cee843a6a62a9b35ff69b",
+    "latex": "tex/records/DETECTORS.tex",
+    "latex_sha256": "2162ab9de02bf24cb4038337cd4c21edeafb5bb2f97dc6f165003161576b7b96"
+  },
+  "docs/bira_replication.md": {
+    "source_sha256": "2936a67b73a5f38659008fda925845604e0b1590b9349a8101b8836f15fefe07",
+    "latex": "tex/records/docs/bira_replication.tex",
+    "latex_sha256": "7bd768ebaf5d4ca7623ed074bc808f17e2d3aa75186cbb49bd88128c6fd1bc50"
+  },
+  "docs/cleanup_validation.md": {
+    "source_sha256": "de281d19961a19f6db17be09e8a8923a61b3b25bb67091e0ad7cfda5a28f06ab",
+    "latex": "tex/records/docs/cleanup_validation.tex",
+    "latex_sha256": "f3138da3467dd4581af96a8bff18d7ae6bd13dff5aaacbb60b77ece375716a58"
+  },
+  "docs/closed_image_results.md": {
+    "source_sha256": "fe21353295b9c75eda5cb1207db5edbe0d1243d1330ea0cd0f5498729202d9b7",
+    "latex": "tex/records/docs/closed_image_results.tex",
+    "latex_sha256": "0f87d09c5030bd5dc00d16088419dbe82832ddf100cbc68971812bcaeef5417e"
+  },
+  "docs/closed_image_watermarking.md": {
+    "source_sha256": "b9973c0d47a42a016747971f10f3b0c0c882d17cee72050ab4b50fc500e41ae2",
+    "latex": "tex/records/docs/closed_image_watermarking.tex",
+    "latex_sha256": "8866777487186acc30caf086d0f11b9cbeced360221ef5b7ba1f968979b0a6a8"
+  },
+  "docs/defender_comparison.md": {
+    "source_sha256": "ab22a071607555e266c93b3514523cdd31b2faa764b2eb70f11c58f57018efd2",
+    "latex": "tex/records/docs/defender_comparison.tex",
+    "latex_sha256": "3e07364a7bbbe904d7c77d5f3719ffca7d6b16294f1f1955c0006c28dee6443d"
+  },
+  "docs/diveye_classifier.md": {
+    "source_sha256": "b0afc0dd8325a0ada1dfe14a6d8b5a5e21707c67095784d4f87c87b4e1b4e9da",
+    "latex": "tex/records/docs/diveye_classifier.tex",
+    "latex_sha256": "2efecde9faa4088c036f37d835059d12a8714674a09ea6f52ab7755711d7230e"
+  },
+  "docs/image_attacker_ablation_results.md": {
+    "source_sha256": "6088b79844e9b85141629a60b921545d513bfba52ab74e74157c3e9ab8c1abae",
+    "latex": "tex/records/docs/image_attacker_ablation_results.tex",
+    "latex_sha256": "b2ace79db13d934a2f79457cd2e6bad969d837ccb19391144a9a4f3c0a0967b7"
+  },
+  "docs/image_attacker_ablation_summary.md": {
+    "source_sha256": "1ff0eb98d563339eb9edf9b37d563b5fbdad6e774b218146f564347e6d3e5e5d",
+    "latex": "tex/records/docs/image_attacker_ablation_summary.tex",
+    "latex_sha256": "5c0fe6ac450eed70dfab287c6c3ad4d7d8aa825b636cd671af8b040a073a2a7a"
+  },
+  "docs/image_defender_update_results.md": {
+    "source_sha256": "f35cac64d48cb3aac6f758847b77ba980ba22088d23013b92c76aa1df3f14c2b",
+    "latex": "tex/records/docs/image_defender_update_results.tex",
+    "latex_sha256": "00dd50f6702ea8b77609bdcc3bb53d93de40cb0fa6bb9d1bf8a6e26e976e3cbe"
+  },
+  "docs/image_defenders.md": {
+    "source_sha256": "2def8e92c272778a873feb15b4f945270454e6c24d2063730d1173f13ad1c3df",
+    "latex": "tex/records/docs/image_defenders.tex",
+    "latex_sha256": "fee3aa299bb620a21a4ea252a1ca996b66bb40f04e8315372c067dd413619016"
+  },
+  "docs/image_final_checkpoint_test_results.md": {
+    "source_sha256": "4fbf33dc456007343366c44c850a1c38a62b7b131158bc59c4a35632503507c1",
+    "latex": "tex/records/docs/image_final_checkpoint_test_results.tex",
+    "latex_sha256": "1995e9553e9a2bf854a151e7b4f2767ab103c6b091c1329c4cb852583a6ea64b"
+  },
+  "docs/image_reference_reward.md": {
+    "source_sha256": "7b2215216e1ebaad4ebb31bfd88ff76e4d411f2900a1b2615763a249f5ece4bc",
+    "latex": "tex/records/docs/image_reference_reward.tex",
+    "latex_sha256": "9d20fea4978cf4e44a236493f6ad5482c0330f438d6d538f4f2371b1c3f87ba8"
+  },
+  "docs/image_reference_reward_results.md": {
+    "source_sha256": "05a269a5b10a972486d67664632b6d8af0806d176652f41638f67e2faae29a3e",
+    "latex": "tex/records/docs/image_reference_reward_results.tex",
+    "latex_sha256": "ce23af4e8581d5fec5a5e2c02d9a23a6d8589279740db3de31c55c26ca7fc0bd"
+  },
+  "docs/image_results.md": {
+    "source_sha256": "5cae58e2babc650f04a3da9ee3f471fa0b4fb997693bbce50d08a23ac1733af4",
+    "latex": "tex/records/docs/image_results.tex",
+    "latex_sha256": "9f4ae48daec977099540cd4d2e0adf1ef1db45bb254fc8630ef6eaeb1d38852c"
+  },
+  "docs/image_weight_attack_quality.md": {
+    "source_sha256": "24de8cf09ae2031391080fbd84bbb86bb10b42aaa6a92b9efd000a30ef3018bd",
+    "latex": "tex/records/docs/image_weight_attack_quality.tex",
+    "latex_sha256": "0c204255849f75372a8c4917b50a7a2a2368a340d43d74448c606c79f26778af"
+  },
+  "docs/instruct_watermarking.md": {
+    "source_sha256": "85f81dbf39a63c970946d729e377635c1df56abc52eb4ae73d262737c766be9c",
+    "latex": "tex/records/docs/instruct_watermarking.tex",
+    "latex_sha256": "dc33eeb11370ff9b409552f1eace840f499bfde42af996196827fd7fb62ec918"
+  },
+  "docs/jina_similarity.md": {
+    "source_sha256": "553769d5f81f6204c59b102fd6f3acb519c8e6f959d72e197adf2b2629fbaf06",
+    "latex": "tex/records/docs/jina_similarity.tex",
+    "latex_sha256": "6c87be19b551e0e1abdf5da2422504c75f289b2e8e05fbaf37b0a7876b714776"
+  },
+  "docs/jina_similarity_results.md": {
+    "source_sha256": "ea5c2b974702e59154d4d3eb34dee276992cef6f0adfd31673ef2359e53e4e39",
+    "latex": "tex/records/docs/jina_similarity_results.tex",
+    "latex_sha256": "ad74d89794dd83dbf7a97962f62909bd06baf68b83dcd7c275b824c07393f640"
+  },
+  "docs/matched_image_quality.md": {
+    "source_sha256": "704625091a36e4dbddf5e9828d8e2e89c7319043fbbe4ddb092d485b3cbf56dc",
+    "latex": "tex/records/docs/matched_image_quality.tex",
+    "latex_sha256": "f3145897e0a64fd8a5cdebf6032fbca3ba62b55d07fcd0e494038365d0208b8a"
+  },
+  "docs/matched_image_quality_results.md": {
+    "source_sha256": "767aa44db905c5c7ae0a3acd390992e0f50bb07b9df073bb87e161f1d2dccb8f",
+    "latex": "tex/records/docs/matched_image_quality_results.tex",
+    "latex_sha256": "b2cd7d9a1aeb6a0fd5ade9bb404bf1af0d1bace32c5d1308ef85c0942b48152f"
+  },
+  "docs/research_guide.md": {
+    "source_sha256": "198cf08f2feba44d120c486d29715b43cd3753b2b9d2d6ae0d0dfade26e2c735",
+    "latex": "tex/records/docs/research_guide.tex",
+    "latex_sha256": "268ee44b5f8300f9ce8ef187bce1cd7d3aafcba0a69c19533442829f3d5a2c27"
+  },
+  "docs/research_results.md": {
+    "source_sha256": "80167b4dc189eccfa10c368089abdc1a36f6d8ab955547d3c2286e26a7b8c4a5",
+    "latex": "tex/records/docs/research_results.tex",
+    "latex_sha256": "fdfd1071befe7246ef8927024194b165ed9b27c519448602c3042b8500552b51"
+  },
+  "docs/textseal_api_attacks.md": {
+    "source_sha256": "e8c2243868f6e5aab994a1223ae64dacfd8fe9e6635c8d8f71a30f60bf6db5fb",
+    "latex": "tex/records/docs/textseal_api_attacks.tex",
+    "latex_sha256": "1d2dbdce8adaa7bc981957a8b8103633b66bee66ff322dc076a0c7aec3d714e6"
+  },
+  "docs/watermark_removal_literature.md": {
+    "source_sha256": "151f841053886438c9b0cd76c0bc284f6b097ffb86b8eeb5a8e7606fc9667006",
+    "latex": "tex/records/docs/watermark_removal_literature.tex",
+    "latex_sha256": "c913d480aba49006ec8f132b4e84f99ec8f600fd7621940345780625f83a404e"
+  },
+  "docs/watermarking.md": {
+    "source_sha256": "9482d5566c5317fd1c94c21850858574689113804378e709ffc1b61f81810b10",
+    "latex": "tex/records/docs/watermarking.tex",
+    "latex_sha256": "8f82e2239e16ac2def735cea25034cd7908d5d6b262f7d61e6bf0d4b6fc7aea4"
+  },
+  "docs/watermarking/historical.md": {
+    "source_sha256": "1b736fb2d579e8dc217f4cfa8713428bc0a3e92b25b6652040e60422ff489037",
+    "latex": "tex/records/docs/watermarking/historical.tex",
+    "latex_sha256": "872f3134e2a8ca98cad4ad009e2d148e063ac20cf63efaf194a4c4593be0ceea"
+  },
+  "docs/watermarking/images.md": {
+    "source_sha256": "cf14d695125a6a3a0f7f92ebfa6e8e2b9369909b641bc4784fede05c26d8a6ee",
+    "latex": "tex/records/docs/watermarking/images.tex",
+    "latex_sha256": "c6f8984cec411e0e5cd56d709b68b17cf03bb937963852d44b3d4d611b06e0fb"
+  },
+  "docs/watermarking/metrics.md": {
+    "source_sha256": "2ad5a02c4d0a486447de7f81ef80d4c97723ce5faa47a64e94acab8c14aeb007",
+    "latex": "tex/records/docs/watermarking/metrics.tex",
+    "latex_sha256": "7f680372270fa2ccbe7a90d90b8a7c134d8fa99b4cc5806735abe8311faca935"
+  },
+  "docs/watermarking/qualitative/image-dcae-center_crop_area50.md": {
+    "source_sha256": "334c0ad928ed53578d227834e1f4629a195ccd3baf3d019985f478866de91b8b",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-center_crop_area50.tex",
+    "latex_sha256": "ea21f909f2a8ac73b13fd5742665baae3cbf0cc492beef69bcfea912a872941c"
+  },
+  "docs/watermarking/qualitative/image-dcae-jpeg50.md": {
+    "source_sha256": "2bf78c567e5cb9db9968ec3709e122a735edd7fb888e263c5c9b15367f7af306",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-jpeg50.tex",
+    "latex_sha256": "34624b8ce3ef38c1e59cdd419ca5ccaf8df6d328e3a9746e0c210de7954c170c"
+  },
+  "docs/watermarking/qualitative/image-dcae-output-nfpa-0.md": {
+    "source_sha256": "e5a6fa63a47ac441e5ce1c552f5d4a80d024afbece39db429aadde3f4a009ddc",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-0.tex",
+    "latex_sha256": "68bab04f404dd376f71c26a543ba02764c9ab19cdb6f3d54f103bb24a213eb76"
+  },
+  "docs/watermarking/qualitative/image-dcae-output-nfpa-20.md": {
+    "source_sha256": "6dc20f705b1b158d05ee4f0e2bb1b7ccea0e791db4c4cb0b6fd8c96c964d746b",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-20.tex",
+    "latex_sha256": "03c4d879b16c55ceabc96d900facc9260276d68c4ea4b29bf65547c678de0855"
+  },
+  "docs/watermarking/qualitative/image-dcae-output-nfpa-40.md": {
+    "source_sha256": "822b7bdf41bd5b5413b2d3ed5caba3e9b265b841803867a4d0e19e8476e6dac7",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-40.tex",
+    "latex_sha256": "f25fac4d4d3c6218268e9f103e38233621d2f29a37f434e9f57f572f57605fb5"
+  },
+  "docs/watermarking/qualitative/image-dcae-output-resize-only.md": {
+    "source_sha256": "ba8efc602ab419703c615742fb98485a8c735e8337aa07e002e1331ea51f8de9",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-output-resize-only.tex",
+    "latex_sha256": "464614542cf84a88f1b624741720c0851750831eb4ffc7f34bf936d9dd7fc5fc"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-clean-full-2500.md": {
+    "source_sha256": "9eb4cd6159ef1da742a738afddfd88d4679172d782b3135e5e1b84950fd519c1",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-full-2500.tex",
+    "latex_sha256": "1b92ba91faf32c5727aa0a1a87aad5e774cadec3a807401516a9b5404c6c431c"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-clean-full-500.md": {
+    "source_sha256": "76a3ace1e2ae115dc57b1fa40ffb5ec304977dd7114035e114e501715bdf8e17",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-full-500.tex",
+    "latex_sha256": "4b20a1f82b58e353a72a5c218b32e551a3fd963c8efc528750093edc34bd82e2"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-clean-lora-2500.md": {
+    "source_sha256": "17de78a07f7052de2fe6b96b9d7c376deed4d2ccf69e5e4d61b9a6be8caf3c87",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-2500.tex",
+    "latex_sha256": "a7d009f5f9b8e11bc6ac20feeb59eb9ed2d900c0b23cb858c62eee12c57c83f2"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-clean-lora-500.md": {
+    "source_sha256": "d7fdbdd49a19a198c1e717a408aa8c1273703be16dcd596a93d4488420dfe608",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-500.tex",
+    "latex_sha256": "49ce25113d8680f87a25bbb85f4b49760e9501eb9d2e7c83562d369c7ca3ff32"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-merge-0-25.md": {
+    "source_sha256": "252e77a35d1c86987bfa8a09ca3e30957c440587c0800b58dc4d049024c4eb43",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-25.tex",
+    "latex_sha256": "ca075b4e9b2f43eea40e99a824ec9763f0ffe2a1c718abad760d272c111a73c8"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-merge-0-5.md": {
+    "source_sha256": "4edbff56f1931f538b94261d50ae5ef0ec0923a79ce059769ebbccbc0ff2e178",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-5.tex",
+    "latex_sha256": "3304cdcc680ac1ea438f75bf0d112082e848425de9e39ab7d4849ecd9a59a107"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-merge-0-75.md": {
+    "source_sha256": "4a1c386b1a466f79b2d009ca9ca9e3bf8eba92ced5b1ddeeff7ffe9d3631dd98",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-75.tex",
+    "latex_sha256": "4021bddd768c96b3faa7bb1e90369a06052d61d1335dd6ad3dc04f1094d1849b"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-merge-0.md": {
+    "source_sha256": "030769e5efca9ac767f17d907422c51f9ac81460524fd9a22412fa54718f6974",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0.tex",
+    "latex_sha256": "f4fc6acb0cf358c64a33dda2a06e01f7c45357b304b6f1f64d4102e5a045616a"
+  },
+  "docs/watermarking/qualitative/image-dcae-weight-unmodified-supplied.md": {
+    "source_sha256": "1436dc6e0fc07a71984d3c9c177d0e6f0718794f23cc12f43b8cf226c32f0928",
+    "latex": "tex/records/docs/watermarking/qualitative/image-dcae-weight-unmodified-supplied.tex",
+    "latex_sha256": "183fa01ef4b5a4080fc63c0f333a224fb677f9c3809ddd370c051ee6423a554a"
+  },
+  "docs/watermarking/qualitative/image-rar-center_crop_area50.md": {
+    "source_sha256": "da6b7dea6bba27b084b540717730e8b0dada35f8d6b53c61a064db09faac1caf",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-center_crop_area50.tex",
+    "latex_sha256": "e28f5ac0f375f1ea3659c930d444dfa91763e47f5e9d8530643694a74eb9f653"
+  },
+  "docs/watermarking/qualitative/image-rar-jpeg50.md": {
+    "source_sha256": "13d294c6942503b1e3d8f516b3796afb6429aeef9f612c5d75bbfe385d3d7c61",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-jpeg50.tex",
+    "latex_sha256": "976c0adfacaa49a416db20878662bdf09a142853d55a030c7af0df5fc8f736ff"
+  },
+  "docs/watermarking/qualitative/image-rar-output-nfpa-0.md": {
+    "source_sha256": "3a20a6233dc669db5c10f135e407838169d80b96577ae8a8e14d71bde42df6a9",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-0.tex",
+    "latex_sha256": "17fc14a503a14e807e870a0358554d6345af4f9d60e1e3561b3682fd059542e6"
+  },
+  "docs/watermarking/qualitative/image-rar-output-nfpa-20.md": {
+    "source_sha256": "cd56adedd65093dbe754ee97e88b00bde4c496d1b1be68a40fe55413d8eec3a7",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-20.tex",
+    "latex_sha256": "719584304126d9279e89ff91eb2987fd16d8d03e66c934ad56c4a6d9e6a2cdbf"
+  },
+  "docs/watermarking/qualitative/image-rar-output-nfpa-40.md": {
+    "source_sha256": "fd5ddc8451f114fa2a353733befd629e78a6ce98a6a14b427af031545867af4a",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-40.tex",
+    "latex_sha256": "6edf408fe253bccc74226e06638f731e073f0a0773c1ce5bed4eae697448f5df"
+  },
+  "docs/watermarking/qualitative/image-rar-output-resize-only.md": {
+    "source_sha256": "c112ae1c1459ccfae7d920bbba7176caaaa061c8245ef74e166e8a8ea5433346",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-output-resize-only.tex",
+    "latex_sha256": "d9a3b539b29082144d23b9f5bcc49aa0df3afd58ba02f2e0238171a243131a5e"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-clean-full-2500.md": {
+    "source_sha256": "3e32111ea25844655355a5da8d35c036a28b456c81d5801c3c439dcc3072a548",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-clean-full-2500.tex",
+    "latex_sha256": "bc2a4a32a9633af90a1c3a5537c332064c3cab0e78cc525f36c0460b6d57f825"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-clean-full-500.md": {
+    "source_sha256": "683018747a22ca4e0d96f33a973ca05923ece1a9098e1b64e51f02eacc8f7aea",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-clean-full-500.tex",
+    "latex_sha256": "a5bb784fbd03fddc2f875ca87033e89b6429d7f47f9a7e675e41adbd03971287"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-clean-lora-2500.md": {
+    "source_sha256": "eeec511a2f1744018321f6eaf3f08e80554bb50682024f05476b1e04c5dd02db",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-clean-lora-2500.tex",
+    "latex_sha256": "c9c33645448ccc177969f5bdc6139e88167a90cb99f325045ffafbbc3147cedb"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-clean-lora-500.md": {
+    "source_sha256": "9bf80ffc04c74ab11e613e4cece6033d6c1a4e33425664d0d60f774b8a430542",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-clean-lora-500.tex",
+    "latex_sha256": "487d7f54c428108cf8a0bca6e425dd56289c5c7e9911a68d7ce6912057ef32db"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-merge-0-25.md": {
+    "source_sha256": "0449d30c9991fc737d1dceaa55948b9ce46f69f3fc0f7224f1bd90f53b0a29a9",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-25.tex",
+    "latex_sha256": "fbd70709920eded1bc07d8ba7165fefd043ab6c77876d2566e622f321137e10a"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-merge-0-5.md": {
+    "source_sha256": "2632ffe5eb3b381487b4cc1c5ae69b6371610341753846f33542254cadd74b05",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-5.tex",
+    "latex_sha256": "15f2a0ee9ac642cbda0cfcb4e91ee369ff91dc9f566ab3ea18c4059d31c41bce"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-merge-0-75.md": {
+    "source_sha256": "ed1c0c6bbe5c8c13e812b28f0d4a0f672996828908a101f9e9e4779cbdf334de",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-75.tex",
+    "latex_sha256": "cd1a819cf6746f288e4a6be3056014e1d8d75e63e50f0462efffa4a9085f6796"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-merge-0.md": {
+    "source_sha256": "76ab2585127a1c918b1df15109749a40d61d59368f346d84c742471373ad8375",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0.tex",
+    "latex_sha256": "f50d6f57395106323d1423e6a8724cd9558d1cd89c8ee0cad829f1c7a250de28"
+  },
+  "docs/watermarking/qualitative/image-rar-weight-unmodified-supplied.md": {
+    "source_sha256": "ecacc6a63f103097dde6a55b649115b1db48f3607a7b7fdb3eac5bb11799ab64",
+    "latex": "tex/records/docs/watermarking/qualitative/image-rar-weight-unmodified-supplied.tex",
+    "latex_sha256": "32e9589edcabc6653ae159c706ea58e4296ad47bdd96a9de232fc8fefcc0123d"
+  },
+  "docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-25.md": {
+    "source_sha256": "41b7585f14f1e548d14011cb7018535750614c09fcf6e56520e087c42089947f",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-25.tex",
+    "latex_sha256": "e56b81a5af40ab6113bdd9d43c37a936b40b268a9f503a2c0ff88167f1e31fb0"
+  },
+  "docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-5.md": {
+    "source_sha256": "4115ebb8236faa2dc26a3c5c9c5328da3b29bd63f416c78befbd72a5ee8fe7d3",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-5.tex",
+    "latex_sha256": "4c13611084aec9ecce8cca26b96400b5f10950cc11ac92d5b1e2b5c0b415cfda"
+  },
+  "docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-75.md": {
+    "source_sha256": "7b6d05e9457860118ea3fdc97fdd93f674aaf58112fd307da82f405fa5c5039f",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-75.tex",
+    "latex_sha256": "4bd773938f38e01a42f808ce954a0d112c94ac062eec70a880de5337788972a2"
+  },
+  "docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0.md": {
+    "source_sha256": "ae149f65510c22dd9c909eb0ab5d2b159ba7bbbbddaa464f7d5fe066766a72f7",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0.tex",
+    "latex_sha256": "fa55e1d725cb43242c0fbd2ba864cc9999444d89fe77c6f475a03606cfc6ab63"
+  },
+  "docs/watermarking/qualitative/legacy-dcae-clean-clean-step-2500.md": {
+    "source_sha256": "b59e63151cdef4b492ccb985141f7a05271e2102af57199aed67918211f3b7e2",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-2500.tex",
+    "latex_sha256": "ad5d3df6a932bbfa99d97e3c096b8bb4330cccb1e7106d582f8e7994e831638c"
+  },
+  "docs/watermarking/qualitative/legacy-dcae-clean-clean-step-500.md": {
+    "source_sha256": "137b0d9d75e833c496f16fc2d6e6dc5422bd1d377ffee8a7f6c219c88a30705d",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-500.tex",
+    "latex_sha256": "ea0d8df946efada926763647930692f3ffbf26a5adfd3a44d2d22adcd412ccd9"
+  },
+  "docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-25.md": {
+    "source_sha256": "87c2a0735eac96a139e7aa72fe0a1db84be03666ffce3df31f2035fd46f64486",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-25.tex",
+    "latex_sha256": "7000de63321d9c4c488270498f9aee93a7115fc1eb9aadbe5645a3f1e0f39127"
+  },
+  "docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-5.md": {
+    "source_sha256": "a9a0dfc2c082e391c44f7f2629627df4a7636bae3d11e491861abef02e8ba8ee",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-5.tex",
+    "latex_sha256": "8cc178276ac0d31e5c5aceb0b68a2ba8a3649e284baece69898a1840a60f1ef3"
+  },
+  "docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-75.md": {
+    "source_sha256": "ad0a40aaf3063f9737421e7182038538f24b5878a154b922a616aafd809ddf26",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-75.tex",
+    "latex_sha256": "e472d0540d16951a5a64807888a1ba20211cbccaf0b848ca523689de575ba82e"
+  },
+  "docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0.md": {
+    "source_sha256": "2e8444743d45eea9794234b6f64f7ee737b862f30570e07928391cad647c03a9",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0.tex",
+    "latex_sha256": "7487c08add1bd1e6ec2d3b93b6493162b199ff3ef6cca0c6f176ef9a8f262f8c"
+  },
+  "docs/watermarking/qualitative/legacy-rar-clean-clean-step-2500.md": {
+    "source_sha256": "3d31067c6f2098ac354730559dd63d2fdddd88ad074020193835339068bdeef3",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-2500.tex",
+    "latex_sha256": "dd1bf4928b0e481fc97e43241512aac5e18bcc6453d9f705b65342edc2a1baa8"
+  },
+  "docs/watermarking/qualitative/legacy-rar-clean-clean-step-500.md": {
+    "source_sha256": "5dc4ba4cd37910633cfbe6daf5e1ff56c81a51accbfdba4a19806f97e27ab07c",
+    "latex": "tex/records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-500.tex",
+    "latex_sha256": "d60d2454b4e84a202ce3e538891d10f95cd189efaa10c76f5cb6bc182ad985b9"
+  },
+  "docs/watermarking/qualitative/paper-kgw-bira.md": {
+    "source_sha256": "4d7268b184e7be0d12e0d2ffde8e4dbd6cc73768aa72a502c97d1b20e83dde33",
+    "latex": "tex/records/docs/watermarking/qualitative/paper-kgw-bira.tex",
+    "latex_sha256": "271c759f4a3a36899fe410083ff568eded53a0f1e5ac52cb4ed9c41949b919c2"
+  },
+  "docs/watermarking/qualitative/paper-kgw-vanilla.md": {
+    "source_sha256": "823caf5027f064f8749f22962833b09f96bfbde19fd98e7f7152b439509e9e25",
+    "latex": "tex/records/docs/watermarking/qualitative/paper-kgw-vanilla.tex",
+    "latex_sha256": "1a99f585cec01452dfd1de9abc626ab63d8f49d95b4fe18d7dfa0fcb84344570"
+  },
+  "docs/watermarking/qualitative/paper-sir-bira.md": {
+    "source_sha256": "fa89c38eef5c65772e84a7a1f0eaf0dd479f90e84d00ed4a7462279cac0ba086",
+    "latex": "tex/records/docs/watermarking/qualitative/paper-sir-bira.tex",
+    "latex_sha256": "9d700dcb90a831a9af25e65753dcbf144252be63fa5dc38d2c89cb013576e17a"
+  },
+  "docs/watermarking/qualitative/paper-sir-vanilla.md": {
+    "source_sha256": "6bc71fa452cdaaa473b18100404d9ca5ff09cc830ec7a682014063dad408d334",
+    "latex": "tex/records/docs/watermarking/qualitative/paper-sir-vanilla.tex",
+    "latex_sha256": "6964489737f2f037f44daf855c5b6dde0c992d2fa90c53c755473e352ef15460"
+  },
+  "docs/watermarking/qualitative/text-latent-bira.md": {
+    "source_sha256": "b1181a53af80798fb0d3ea5e0e4009eadc10ae1fd2efa83ef3bad8c4d448d522",
+    "latex": "tex/records/docs/watermarking/qualitative/text-latent-bira.tex",
+    "latex_sha256": "22a877e5e4ac871fc6d6dbd593010fa35418b3432017212cb139d8afb737e47d"
+  },
+  "docs/watermarking/qualitative/text-latent-direct_topk.md": {
+    "source_sha256": "8898a90e4cbca575fd55cad5cbbc80c31d60d4ff3fe0ada92afa71a0a24e101d",
+    "latex": "tex/records/docs/watermarking/qualitative/text-latent-direct_topk.tex",
+    "latex_sha256": "44b281890963309c05284f5f62f739d6faebcdec33a1ed08ad1a31780e95a382"
+  },
+  "docs/watermarking/qualitative/text-latent-smoothing.md": {
+    "source_sha256": "35bf4e372e8e323e088399fc71dfc4606ab011a75caec92b73501e65795d6203",
+    "latex": "tex/records/docs/watermarking/qualitative/text-latent-smoothing.tex",
+    "latex_sha256": "caa958264bb501d35d51336365124a9c1a968fa3ee954614bbd13059cd8d7320"
+  },
+  "docs/watermarking/qualitative/text-latent-vanilla.md": {
+    "source_sha256": "a64a24528e6fcd9f9bd5437af14c60249d3da3d2ebe6071e702564932b468a27",
+    "latex": "tex/records/docs/watermarking/qualitative/text-latent-vanilla.tex",
+    "latex_sha256": "2492b89cb5245f484c164ff0259b1954210db25292f2a781e50c68441384c575"
+  },
+  "docs/watermarking/qualitative/text-textseal2-bira.md": {
+    "source_sha256": "9238d4c1ac75de685e102e9c5035db5d831823030faa03c2095cb1e022cf0786",
+    "latex": "tex/records/docs/watermarking/qualitative/text-textseal2-bira.tex",
+    "latex_sha256": "d7ee65fee6271ecbe4d9039d5e463dce881cb6b8c5470c57304d57ac0bb2e678"
+  },
+  "docs/watermarking/qualitative/text-textseal2-direct_topk.md": {
+    "source_sha256": "281abce7c129eeb3091b29316b89aa7da6ed17f05d800d7ddd443df18ce675a9",
+    "latex": "tex/records/docs/watermarking/qualitative/text-textseal2-direct_topk.tex",
+    "latex_sha256": "cecbfc65887c5b396de5bc0341dbbe7ed29125a16f69ec1c59f7bc5e9f0ca1b7"
+  },
+  "docs/watermarking/qualitative/text-textseal2-smoothing.md": {
+    "source_sha256": "86eb341c7309769bb070f86d8b3f053b2677c930a6e43ccead10a728385a16d9",
+    "latex": "tex/records/docs/watermarking/qualitative/text-textseal2-smoothing.tex",
+    "latex_sha256": "8bd4d57a1602a2cf3e441b2fad9fdbfcc664293dd26274a10ca494542470808c"
+  },
+  "docs/watermarking/qualitative/text-textseal2-vanilla.md": {
+    "source_sha256": "f93acab73aa84a43ccb5eb174f42e149a304cdbf21cf86d2d278eea2f298bafa",
+    "latex": "tex/records/docs/watermarking/qualitative/text-textseal2-vanilla.tex",
+    "latex_sha256": "2b500367ce8860551c473e0e1ccc3acb42d2f0490b967fd533149603da43cba8"
+  },
+  "docs/watermarking/robustness.md": {
+    "source_sha256": "aef5abfae152de9a6e9c24ad9ec1d0d9149061841b96a6a58d12cc2e82d7791b",
+    "latex": "tex/records/docs/watermarking/robustness.tex",
+    "latex_sha256": "afa9f82ac471e6101034d9d4d0299eb912b14a6d8ec0edfcf4f8cfc053f61cee"
+  },
+  "docs/watermarking/text.md": {
+    "source_sha256": "dc8ae544faad90eeb39a899c73f0374d21276479899e5c2da847964b31c0ead3",
+    "latex": "tex/records/docs/watermarking/text.tex",
+    "latex_sha256": "4da0fe5466815d1eb64674d3264bf9df7282008658b712b760d5f062076bcca8"
+  }
+}

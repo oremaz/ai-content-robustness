@@ -1,0 +1,28 @@
+\section{Other adaptation methods}
+The relevant published starting points are SPIN \citep{chen2024spin} and MAML \citep{finn2017maml}. Their inclusion explains implemented research directions, not completed benchmark results.
+
+SPIN constructs human-preferred/generated-rejected continuation pairs and optimizes relative log probabilities against a frozen reference. Detector calls are not required by that objective. Features computed after decoding are monitoring statistics unless a differentiable estimator explicitly links them to parameters.
+
+MAML distinguishes inner-loop support data from outer-loop query data. For task $j$, $\theta'_j=\theta-\alpha\nabla_\theta L_j^{\rm support}(\theta)$, followed by an outer update on $\sum_j L_j^{\rm query}(\theta'_j)$. Query data contribute to training. A final test set must be disjoint from both. Repeated attacker/defender updates are an experimental game, not evidence of a converged equilibrium.
+
+\subsection{Preference training without a reward gradient}
+A pairwise relative-likelihood objective has the form
+\begin{align}
+ L_{\rm pair}(\theta)&=-\E\log\sigma\!\left(\beta\left[
+ \log\frac{\pi_\theta(y^+\mid c)}{\pi_{\rm ref}(y^+\mid c)}
+ -\log\frac{\pi_\theta(y^-\mid c)}{\pi_{\rm ref}(y^-\mid c)}\right]\right).
+\end{align}
+Here $y^+$ is the preferred continuation and $y^-$ the rejected one. The objective raises the relative margin of the preferred response compared with the reference. In the self-play construction, human continuations supply the positive examples and a previous generator supplies the negatives. This supplies a learning signal through log probabilities; computing a detector score afterward does not retroactively make that detector part of the optimized objective. The project contains implementations of these methods, but the retained result audit does not establish completed SPIN or MAML scientific comparisons.
+
+\subsection{The derivative through an adaptation step}
+For one MAML inner step and twice differentiable support loss, put $H_j=\nabla^2 L_j^{\rm support}(\theta)$ and $g_j=\nabla_{\theta'_j}L_j^{\rm query}(\theta'_j)$. The chain rule gives
+\begin{align}
+ \frac{\partial\theta'_j}{\partial\theta}&=I-\alpha H_j,\\
+ \nabla_\theta L_j^{\rm query}(\theta'_j)
+ &=(I-\alpha H_j)^\top g_j.
+\end{align}
+First-order MAML drops the Hessian factor. Ordinary fine-tuning uses an adapted model directly; MAML instead trains an initialization to adapt well on new tasks. These are different objectives. A restart that restores weights but loses the current outer-gradient accumulation, optimizer state or support/query sampling stream can change the training procedure.
+
+\subsection{Attacker/defender games}
+An attacker minimizes detection subject to content utility, while a defender updates its decision rule. These objectives need not form an exact zero-sum game, because quality losses, false positives and update costs matter. Scoring the same saved attack outputs before and after a defender update isolates the defender's effect. Allowing the attacker to adapt again asks a further question. One successful defender update does not establish convergence, an equilibrium, or resistance to all future adaptive attackers.
+

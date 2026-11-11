@@ -1,0 +1,104 @@
+\section{Jina v5 paired response
+similarity}\label{record-docs-jina-similarity-md-jina-v5-paired-response-similarity}
+
+This adds the same embedding-based metric to ordinary paraphrasing,
+BIRA, direct probability resampling and confidence smoothing for both
+the TextSeal 2 and DistSeal-inspired instruct-Qwen experiments. It does
+not alter their attacks or select outputs using owner detections.
+
+The pinned model is the official
+\href{https://huggingface.co/jinaai/jina-embeddings-v5-text-small-text-matching}{jinaai/jina-embeddings-v5-text-small-text-matching}
+checkpoint \texttt{\seqsplit{69890c317b81d4e1f412e66ebe68b6ebf9534d24}},
+which merges Jina v5's text-matching adapter into its backbone. The
+released Sentence Transformers configuration specifies the
+\texttt{\seqsplit{Document:}} prefix, last non-padding token pooling,
+full 1024-dimensional embeddings and L2 normalization. The evaluator
+uses the same operations with native Transformers and SDPA; it does not
+require remote code execution or an external API. No evaluation text
+leaves the research VM.
+
+Original and candidate responses are aligned by prompt ID, with missing
+or duplicate IDs rejected. The original response is the unmodified
+marked TextSeal 2 output or the unmodified distilled student's response.
+Each method has 256 paired test questions. All inputs and code are
+frozen and hashed. Jina inference uses no truncation; inputs beyond its
+32,768-token limit cause an explicit error. Vectors are cached by text
+hash in restartable batches.
+
+For paired embeddings a and b, the score is their cosine similarity:
+\texttt{\seqsplit{dot(a, b) / (norm(a) * norm(b))}}. Scores are reported
+directly, not converted into a percentage or a preservation pass rate.
+Each condition reports mean, median, standard deviation, P05/P25/P75/P95
+and a 95\% bootstrap interval for the mean (2,000 resamples over
+question pairs). Paired differences against ordinary paraphrasing use
+the same question-level sampling unit.
+
+Controls include original-versus-itself, original-versus-clean-model
+answers, original-versus-human answers, and a deterministic permutation
+pairing different questions. The DistSeal case also includes the learned
+teacher's response. Empty pairs are flagged and excluded from the
+primary score summary.
+
+For resampling and smoothing, this measures similarity between two
+answers to the same question. It is not a requirement that independent
+valid answers say exactly the same things. High embedding similarity can
+also coexist with wrong numbers, negation or other factual changes; NLI
+and factual checks remain useful. No universal cosine threshold is
+inferred from these data.
+
+\subsection{Runtime and
+commands}\label{record-docs-jina-similarity-md-runtime-and-commands}
+
+The existing Torch 2.9 paper runtime is reused without modification. A
+separate \texttt{\seqsplit{jina\_v5\_overlay}} supplies Transformers
+5.17 and compatible tokenizers, avoiding an upgrade of either running
+experiment environment. Pins are in
+\texttt{\seqsplit{requirements\_jina\_similarity.in}}. Downloaded
+weights and their revision are recorded in
+\texttt{\seqsplit{results/research\_workflow/watermarking/resources/jina\_v5\_model.json}}.
+
+Download the pinned model snapshot with the Hugging Face client and
+record its local path before preparation:
+
+\begin{Verbatim}
+import json
+from pathlib import Path
+from huggingface_hub import snapshot_download
+resources = Path("results/research_workflow/watermarking/resources")
+model = "jinaai/jina-embeddings-v5-text-small-text-matching"
+revision = "69890c317b81d4e1f412e66ebe68b6ebf9534d24"
+path = snapshot_download(model, revision=revision, cache_dir=str(resources/"hf"),
+    allow_patterns=["*.json", "*.txt", "*.safetensors", "*.md", "*.jinja", "1_Pooling/*"])
+(resources/"jina_v5_model.json").write_text(json.dumps(
+    {"name": model, "revision": revision, "path": str(Path(path).resolve())}))
+\end{Verbatim}
+
+\begin{Verbatim}
+uv pip install --python results/research_workflow/watermarking/resources/bira_runtime_py310/bin/python \
+  --target results/research_workflow/watermarking/resources/jina_v5_overlay \
+  --no-deps -r requirements_jina_similarity.in
+PYTHONPATH=. uv run --no-sync python scripts/jina_watermark_similarity.py prepare TEXT_RUN/manifest.json
+PYTHONPATH=. uv run --no-sync python scripts/jina_watermark_similarity.py submit JINA_RUN/manifest.json
+PYTHONPATH=. uv run --no-sync python -m pytest ai_content_detector/tests/test_semantic_similarity.py -q
+\end{Verbatim}
+
+The TextSeal 2 job can run immediately once its producer is complete.
+The DistSeal job waits for the existing teacher/student/attack job to
+finish, then freezes its final attack artifacts. Each uses one H100 on
+two-hour dev QoS, saves every embedding batch and requeues on the
+advance signal. Project storage holds the job caches, which are cleaned
+on exit.
+
+Five CPU checks passed in this checkout: ID alignment, mixed-padding
+last-token pooling, cosine normalization, pair-level bootstrap behavior
+and empty-pair flags. GPU evaluation outcomes are recorded per case in
+\texttt{\seqsplit{receipt.json}}, \texttt{\seqsplit{summary.json}} and
+\texttt{\seqsplit{report.md}}; job submission alone is not a completed
+comparison.
+
+Both GPU evaluations completed successfully in run
+\texttt{\seqsplit{20261104T081330240270Z}} (jobs
+\texttt{\seqsplit{1938571}} and \texttt{\seqsplit{1938573}}). The
+real-weight CPU smoke check also passed. See the
+\href{records/docs/jina_similarity_results.tex}{saved comparison table}
+for the results.

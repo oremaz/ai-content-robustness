@@ -1,0 +1,83 @@
+{
+  "report": "tex/report.tex",
+  "compute": {
+    "ledger": "tex/provenance/compute_budget.json",
+    "pilot_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/manifest.json",
+    "transport_training_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261106T180427Z/manifest.json",
+    "text_exposure_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-20261106T181710Z/manifest.json",
+    "transport_screen_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-screen-20261106T182359Z/manifest.json",
+    "prediction_training_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261106T183630Z/manifest.json",
+    "prediction_screen_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-screen-20261107T180723Z/manifest.json",
+    "text_quality_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T180709Z/manifest.json",
+    "actual_completed_h100_hours": 17.38861111111111,
+    "preserving_evaluation_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261107T184525Z/manifest.json",
+    "text_blocked_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-blocked-20261107T183333Z/manifest.json",
+    "probability_audit_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-audit-20261107T201658Z/manifest.json",
+    "reserved_h100_hours": 0
+  },
+  "latest_text_confirmation": "tex/provenance/text_exposure_confirmation_results.json",
+  "latest_text_support_pruning": "tex/provenance/text_exposure_guard_results.json",
+  "latest_text_null_audit": "tex/provenance/textseal2_human_null_audit.json",
+  "current_quality_rule": "tex/provenance/revised_quality_rule_no_ssim.json",
+  "current_reanalysis": "tex/provenance/revised_quality_no_ssim_results.json",
+  "current_attack_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+  "latest_experiment_events": [
+    {
+      "event": "Text support-pruning development owner evaluation complete; image final evaluation chain submitted",
+      "text_guard": "Matched 32 sources, relevant sampling, selection and key verified; ratio joint removals 21/32 baseline versus 3/32 at 90% retention and 1/32 at 80%; quality 21/32 versus 25/32 and 24/32. Smoothing has no gain; reference evades on all 22 quality-passing outputs. Fresh confirmation remains necessary.",
+      "image_jobs": {
+        "validate_original": "2138200",
+        "validate_fixed": "2138201",
+        "validate_adapted": "2138202",
+        "owner_after_all_validation": "2138203"
+      },
+      "image_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+      "documentation": "Result tables, full sample texts and portable receipts are retained."
+    },
+    {
+      "event": "Horizon500 image final owner evaluation complete; stop this training direction",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+      "joint_removals_of64": {
+        "original": 20,
+        "fixed": 21,
+        "adapted": 20
+      },
+      "raw_quality_passes_of64": {
+        "original": 21,
+        "fixed": 23,
+        "adapted": 21
+      },
+      "returned_quality_passes_of64": {
+        "original": 64,
+        "fixed": 64,
+        "adapted": 64
+      },
+      "conclusion": "No robustness gain. Following the frozen horizon500 protocol, stop meta-distillation expansion; do not run additional watermark families for this failed candidate."
+    },
+    {
+      "event": "Deleted failed LoRA artifacts; qualitative recalibration and SSIM marginal audit complete",
+      "deleted_run_receipt": "tex/provenance/discarded_lora_run.json",
+      "current_quality_rule": "tex/provenance/revised_quality_rule_no_ssim.json",
+      "current_reanalysis": "tex/provenance/revised_quality_no_ssim_results.json",
+      "latest_horizon500_joint_removals": {
+        "original": 29,
+        "fixed": 28,
+        "adapted": 28
+      },
+      "horizon100_joint_removals": {
+        "original": 28,
+        "fixed": 26,
+        "adapted": 31
+      },
+      "interpretation": "No reliable defense gain; paired intervals include zero. All revised counts are post-hoc, not fresh confirmation. SSIM reported but does not gate preservation; other3checks retained.",
+      "validation": {
+        "checks": "All6oldoutcomes reconstructed exactly. NoSSIMreanalysis adds exactly the9auditedSSIM-onlyexclusions and no other outputs. Owner raw removal decisions unchanged.",
+        "added_quality_passes": 9,
+        "source_sha256": "36a55f51fd3f4d8f0d86c6bacb7445e373e11afd263c141699295fb1bea6b7f9",
+        "results_sha256": "a5586465c79c86c4d402f2d74e4734967b37a97eb23aa37d6528ca179031ee46",
+        "rule_sha256": "b7130fe3dc3f10d744199183a4528ad60ecff92fa55aa41451704f2b8d10ea1a"
+      },
+      "gpu_compute": "No additional GPU use for calibration/reanalysis;17.38861111111111H100hours completed,0reserved."
+    }
+  ]
+}

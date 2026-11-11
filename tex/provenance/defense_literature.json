@@ -1,0 +1,115 @@
+{
+  "status": "Candidate development study; bounded literature search does not establish worldwide priority. No first-ever or submission-readiness claim is authorized by these pilot results.",
+  "candidate": "Post-distillation, content-watermark task-vector filtering using a finite-horizon survival direction, with block-constant clean-gradient energy as a curvature proxy. Retains the existing extractor and architecture; normalizes to equal perturbation energy.",
+  "distinction_to_test": "Unlike CTV redistillation and FSW internal-activation ownership verification, this candidate filters an already distilled content watermark for output-only owner verification. It is a specific algorithmic hypothesis, not a claim that curvature filtering or parameter stability is new.",
+  "mandatory_controls": [
+    "unchanged watermark",
+    "zero-horizon inverse-curvature filter",
+    "positive-horizon filters",
+    "matched perturbation energy",
+    "paired generation seeds and content preservation",
+    "held-out clean-update attack data and optimizer",
+    "shuffled-curvature and utility-matched scaling controls before confirmatory claims"
+  ],
+  "papers": [
+    {
+      "title": "PRO",
+      "url": "https://arxiv.org/pdf/2510.23891",
+      "pdf_sha256": "fabdeccc9f16b92ba94a8a1d664cccac2c4decd635e5e4619c624b7aaa347e9e",
+      "full_pdf_read": true,
+      "relationship": "Jointly learns a text watermark policy and model, with a forgetting-perturbation regularizer. A generic adversarial-training defense is not new."
+    },
+    {
+      "title": "FSW",
+      "url": "https://arxiv.org/pdf/2603.18793",
+      "pdf_sha256": "bdfa616785e829e0702db487a93cf1307184649e47d3c6fb52cb72a9d9aa5aed",
+      "full_pdf_read": true,
+      "relationship": "Uses a generalized eigenproblem and spectral truncation on intermediate representations; verification requires white-box representation access. Generic stable subspace watermarking is not new."
+    },
+    {
+      "title": "CTV durability study",
+      "url": "https://arxiv.org/pdf/2502.10525",
+      "pdf_sha256": "d4bfe15368acac7532809621406219b6a7c7cf7ef2c1ea426804fd274dbb4e7f",
+      "full_pdf_read": true,
+      "relationship": "Uses a contrastive task-vector Boolean parameter mask for targeted distillation. Selecting parameters resistant to clean training is not new."
+    },
+    {
+      "title": "Merge-Adversarial Training",
+      "url": null,
+      "pdf_sha256": "3a49e494aadc29ab7722817ec19e29e677f363245f017d25b302f4760e73500b",
+      "full_pdf_read": true,
+      "relationship": "Trains watermark distillation through simulated linear model merging. Generic merge-adversarial distillation is not new."
+    },
+    {
+      "title": "RoboSignature: Robust Signature and Watermarking on Network Attacks",
+      "url": "https://arxiv.org/pdf/2412.19834",
+      "pdf_sha256": "efae31a7432daaaa85c4756438f86aa35281b1be66a0375a279a204638febf35",
+      "full_pdf_read": true,
+      "relationship": "Already applies tamper-resistant meta fine-tuning to Stable Signature image decoders, using attacked-model watermark/reconstruction loss and a retention loss. Generic MAML/TAR hardening for images is not new; no such method has been implemented as a new contribution here."
+    },
+    {
+      "title": "DistSeal, published ICML2026 full29pageversion",
+      "url": "https://proceedings.mlr.press/v306/rebuffi26a.html",
+      "pdf_sha256": "c11d0be00557d10de67bb6b51a30ae57e2b3e6507f3fadfbb43d5ce1c6c34b0c",
+      "full_pdf_read": true,
+      "relationship": "AppendixG already studies single-class clean LoRA forgetting;AppendixH studies composition with other watermarking schemes. Neither ordinary clean forgetting nor generic watermark stacking can be claimed as a new contribution."
+    },
+    {
+      "title": "TextSeal full41pagev2",
+      "url": "https://arxiv.org/pdf/2605.12456v2",
+      "pdf_sha256": "361609e52786f67bed4c5cbfe84be46b291b82015dcb0ec37c92bdcc7dad45d2",
+      "full_pdf_read": true,
+      "relationship": "Native methods, assumptions, repeated-context handling, calibration and limits checked against full text. This is prior art, not a new contribution."
+    },
+    {
+      "title": "TextSeal2 full29pagev1",
+      "url": "https://arxiv.org/pdf/2610.40613v1",
+      "pdf_sha256": "aa725e15ebca43252992c59087fc0918aa5bf320e2ece4d92d748119859c8f29",
+      "full_pdf_read": true,
+      "relationship": "Native methods, assumptions, repeated-context handling, calibration and limits checked against full text. This is prior art, not a new contribution."
+    },
+    {
+      "title": "Meet Students Where They Are: Student-Prefix Teacher Adaptation for On-Policy Distillation",
+      "url": "https://arxiv.org/pdf/2611.03133v1",
+      "pdf_sha256": "de559179adefd924e0882942218139121ccc4d564abda0c3b88369a0714b6fbc",
+      "full_pdf_read": true,
+      "relationship": "Already adapts teachers to student prefixes with RLVR, then freezes them for standard OPD. Generic teacher adaptation, on-policy prefixes, or exposure-bias repair are not new. The watermark transport candidate concerns a marked target after clean parameter adaptation, not a claim to invent teacher adaptation."
+    },
+    {
+      "title": "A Unified Attack Framework against Statistical Generative Watermarks for Large Language Models",
+      "url": "https://arxiv.org/pdf/2610.27653v2",
+      "pdf_sha256": "2ae30bec13f35822902a0c8ea5e9401f2d7f1fa09528fb397af54d83ea9ec778",
+      "full_pdf_read": true,
+      "pages": 35,
+      "relationship": "Read all35pages including proof appendices. Probability-ratio attacks are prior art and mandatory adaptive control for conditional exposure. Paper uses repeated sampled outputs; our proposed exposed-top10 ratio tilt is not a faithful replication of that estimator. General theorem statements require explicit score-alignment and fresh-key null-invariance, which are not established for TextSeal2. Perplexity alone does not establish content preservation."
+    },
+    {
+      "title": "textGrain: Entropy-Calibrated Watermarking for Language Model Text",
+      "url": "https://cdn.openai.com/pdf/e9508624-d767-41b6-a26d-e34ca798ada6/textgrain-entropy-calibrated-watermarking-for-language-model-text.pdf",
+      "pdf_sha256": "206e7345bb7d73fe98cf1d560df4cdd8f41b4e9125e98cda22d057c34e7bced8",
+      "full_pdf_read": true,
+      "pages": 20,
+      "relationship": "Distinct entropy-budgeted block-OT watermark baseline. Any local reimplementation must check corrected marginals, achieved versus requested entropy loss, conditional selected-column probabilities, fresh-key assumptions and context-only deduplication. Support pruning is a separate API contract change, not unbiased watermark generation or an entropy guarantee.",
+      "local_pdf": "results/research_workflow/paper_writing/resources/literature/textgrain2026.pdf"
+    },
+    {
+      "title": "Watermark Smoothing Attacks against Language Models",
+      "url": "https://aclanthology.org/2025.findings-emnlp.264.pdf",
+      "pdf_sha256": "775a7c604d26115374a77298be6cb100cdf027bdf8d1e90567a5967576be4fb6",
+      "full_pdf_read": true,
+      "pages": 27,
+      "relationship": "Prior smoothing attack uses top-K probabilities, confidence calibration and a reference-model mixture. AppendixD already proposes restricting confidence-related API information, including returning only the top token without probabilities. Generic probability hiding or support restriction is not new. The narrower candidate optimizes a keyed evidence floor under a retained-mass budget and leaves retained probabilities unchanged; priority still requires further comparison. Prior population fluency/diversity differs from source-preserving rewrites here.",
+      "local_pdf": "results/research_workflow/paper_writing/resources/literature/smoothing2025.pdf"
+    },
+    {
+      "title": "Scalable watermarking for identifying large language model outputs (SynthID-Text)",
+      "url": "https://www.nature.com/articles/s41586-024-08025-4.pdf",
+      "pdf_sha256": "ac88f69c1af9f9748cfb0b10ea34b5a0b0329bc4461cb6a57442ce572a678a4e",
+      "full_pdf_read": true,
+      "pages": 14,
+      "supplementary_read": false,
+      "relationship": "Independent tournament watermark baseline. Main paper includes repeated-context masking and algorithm; default experiments useH4,m30,Bernoulli(.5),N2 and a learned Bayesian detector at empiricalFPR. A current official frequentist detector is a separately declared scoring choice. Conditional law must reflect post-temperature/top-p probabilities; masking and inter-response history must be explicit. Supplement-specific claims remain unverified.",
+      "local_pdf": "results/research_workflow/paper_writing/resources/literature/synthid2024.pdf"
+    }
+  ]
+}

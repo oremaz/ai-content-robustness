@@ -1,20 +1,32 @@
 # AI Content Robustness
 
-A research workbench for measuring how AI-content detectors respond to adaptive
-text and image generators, and whether retraining recovers detection. It also
-contains watermarking and removal experiments with separate attacker and owner
-roles. A Streamlit app exposes the detector interface for interactive scoring.
+A research workbench for AI-content detection, adaptive text and image generation,
+and watermark persistence under removal attempts. It studies how detectors
+generalize, whether retraining recovers detection after an adaptive attack, and
+how attacker access and content preservation change watermark-removal results.
+A Streamlit application exposes the detectors for interactive scoring.
 
-The central experiment is a controlled loop: train a generator against a detector,
-evaluate on reserved prompts, retrain the detector on fresh training outputs,
-and score the same saved evaluation texts again. Scores measure statistical
-patterns, not proof of authorship.
+The [pedagogical report](tex/report.pdf) connects the methods, mathematical
+definitions and experimental results. The [watermarking results](docs/watermarking/README.md)
+include complete metric tables and fixed-sample comparisons. The
+[detector catalogue](DETECTORS.md) explains the implemented methods and their
+score conventions.
 
-## Results and scope
+## Selected results
 
-The [retained results](docs/research_results.md) evaluate Qwen3.5-9B-Base LoRA
-attackers on 500 generated texts and 500 human passages. Evasion is the fraction
-of generated texts with AI score below 0.5:
+The supervised benchmarks and adaptive experiments use separate protocols.
+The text benchmark reports Qwen macro F1 of 0.9236 on MAGE and 0.8310 on Pile,
+while Gemma reaches 0.9499 on peer reviews. In the image benchmark, EfficientNet
+macro F1 falls from 0.9346 on ArtiFact to 0.3333 on CIFAKE. A ConvNeXt augmentation
+intervention fails its exploratory acceptance criterion. Dataset shift therefore
+matters even for strong in-distribution classifiers. The report retains the full
+model comparisons and evaluation boundaries.
+
+### Adaptive generation and defender recovery
+
+Qwen3.5-9B-Base LoRA attackers target three defenders. Each branch evaluates 500
+generated texts and 500 human passages. Evasion is the fraction of generated
+texts with AI score below 0.5.
 
 | Target | Attacker updates | Evasion before defender update | After one defender update |
 |---|---:|---:|---:|
@@ -22,123 +34,131 @@ of generated texts with AI score below 0.5:
 | ModernBERT-large | 1,487 | 96.8% | 1.0% |
 | Seven-detector ensemble | 502 | 94.8% | 0.4% |
 
-Before and after use identical saved texts. Training budgets differ, so the rows
-are not a matched-budget comparison. The experiment shows recovery against fixed
-attackers; another adaptive attacker round remains untested. Base-generator
-retention and individual ensemble members expose additional tradeoffs in the
-report. Semantic similarity does not certify factual accuracy.
+Before and after use identical saved texts. Defender fitting uses fresh training
+outputs. Training budgets differ across branches, and another adaptive attacker
+round remains untested. These results establish recovery against the saved
+attackers. The [experiment record](tex/records/docs/research_results.tex) retains
+the detailed measurements.
 
-Watermarking is a separate line of work. See the [protocol](docs/watermarking.md)
-and [removal review](docs/watermark_removal_literature.md) for TextSeal, released
-DistSeal image checkpoints, and the experimental latent text adaptation.
-Pending jobs are not completed results.
+For SD1.5 diffusion evasion, the validation-selected checkpoint increases test
+evasion from 1.2% to 8.2% while retaining 99.1% of mean CLIP alignment. A later
+checkpoint reaches 99.4% evasion with only 63.3% alignment retention. The report
+distinguishes the selected result from this exploratory high-evasion checkpoint.
 
-The [TextSeal API attack protocol](docs/textseal_api_attacks.md) compares direct
-top-k probability resampling, confidence-based smoothing (Findings EMNLP 2025),
-and BIRA rewriting (ICML 2026), with an ordinary paraphrasing control. This uses
-the original sampler-level TextSeal outputs, not a distilled student.
+### Watermark persistence and content preservation
 
-The [released BIRA replication and Qwen extensions](docs/bira_replication.md)
-use the authors' standard Llama instruct checkpoint and a Qwen3.5-9B extension.
-The stronger latent Qwen student receives BIRA, probability resampling and
-smoothing, with detection and quality evaluated separately. The same protocol
-can target an earlier student checkpoint with `--latent-manifest` and `--latent-only`.
-Use `--quality-only --quality-model base` for a matched unwatermarked base-model
-control, without submitting removal attacks.
-`--quality-model teacher` checks the original watermarked teacher with its
-saved embedder; all standalone quality probes now use the frozen original sampler settings.
+- On 128 fresh questions, exposing TextSeal 2's estimated key-conditional
+  probabilities reduces content-preserving direct-resampling removals from
+  114/128 to 19/128. An adaptive ratio client still removes 126/128 watermarks,
+  including 95 of its 96 outputs passing the quality rule.
+- Support pruning reduces ratio-client joint removals from 21/32 to 3/32 or 1/32
+  in a separate development comparison. Independent rewriting evades on all
+  22 quality-preserving outputs. The 128-question experiment does not confirm
+  this later pruning treatment.
+- The image meta-distillation comparison shows no reliable defense gain.
+  Under the revised preservation rule, the original model has 29/64 joint
+  removals and each trained variant has 28/64. Paired uncertainty intervals
+  include no difference. These counts are a post-hoc reanalysis.
+- An independent 4,096-prefix human-null audit flags 5 prefixes at the unchanged
+  nominal TextSeal 2 threshold of `p ≤ 0.001`. This diagnostic concerns the
+  evaluated key and HC3 cohort.
 
-## Read the code
+Raw removal and content-preserving removal have separate denominators.
+The report includes failed candidates, quality failures, paired uncertainty and
+the distinction between development and confirmation. Automatic similarity
+metrics provide proxies for content preservation.
 
-| Component | Start here | What to inspect |
-|---|---|---|
-| Detector contract | [ensemble.py](ai_content_detector/detectors/ensemble.py) | AI score direction, uncertainty, aggregation and resource release |
-| Text statistics | [likelihood_text.py](ai_content_detector/detectors/likelihood_text.py) | Binoculars and Fast-DetectGPT score calculations |
-| Image detector | [warpad.py](ai_content_detector/detectors/warpad.py) | Feature extraction, raw statistics and threshold semantics |
-| Text training lifecycle | [grpo_trainer.py](ai_content_detector/rl_evasion/text_evasion/grpo_trainer.py) | Setup, explicit backend selection and evaluation |
-| Text optimization | [grpo_optimization.py](ai_content_detector/rl_evasion/text_evasion/grpo_optimization.py) | TRL updates, reference state and the explicit fallback |
-| Diffusion mathematics | [diffusion_policy.py](ai_content_detector/rl_evasion/image_evasion/diffusion_policy.py) | Transition log probabilities, reference KL and trajectories |
-| Paired defender evaluation | [workflow.py](ai_content_detector/rl_evasion/defender_comparison/workflow.py) | Saved-text reuse and resumable experiment phases |
-| Watermark removal | [watermark_removal.py](scripts/watermark_removal.py) | Attacker contracts, source snapshots and owner evaluation jobs |
+## Code structure
 
-The [evasion package guide](ai_content_detector/rl_evasion/README.md) and
-[watermarking package guide](ai_content_detector/watermarking/README.md) explain
-which workflow to inspect and where its evaluation boundaries sit.
+Implementation modules live in `ai_content_detector/`, experiment entry points
+and Slurm launchers in `scripts/`, and regression checks in
+`ai_content_detector/tests/`. Generic ML utilities come from the pinned
+`ml_pipeline` package maintained in [ML Playground](https://github.com/oremaz/ml-playground).
 
-For a short first pass, read the detector contract and paired evaluation workflow,
-then inspect one detector. The [detector catalogue](DETECTORS.md) distinguishes
-published implementations from local heuristics. The [full research guide](docs/research_guide.md)
-retains method explanations, equations, examples, commands and historical validation records.
+| Start here | What to inspect |
+|---|---|
+| [Detector contract](ai_content_detector/detectors/ensemble.py) | AI score direction, uncertainty, aggregation and resource release |
+| [Text optimization](ai_content_detector/rl_evasion/text_evasion/grpo_optimization.py) | TRL updates, reference state and explicit fallback |
+| [Diffusion policy](ai_content_detector/rl_evasion/image_evasion/diffusion_policy.py) | Transition log densities, reference KL and saved trajectories |
+| [Paired defender evaluation](ai_content_detector/rl_evasion/defender_comparison/workflow.py) | Saved-text reuse and resumable experiment phases |
+| [Watermark preservation](ai_content_detector/watermarking/preservation.py) | Input alignment, blind quality selection and joint outcomes |
+| [Support optimization](ai_content_detector/watermarking/exposure_support.py) | Evidence floors and retained-mass constraints |
+| [Watermark experiment driver](scripts/instruct_watermark_experiments.py) | Frozen manifests, disjoint questions and staged owner evaluation |
 
-## Run
+The [evasion guide](ai_content_detector/rl_evasion/README.md) and
+[watermarking guide](ai_content_detector/watermarking/README.md) give the module
+maps, experiment commands and resource requirements.
 
-Use Python 3.11+ and run from this repository's root:
+## Setup and validation
+
+Use Python 3.11+ and run from the repository root.
 
 ```bash
 uv venv
 uv pip install -r requirements.txt
-uv run python -m spacy download en_core_web_sm
-PYTHONPATH=. uv run python -m ai_content_detector.rl_evasion.run_experiments \
-  --experiment smoke_test
-PYTHONPATH=. uv run streamlit run ai_content_detector/app.py
+uv run --no-sync python -m spacy download en_core_web_sm
 ```
 
-The smoke test checks CPU wiring, not real-model accuracy. Most detectors need
-external weights or fitted checkpoints. Training needs the appropriate GPU stack.
-The applications install the shared `ml_pipeline` package from a pinned Git commit
-in [ML Playground](https://github.com/oremaz/ml-playground).
-
-Use [GPU setup](docs/research_guide.md#1-create-the-environment) for the existing
-CUDA and Qwen kernel pins, [resource requirements](docs/research_guide.md#required-models-and-external-resources)
-for weights and authentication, and [experiment commands](docs/research_guide.md#running-experiments)
-for GRPO, SPIN, DDPO, MAML and benchmarks. Watermarking has its own optional
-requirements and Slurm commands in the protocol above.
-
-A lightweight detector example needs no weights:
-
-```python
-from PIL import Image
-from ai_content_detector.detectors import FrequencyDetector
-
-result = FrequencyDetector().detect(Image.new("RGB", (256, 256), "gray"))
-print(result.score, result.label, result.details)
-```
-
-This is an interface example using a synthetic image, not a detection benchmark.
-
-## Evaluation and reproducibility
-
-Prompt splits are deterministic and fixed before training. MAML separates support
-and query prompts; query prompts contribute to training. Benchmark manifests
-check row alignment and reject declared held-out detector overlap. Attack
-checkpoints do not yet record training sample IDs, so sample-level overlap cannot
-be rejected automatically. See [evaluation controls](docs/research_guide.md#evaluation-and-leakage-controls).
-
-Existing CLI names, configuration defaults, seeds and checkpoint paths are
-preserved. `text_detectors.py` and `image_detectors.py` retain their public imports;
-implementations live in smaller method-specific modules. Serialized detector
-classes retain their historical module identities.
-
-Slurm workflows use saved manifests and frozen source directories. Resume the
-original run using its original manifest, snapshot, environment and artifacts.
-Do not substitute a new run's configuration when reproducing a recorded result.
-Image clean training saves encoded fitting data in resumable chunks and records
-training state for continuation after a Slurm warning signal.
-Watermark-removal staging resolves model-cache symlinks before linking files into
-the run's sealed inputs.
-The [defender protocol](docs/defender_comparison.md) documents retained checkpoints
-and continuation; the watermarking protocol documents its source snapshots.
-
-## Tests
+Validate the portable results without loading model weights or local datasets.
 
 ```bash
-PYTHONPATH=. uv run python -m pytest ai_content_detector/tests -q
+PYTHONPATH=. uv run --no-sync python scripts/publish_watermark_results.py --check
 ```
 
-CPU fixtures and mocks check score semantics, formulas, splits, failure behavior
-and restart contracts. GPU training, external APIs and real-model inference need
-their recorded resources. Historical test receipts in the guide describe their
-original checkouts rather than certifying the current environment.
+Run the CPU test suite with bounded numerical-library threads.
 
-The [2026-10-27 cleanup checks](docs/cleanup_validation.md) record the current
-validation results, CPU/kernel workarounds and pending-job preservation checks.
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+PYTHONPATH=. uv run --no-sync python -m pytest ai_content_detector/tests -q
+```
+
+The tests cover score semantics, formulas, splits, artifact integrity, failure
+behavior and restart contracts. Real-model inference, GPU training and external
+APIs require their recorded resources. Historical test receipts describe their
+original checkouts. The [validation record](tex/records/docs/cleanup_validation.tex)
+documents environment-specific CPU and notebook-kernel checks.
+
+On 2026-11-11, the current checkout passed 538 CPU tests with one notebook
+signal test deselected because the sandbox denies local TCP binding. This run
+used writable temporary caches and disabled optional GPU-only kernels in the
+test process to exercise the CPU reference implementation. GPU training and
+real-model inference were not rerun.
+
+The smoke experiment checks CPU wiring. The application needs the detector
+dependencies and weights described in the catalogue.
+
+```bash
+PYTHONPATH=. uv run --no-sync python -m ai_content_detector.rl_evasion.run_experiments \
+  --experiment smoke_test
+PYTHONPATH=. uv run --no-sync streamlit run ai_content_detector/app.py
+```
+
+## Reproducibility and report sources
+
+Prompt splits are deterministic and fixed before training. MAML separates support
+and query prompts, with both contributing to training. Benchmark manifests check
+row alignment and declared held-out detector overlap. Attack checkpoints do not
+yet record training sample IDs, so sample-level overlap cannot be rejected
+automatically.
+
+Slurm workflows retain manifests, frozen code, input hashes and resumable state.
+Reproduce a recorded run using its original snapshot and artifacts. Model weights,
+datasets, runtime caches and raw job logs are local resources excluded from Git.
+Portable metrics and fixed-sample galleries are retained with the documentation.
+
+The [research guide](tex/records/docs/research_guide.tex) contains the historical
+setup and experiment commands. [TeX records](tex/records/) preserve detailed
+protocols, and the [migration map](tex/provenance/migration.json) links them to
+hashed source snapshots. The [compute ledger](tex/provenance/compute_budget.json)
+records the development experiments' 60 H100-hour budget and historical usage.
+
+Build the modular report with XeLaTeX and BibTeX.
+
+```bash
+cd tex
+latexmk -xelatex report.tex
+```
+
+The verified PDF has 38 pages in total and 28 when recompiled without tables,
+figures and references. The [layout audit](tex/provenance/layout_audit.json)
+records the PDF hash and page-count method.

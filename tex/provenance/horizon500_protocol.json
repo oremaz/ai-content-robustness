@@ -1,0 +1,21 @@
+{
+  "motivation": "100-inner-step image candidates showed no gain against quality-fallback500-step attacks:20/64original vs22/64bothvariants. Test one horizon-matched revision before expanding this image direction.",
+  "changes": {
+    "clean_teacher_adaptation_steps": 500,
+    "student_inner_steps": "Must equal teacher500; preparation derives it from parent and worker asserts saved teacher step.",
+    "outer_steps": 100,
+    "retention_kind": "prediction",
+    "retention_weight": 32,
+    "support_sequence_seed": 2026110602,
+    "teacher_evaluation_seed": 2026110712
+  },
+  "controls": "Fixed/adapted targets share identical inner updates, outer budget and retention. Existing supports/classes remain disjoint from independent attacker data. Horizon length is established methodology, not itself a novelty claim.",
+  "gates": "First teacher detection/preservation>=28/32each, then trained-model fresh initialscreen, then frozen independent quality-preserving attack and final owner test. If no meaningful gain, stop this meta-distillation direction and report failure.",
+  "budget": "Reserve1H100h for teacher check; training and follow-up reserve separately after screens. All devQoS and same60hourcap.",
+  "future_evaluation_seeds": {
+    "initial_student_screen": 2026110812,
+    "attack_quality_validation": 2026110813,
+    "final_owner": 2026110814
+  },
+  "seed_scope": "Frozen before completion of either500-inner-step student. Existing fitting data and prior held-out class identities are reused; these are fresh generation seeds, not new dataset/class confirmation."
+}

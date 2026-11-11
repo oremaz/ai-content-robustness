@@ -1,0 +1,8 @@
+\begin{table}[ht]\centering\small
+\begin{tabular}{lrrrrr}\toprule
+Starting model & Updates & Anchor & Preserved & Raw removed & Joint removed\\\midrule
+Original & 500 & 0.0 & 64/64 & 20/64 & 20/64\\
+Fixed & 500 & 0.0 & 64/64 & 21/64 & 21/64\\
+Adapted & 500 & 0.0 & 64/64 & 20/64 & 20/64\\
+\bottomrule\end{tabular}
+\caption{Frozen quality-only-selected image attacks on 64 reserved final seeds and fitting-holdout classes. Each attack is paired with its own supplied marked checkpoint. The distinct selected anchor weights reflect the prespecified selection policy; they are not matched-coefficient comparisons. The hybrid client returns the marked source on a quality failure; these are gated outputs, not a single adapted checkpoint. Class identities are reused with fresh generation seeds.}\end{table}

@@ -1,0 +1,1115 @@
+{
+  "schema_version": 1,
+  "selection": "Eight evenly spaced positions without detection/quality filtering; partial paper controls use the common completed prefix.",
+  "builder_sha256": "4f509993fce4824bec2b42fa1c3ade6cc76ef720c8adedb69c1842035e593322",
+  "renderer_sha256": "7eceb2f898391e09a6b4566de65d0a4fedd12fa73b5d2fc161fada052370a5b5",
+  "renderer": {
+    "Pillow": "12.1.0",
+    "font": "DejaVuSans",
+    "font_sha256": "66b8a8ee0a4d1d46ff40f3352b05dbaffb63669c0577096f4a513772d21290f1",
+    "image_display_pixels": 256,
+    "encoding": "WebP lossless"
+  },
+  "galleries": [
+    {
+      "key": "text-textseal2-vanilla",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-textseal2-vanilla.tex",
+      "asset": "assets/text-textseal2-vanilla.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-textseal2-bira",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-textseal2-bira.tex",
+      "asset": "assets/text-textseal2-bira.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-textseal2-direct_topk",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-textseal2-direct_topk.tex",
+      "asset": "assets/text-textseal2-direct_topk.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-textseal2-smoothing",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-textseal2-smoothing.tex",
+      "asset": "assets/text-textseal2-smoothing.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-vanilla",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-latent-vanilla.tex",
+      "asset": "assets/text-latent-vanilla.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-bira",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-latent-bira.tex",
+      "asset": "assets/text-latent-bira.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-direct_topk",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-latent-direct_topk.tex",
+      "asset": "assets/text-latent-direct_topk.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-smoothing",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/text-latent-smoothing.tex",
+      "asset": "assets/text-latent-smoothing.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-unmodified-supplied",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-unmodified-supplied.tex",
+      "asset": "assets/image-rar-weight-unmodified-supplied.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0-75",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-75.tex",
+      "asset": "assets/image-rar-weight-merge-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0-5",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-5.tex",
+      "asset": "assets/image-rar-weight-merge-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0-25",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-25.tex",
+      "asset": "assets/image-rar-weight-merge-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0.tex",
+      "asset": "assets/image-rar-weight-merge-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-lora-500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-lora-500.tex",
+      "asset": "assets/image-rar-weight-clean-lora-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-lora-2500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-lora-2500.tex",
+      "asset": "assets/image-rar-weight-clean-lora-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-full-500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-full-500.tex",
+      "asset": "assets/image-rar-weight-clean-full-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-full-2500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-full-2500.tex",
+      "asset": "assets/image-rar-weight-clean-full-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-resize-only",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-output-resize-only.tex",
+      "asset": "assets/image-rar-output-resize-only.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-nfpa-0",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-0.tex",
+      "asset": "assets/image-rar-output-nfpa-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-nfpa-20",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-20.tex",
+      "asset": "assets/image-rar-output-nfpa-20.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-nfpa-40",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-40.tex",
+      "asset": "assets/image-rar-output-nfpa-40.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-jpeg50",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-jpeg50.tex",
+      "asset": "assets/image-rar-jpeg50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-center_crop_area50",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-rar-center_crop_area50.tex",
+      "asset": "assets/image-rar-center_crop_area50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-unmodified-supplied",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-unmodified-supplied.tex",
+      "asset": "assets/image-dcae-weight-unmodified-supplied.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0-75",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-75.tex",
+      "asset": "assets/image-dcae-weight-merge-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0-5",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-5.tex",
+      "asset": "assets/image-dcae-weight-merge-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0-25",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-25.tex",
+      "asset": "assets/image-dcae-weight-merge-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0.tex",
+      "asset": "assets/image-dcae-weight-merge-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-lora-500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-500.tex",
+      "asset": "assets/image-dcae-weight-clean-lora-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-lora-2500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-2500.tex",
+      "asset": "assets/image-dcae-weight-clean-lora-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-full-500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-full-500.tex",
+      "asset": "assets/image-dcae-weight-clean-full-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-full-2500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-full-2500.tex",
+      "asset": "assets/image-dcae-weight-clean-full-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-resize-only",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-output-resize-only.tex",
+      "asset": "assets/image-dcae-output-resize-only.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-nfpa-0",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-0.tex",
+      "asset": "assets/image-dcae-output-nfpa-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-nfpa-20",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-20.tex",
+      "asset": "assets/image-dcae-output-nfpa-20.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-nfpa-40",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-40.tex",
+      "asset": "assets/image-dcae-output-nfpa-40.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-jpeg50",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-jpeg50.tex",
+      "asset": "assets/image-dcae-jpeg50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-center_crop_area50",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/image-dcae-center_crop_area50.tex",
+      "asset": "assets/image-dcae-center_crop_area50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0-75",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-75.tex",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0-5",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-5.tex",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0-25",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-25.tex",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0.tex",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-clean-clean-step-500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-500.tex",
+      "asset": "assets/legacy-rar-clean-clean-step-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-clean-clean-step-2500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-2500.tex",
+      "asset": "assets/legacy-rar-clean-clean-step-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0-75",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-75.tex",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0-5",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-5.tex",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0-25",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-25.tex",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0.tex",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-clean-clean-step-500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-500.tex",
+      "asset": "assets/legacy-dcae-clean-clean-step-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-clean-clean-step-2500",
+      "kind": "image",
+      "page": "../../tex/records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-2500.tex",
+      "asset": "assets/legacy-dcae-clean-clean-step-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-sir-vanilla",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/paper-sir-vanilla.tex",
+      "asset": "assets/paper-sir-vanilla.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "f349a8727c7c51a1c91fedf1fcafe0ae6851c5474bb2ce79fccc84c7544358e8",
+        "a8aa4f7effda3b9a9f5d3ee789d1d3c1dcb65a4df31ca926e955d1241abda5e1",
+        "adaf979fdfb964904e387f40af11efc473f86dfd03a188d448f24221cea6cf05",
+        "1b3ba6e9a2d857aa37a67122f763b84f6e273823246f7c6fcec9fced3d89d443",
+        "03347445733f407fb1ccdcdfee0ac8a6870be235b90c64510ee96dfa7af4dfcf",
+        "4cbf4e262824ea813199d26415d873e7a935d3d4f9e628144b1679a9ef93d63a",
+        "9cdf452ec7392837b8e59d71537c6bd8a5a860e4379361d145f1b68dc8ef065b"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-sir-bira",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/paper-sir-bira.tex",
+      "asset": "assets/paper-sir-bira.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "f349a8727c7c51a1c91fedf1fcafe0ae6851c5474bb2ce79fccc84c7544358e8",
+        "a8aa4f7effda3b9a9f5d3ee789d1d3c1dcb65a4df31ca926e955d1241abda5e1",
+        "adaf979fdfb964904e387f40af11efc473f86dfd03a188d448f24221cea6cf05",
+        "1b3ba6e9a2d857aa37a67122f763b84f6e273823246f7c6fcec9fced3d89d443",
+        "03347445733f407fb1ccdcdfee0ac8a6870be235b90c64510ee96dfa7af4dfcf",
+        "4cbf4e262824ea813199d26415d873e7a935d3d4f9e628144b1679a9ef93d63a",
+        "9cdf452ec7392837b8e59d71537c6bd8a5a860e4379361d145f1b68dc8ef065b"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-kgw-vanilla",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/paper-kgw-vanilla.tex",
+      "asset": "assets/paper-kgw-vanilla.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "b0c064862630e362062754f8f83a690bfe02f4e4b9c144ece28f5c7ca9e64ea0",
+        "fdc6d56377083be33893fcfd60d29bd6270f8e03e808c9f7b37cd3a08f8950cb",
+        "e188369d92ce518d76d24701bc4c37660804ecef2cff85053eb1a3cd3ed65b4e",
+        "d0a0bf543c370620eee59bb3506a28ba248d6793c3be6698eb4d84087d22588b",
+        "0a185b9c2378644f03cf5b0e8220ecd5867b6942f53bf49dc619cafba2b21996",
+        "94aa002ac94b2a21a5235aa31a9cb0248012ffaef3dd8afa669e7c617b990240",
+        "9d920d84388fd56a8cc14972c9c687f130e7db5d16add8a0f4ee6333ac5d7c70"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-kgw-bira",
+      "kind": "text",
+      "page": "../../tex/records/docs/watermarking/qualitative/paper-kgw-bira.tex",
+      "asset": "assets/paper-kgw-bira.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "b0c064862630e362062754f8f83a690bfe02f4e4b9c144ece28f5c7ca9e64ea0",
+        "fdc6d56377083be33893fcfd60d29bd6270f8e03e808c9f7b37cd3a08f8950cb",
+        "e188369d92ce518d76d24701bc4c37660804ecef2cff85053eb1a3cd3ed65b4e",
+        "d0a0bf543c370620eee59bb3506a28ba248d6793c3be6698eb4d84087d22588b",
+        "0a185b9c2378644f03cf5b0e8220ecd5867b6942f53bf49dc619cafba2b21996",
+        "94aa002ac94b2a21a5235aa31a9cb0248012ffaef3dd8afa669e7c617b990240",
+        "9d920d84388fd56a8cc14972c9c687f130e7db5d16add8a0f4ee6333ac5d7c70"
+      ],
+      "panels": 16
+    }
+  ],
+  "files": {
+    "../../tex/figures/image-dcae-center_crop_area50.png": "d43547f08516683a9a24d8af854ea961871b52cffa182e7e0bd502c4ad53c9c2",
+    "../../tex/figures/image-dcae-jpeg50.png": "cd5e6e274e6e50e403f5754e5fb7d91919cc5ccd350b1904b669f1a65253ee7b",
+    "../../tex/figures/image-dcae-output-nfpa-0.png": "6f255a359f6803ff2ce489b81a5e184b1d52aefb2abfffb33d6eddadf00e91a8",
+    "../../tex/figures/image-dcae-output-nfpa-20.png": "752945cbf7d24b6703d8c27b570250d7a0ac1900d10efc6c31a2ba6850781360",
+    "../../tex/figures/image-dcae-output-nfpa-40.png": "0b21e9767b955cc64580b042724fac4a2a9b1cb784289282d193bab08f7c646e",
+    "../../tex/figures/image-dcae-output-resize-only.png": "d7a9a30c78f128283073cbf64f93afd67ecdf304eaa829a1f336ce0319ef52d3",
+    "../../tex/figures/image-dcae-weight-clean-full-2500.png": "3da25bdffffbcb3c934e581105abbf182d317ed0560fea5e2f6d9996c203a667",
+    "../../tex/figures/image-dcae-weight-clean-full-500.png": "628744d8f0b66a9d268025c853961fd2d87106ea88b6a4fae25aaa0c02c5da5a",
+    "../../tex/figures/image-dcae-weight-clean-lora-2500.png": "158e097478db2f8792f6ead3d04d801622026f1d978f8d6075cef423a5d2df7d",
+    "../../tex/figures/image-dcae-weight-clean-lora-500.png": "f7090e5e61ed5592aa9c563f187292c7cdaa906774158a96770499f5be94379b",
+    "../../tex/figures/image-dcae-weight-merge-0-25.png": "81deddc397af6d759c25471d8fe28839dd440355873498354a4a0e8eceb71b65",
+    "../../tex/figures/image-dcae-weight-merge-0-5.png": "630e153ef0f59a9906e5445837317f914eba092e0d0dab5fe74e3396aafb351f",
+    "../../tex/figures/image-dcae-weight-merge-0-75.png": "864d231dea9459d4b546cadac94b5b1541db0967a11bf1c86ca0e91c552330bd",
+    "../../tex/figures/image-dcae-weight-merge-0.png": "c43568fa576ede08edf5614a8dbfdb539bd3781504959b54faf0258bc7e402ee",
+    "../../tex/figures/image-dcae-weight-unmodified-supplied.png": "6206ff588293b654627b5bb2caec618d628ebeec731c69f9eabe7ffd344e7e7d",
+    "../../tex/figures/image-rar-center_crop_area50.png": "0e08dce7767d0a993679e0c47eae7ba0963944502b11dee61b1e94a578bd8972",
+    "../../tex/figures/image-rar-jpeg50.png": "b1dff9512cd98ef21945b343e2b4a4ee96d91f0c3a55330f598c0c2b28846f76",
+    "../../tex/figures/image-rar-output-nfpa-0.png": "bc689aaefc0c35cfc56c0cda18415789ebf20ade6f47bdfbb6efce57c270387f",
+    "../../tex/figures/image-rar-output-nfpa-20.png": "84194e254a5c383c793b1bd04b4441785cffa5804fdb5d3d58b874206a6900da",
+    "../../tex/figures/image-rar-output-nfpa-40.png": "30ae6541e5d32fb90d59bbe823e93bc284a0ad4df69d6e00d69bc76d60c22d02",
+    "../../tex/figures/image-rar-output-resize-only.png": "5dcd5d50f053ae185d0e00a12633b22038735aedd6318868a39a4556f19d4af3",
+    "../../tex/figures/image-rar-weight-clean-full-2500.png": "cf607f65dab8c7297aba3a2d0360a2bf88161f7c65477dddc4223f6c35d227d6",
+    "../../tex/figures/image-rar-weight-clean-full-500.png": "ac47e7646fc49838f582836749b7dd8f6c176554188900baf78b619230b789d9",
+    "../../tex/figures/image-rar-weight-clean-lora-2500.png": "9eb8afab6b03b9b7c3641adfe96ae9cc48488395d47daf66801f1ce88a1ca579",
+    "../../tex/figures/image-rar-weight-clean-lora-500.png": "d9c566aa49fbe81ead5dbdbbed29c7c205a024cda5a8a50ac99bb6f658caf745",
+    "../../tex/figures/image-rar-weight-merge-0-25.png": "745acc29fcedc0ef9b30c9f7ebce280e43ab3203dcd90939bc1e640bba3252c6",
+    "../../tex/figures/image-rar-weight-merge-0-5.png": "9b69ec0288470429917bbdf6da1a31453dc668358956421a11dfd779a970997b",
+    "../../tex/figures/image-rar-weight-merge-0-75.png": "a99313b06313c1491ef5a2ea618c0e226b278cb78c47f4030cfec916f4c28288",
+    "../../tex/figures/image-rar-weight-merge-0.png": "4044e880b01d4361bed913772c7ffcded8484b9ea625670d16eb7396887196fe",
+    "../../tex/figures/image-rar-weight-unmodified-supplied.png": "37bcc5d259fcb0d30b9a04a67e064a25c601f34f18bff742b69801f4b6ab92a1",
+    "../../tex/figures/legacy-dcae-base-watermarked-weight-0-25.png": "14d1e820b49b2d79c08f53bba146788edbb3bdf9015f9bd15ac40a119b4b1b4a",
+    "../../tex/figures/legacy-dcae-base-watermarked-weight-0-5.png": "bbeb40937fd69e822876b57b16c09dcd46ae940e0465e30ab216a6829995e226",
+    "../../tex/figures/legacy-dcae-base-watermarked-weight-0-75.png": "d37e9c9972019c8f0f9bf4a465172b566e65766991d49b64d1231cecf256bd84",
+    "../../tex/figures/legacy-dcae-base-watermarked-weight-0.png": "660734c7231d66fcd66568b6363827961b8d1ed9d7aecab55b712af859cbddde",
+    "../../tex/figures/legacy-dcae-clean-clean-step-2500.png": "cae840b81877cef25a7b46cad82443334cb76e28f28f8dd9942ae87b0b4b2830",
+    "../../tex/figures/legacy-dcae-clean-clean-step-500.png": "18a0328d0e2e014abda3aed2a494adb09acf088c2527fa050720fe8da299cde8",
+    "../../tex/figures/legacy-rar-base-watermarked-weight-0-25.png": "36b9f4d60d2dd27f29465a1a169fc0890e94a5a5041ab13b025efe797690d294",
+    "../../tex/figures/legacy-rar-base-watermarked-weight-0-5.png": "33085092fd280ea3d19e9dae9db51a1f5ae498ee308aa8f0ce10438517566e17",
+    "../../tex/figures/legacy-rar-base-watermarked-weight-0-75.png": "b52ec4f5c99b99daef9183642f44159ac52cc78a29fb119b554c6f242a66058e",
+    "../../tex/figures/legacy-rar-base-watermarked-weight-0.png": "c812ee92a3fdb01c010e33c93ad891e3e3d927843a8076ec81f1a8bffb611f5a",
+    "../../tex/figures/legacy-rar-clean-clean-step-2500.png": "ee9dcd95affd88586facad363027cc6ba98a8cd6e33c5f7553150dae89ce4c85",
+    "../../tex/figures/legacy-rar-clean-clean-step-500.png": "00517102deacacdfefc774fb10a2ac480da789620561806670a91b1b0de3cf1d",
+    "../../tex/figures/paper-kgw-bira.png": "af8fdd32f916b67445c44a66075450edda0933568725aab9a9df11ca4de2a43a",
+    "../../tex/figures/paper-kgw-vanilla.png": "f0c93784a913ad0c76f81ab7f6e28c9220133314e5d9431e165a3b004edecbf7",
+    "../../tex/figures/paper-sir-bira.png": "22977a4fca43da765316df06d7fc41509583d7838ad73cc7e689cd64cdbf1e24",
+    "../../tex/figures/paper-sir-vanilla.png": "778819d00113f263c0e9f362d814c3048ba6321be5147eeb57ce0d79c4796845",
+    "../../tex/figures/text-latent-bira.png": "26a7180ac7d9b87433718120edfae51f3ed6f3f2945275b6002fb7737c131ea7",
+    "../../tex/figures/text-latent-direct_topk.png": "256a1b12e00b471fe60f12bbe4d7ae2c7949db76ad90adda1ad8acad8f152cfa",
+    "../../tex/figures/text-latent-smoothing.png": "62b80bc3d660c4b2e2cb3f177421b359dbb5c5d3aff61700fc3eb59025ee2f7c",
+    "../../tex/figures/text-latent-vanilla.png": "a116fc0c2756b453d9ab7481a281d7f8fbaa60582cf0a04e41092321cdc339da",
+    "../../tex/figures/text-textseal2-bira.png": "8f331713b29b07259972a779331579470034d889b93c47c8a9166c555e0d52a1",
+    "../../tex/figures/text-textseal2-direct_topk.png": "d2a0eacc37cb7730604e92223e50613c6deab77e83678fad9b1173eff60608be",
+    "../../tex/figures/text-textseal2-smoothing.png": "a5392ccf27674c2dde8031390b34a99f83498d73d979abb32a2b6460627418b9",
+    "../../tex/figures/text-textseal2-vanilla.png": "ac6b12d508dd5294be558c933e551f1a44b889c87d9230776505ab8724146d88",
+    "../../tex/records/docs/watermarking/historical.tex": "51928715a62e39933a3d425ba482580daa845a6d8355db3923ea414fdc1d007b",
+    "../../tex/records/docs/watermarking/images.tex": "c6f8984cec411e0e5cd56d709b68b17cf03bb937963852d44b3d4d611b06e0fb",
+    "../../tex/records/docs/watermarking/metrics.tex": "7f680372270fa2ccbe7a90d90b8a7c134d8fa99b4cc5806735abe8311faca935",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-center_crop_area50.tex": "ea21f909f2a8ac73b13fd5742665baae3cbf0cc492beef69bcfea912a872941c",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-jpeg50.tex": "34624b8ce3ef38c1e59cdd419ca5ccaf8df6d328e3a9746e0c210de7954c170c",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-0.tex": "68bab04f404dd376f71c26a543ba02764c9ab19cdb6f3d54f103bb24a213eb76",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-20.tex": "03c4d879b16c55ceabc96d900facc9260276d68c4ea4b29bf65547c678de0855",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-output-nfpa-40.tex": "f25fac4d4d3c6218268e9f103e38233621d2f29a37f434e9f57f572f57605fb5",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-output-resize-only.tex": "464614542cf84a88f1b624741720c0851750831eb4ffc7f34bf936d9dd7fc5fc",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-full-2500.tex": "1b92ba91faf32c5727aa0a1a87aad5e774cadec3a807401516a9b5404c6c431c",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-full-500.tex": "4b20a1f82b58e353a72a5c218b32e551a3fd963c8efc528750093edc34bd82e2",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-2500.tex": "a7d009f5f9b8e11bc6ac20feeb59eb9ed2d900c0b23cb858c62eee12c57c83f2",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-500.tex": "49ce25113d8680f87a25bbb85f4b49760e9501eb9d2e7c83562d369c7ca3ff32",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-25.tex": "ca075b4e9b2f43eea40e99a824ec9763f0ffe2a1c718abad760d272c111a73c8",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-5.tex": "3304cdcc680ac1ea438f75bf0d112082e848425de9e39ab7d4849ecd9a59a107",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0-75.tex": "4021bddd768c96b3faa7bb1e90369a06052d61d1335dd6ad3dc04f1094d1849b",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-merge-0.tex": "f4fc6acb0cf358c64a33dda2a06e01f7c45357b304b6f1f64d4102e5a045616a",
+    "../../tex/records/docs/watermarking/qualitative/image-dcae-weight-unmodified-supplied.tex": "183fa01ef4b5a4080fc63c0f333a224fb677f9c3809ddd370c051ee6423a554a",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-center_crop_area50.tex": "e28f5ac0f375f1ea3659c930d444dfa91763e47f5e9d8530643694a74eb9f653",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-jpeg50.tex": "976c0adfacaa49a416db20878662bdf09a142853d55a030c7af0df5fc8f736ff",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-0.tex": "17fc14a503a14e807e870a0358554d6345af4f9d60e1e3561b3682fd059542e6",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-20.tex": "719584304126d9279e89ff91eb2987fd16d8d03e66c934ad56c4a6d9e6a2cdbf",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-output-nfpa-40.tex": "6edf408fe253bccc74226e06638f731e073f0a0773c1ce5bed4eae697448f5df",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-output-resize-only.tex": "d9a3b539b29082144d23b9f5bcc49aa0df3afd58ba02f2e0238171a243131a5e",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-full-2500.tex": "bc2a4a32a9633af90a1c3a5537c332064c3cab0e78cc525f36c0460b6d57f825",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-full-500.tex": "a5bb784fbd03fddc2f875ca87033e89b6429d7f47f9a7e675e41adbd03971287",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-lora-2500.tex": "c9c33645448ccc177969f5bdc6139e88167a90cb99f325045ffafbbc3147cedb",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-clean-lora-500.tex": "487d7f54c428108cf8a0bca6e425dd56289c5c7e9911a68d7ce6912057ef32db",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-25.tex": "fbd70709920eded1bc07d8ba7165fefd043ab6c77876d2566e622f321137e10a",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-5.tex": "15f2a0ee9ac642cbda0cfcb4e91ee369ff91dc9f566ab3ea18c4059d31c41bce",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0-75.tex": "cd1a819cf6746f288e4a6be3056014e1d8d75e63e50f0462efffa4a9085f6796",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-merge-0.tex": "f50d6f57395106323d1423e6a8724cd9558d1cd89c8ee0cad829f1c7a250de28",
+    "../../tex/records/docs/watermarking/qualitative/image-rar-weight-unmodified-supplied.tex": "32e9589edcabc6653ae159c706ea58e4296ad47bdd96a9de232fc8fefcc0123d",
+    "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-25.tex": "e56b81a5af40ab6113bdd9d43c37a936b40b268a9f503a2c0ff88167f1e31fb0",
+    "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-5.tex": "4c13611084aec9ecce8cca26b96400b5f10950cc11ac92d5b1e2b5c0b415cfda",
+    "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-75.tex": "4bd773938f38e01a42f808ce954a0d112c94ac062eec70a880de5337788972a2",
+    "../../tex/records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0.tex": "fa55e1d725cb43242c0fbd2ba864cc9999444d89fe77c6f475a03606cfc6ab63",
+    "../../tex/records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-2500.tex": "ad5d3df6a932bbfa99d97e3c096b8bb4330cccb1e7106d582f8e7994e831638c",
+    "../../tex/records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-500.tex": "ea0d8df946efada926763647930692f3ffbf26a5adfd3a44d2d22adcd412ccd9",
+    "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-25.tex": "7000de63321d9c4c488270498f9aee93a7115fc1eb9aadbe5645a3f1e0f39127",
+    "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-5.tex": "8cc178276ac0d31e5c5aceb0b68a2ba8a3649e284baece69898a1840a60f1ef3",
+    "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-75.tex": "e472d0540d16951a5a64807888a1ba20211cbccaf0b848ca523689de575ba82e",
+    "../../tex/records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0.tex": "7487c08add1bd1e6ec2d3b93b6493162b199ff3ef6cca0c6f176ef9a8f262f8c",
+    "../../tex/records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-2500.tex": "dd1bf4928b0e481fc97e43241512aac5e18bcc6453d9f705b65342edc2a1baa8",
+    "../../tex/records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-500.tex": "d60d2454b4e84a202ce3e538891d10f95cd189efaa10c76f5cb6bc182ad985b9",
+    "../../tex/records/docs/watermarking/qualitative/paper-kgw-bira.tex": "271c759f4a3a36899fe410083ff568eded53a0f1e5ac52cb4ed9c41949b919c2",
+    "../../tex/records/docs/watermarking/qualitative/paper-kgw-vanilla.tex": "1a99f585cec01452dfd1de9abc626ab63d8f49d95b4fe18d7dfa0fcb84344570",
+    "../../tex/records/docs/watermarking/qualitative/paper-sir-bira.tex": "9d700dcb90a831a9af25e65753dcbf144252be63fa5dc38d2c89cb013576e17a",
+    "../../tex/records/docs/watermarking/qualitative/paper-sir-vanilla.tex": "6964489737f2f037f44daf855c5b6dde0c992d2fa90c53c755473e352ef15460",
+    "../../tex/records/docs/watermarking/qualitative/text-latent-bira.tex": "22a877e5e4ac871fc6d6dbd593010fa35418b3432017212cb139d8afb737e47d",
+    "../../tex/records/docs/watermarking/qualitative/text-latent-direct_topk.tex": "44b281890963309c05284f5f62f739d6faebcdec33a1ed08ad1a31780e95a382",
+    "../../tex/records/docs/watermarking/qualitative/text-latent-smoothing.tex": "caa958264bb501d35d51336365124a9c1a968fa3ee954614bbd13059cd8d7320",
+    "../../tex/records/docs/watermarking/qualitative/text-latent-vanilla.tex": "2492b89cb5245f484c164ff0259b1954210db25292f2a781e50c68441384c575",
+    "../../tex/records/docs/watermarking/qualitative/text-textseal2-bira.tex": "d7ee65fee6271ecbe4d9039d5e463dce881cb6b8c5470c57304d57ac0bb2e678",
+    "../../tex/records/docs/watermarking/qualitative/text-textseal2-direct_topk.tex": "cecbfc65887c5b396de5bc0341dbbe7ed29125a16f69ec1c59f7bc5e9f0ca1b7",
+    "../../tex/records/docs/watermarking/qualitative/text-textseal2-smoothing.tex": "8bd4d57a1602a2cf3e441b2fad9fdbfcc664293dd26274a10ca494542470808c",
+    "../../tex/records/docs/watermarking/qualitative/text-textseal2-vanilla.tex": "2b500367ce8860551c473e0e1ccc3acb42d2f0490b967fd533149603da43cba8",
+    "../../tex/records/docs/watermarking/robustness.tex": "afa9f82ac471e6101034d9d4d0299eb912b14a6d8ec0edfcf4f8cfc053f61cee",
+    "../../tex/records/docs/watermarking/text.tex": "4da0fe5466815d1eb64674d3264bf9df7282008658b712b760d5f062076bcca8",
+    "README.md": "cc7e3d152e9938b6d5cf02d56c82cd62f16f4058429169858dd48e8e22c9c41a",
+    "assets/image-dcae-center_crop_area50.webp": "99d93a0a123740f6d5e489fd0f91f1448dd2a58e98425f41475187c1ccea41c3",
+    "assets/image-dcae-jpeg50.webp": "b5500d2ef52defb463db035278eec100d9b696e8938b2a79840d7098e4b61ffd",
+    "assets/image-dcae-output-nfpa-0.webp": "154eeb44f120b0a7579b3dcde88e80dc59376c460fd0fecc7d85f850a320a1af",
+    "assets/image-dcae-output-nfpa-20.webp": "7ec6b4552d8f9ce46ebebccd33cfa7a2abf9dae37c325547a42ee49f1dc66f01",
+    "assets/image-dcae-output-nfpa-40.webp": "e1ae654d8bfbd36cb8ad8591605474c3e5c4b6387a7fb36676cb41641ab7b306",
+    "assets/image-dcae-output-resize-only.webp": "4c85682c77a0be59e405bc191bbb3e61a4e2903c9d6be2fa340c4319b5606ed6",
+    "assets/image-dcae-weight-clean-full-2500.webp": "920c94452ac7aca4e2d95aa4a0f434c307e1662d7d9f7295ea2010e90ffb78b3",
+    "assets/image-dcae-weight-clean-full-500.webp": "70450e4fa41a6942d5fa2480a468f543ed21ed15807633571389eaa836bdb6eb",
+    "assets/image-dcae-weight-clean-lora-2500.webp": "0de653ffd1306196ed37283c26936aeb0e863e1a0349d5c9fd04d80bb51d56e9",
+    "assets/image-dcae-weight-clean-lora-500.webp": "8bc54c25c3e5a5c13807d9feb258f076576737d97e7da0ba3ad85b014217fcca",
+    "assets/image-dcae-weight-merge-0-25.webp": "1a1c390ec76f67275af8858b1f16a3f873be73f2de5bfbf6bed4334bb83f54b1",
+    "assets/image-dcae-weight-merge-0-5.webp": "cb2998c6d50d704c39d10c5526132968d1bcf4d72bc6e438548aefe33ef9e9d0",
+    "assets/image-dcae-weight-merge-0-75.webp": "e348e20ab8923bd5d8c9e50f8b2bc0ff77f1595b925e69a1eb54bf8a5a89e7dc",
+    "assets/image-dcae-weight-merge-0.webp": "ae432829c37464d0ba55f2a1dbd02e29248b16b98052a10ff34a58f7366c3ffb",
+    "assets/image-dcae-weight-unmodified-supplied.webp": "a08c3160a1ed82c6f4cf95debc37a9594a79e05061a9721488790ff0c25d727d",
+    "assets/image-rar-center_crop_area50.webp": "53b57e33c1a9740cd827205e40c66c410774cfad2976df7ee392fc0a5c76204f",
+    "assets/image-rar-jpeg50.webp": "2e21aab8696b605425b8674e098f9f6aca75edb2c850c584e120c4f57fcaa152",
+    "assets/image-rar-output-nfpa-0.webp": "e8bdc9e054963de38de2fb15ade04ecd51599233c0a8c6f7b05080b6a05790f4",
+    "assets/image-rar-output-nfpa-20.webp": "545ff93e9d31a52fc452bdf4fdb73e5d8a320dd5e6b17ea12f8f40dd5024030d",
+    "assets/image-rar-output-nfpa-40.webp": "1f363a00c93f0a022e01de1964d6074dad2ba1fe84d9c32e1b1bfbb947c6e727",
+    "assets/image-rar-output-resize-only.webp": "1f9951fb038faf47b2ab9e7c6ead112bc91bac8bd96b62e1343cb275db722fff",
+    "assets/image-rar-weight-clean-full-2500.webp": "2aa040e309221f86680900e3784fc494cf08551b7706bad79d947e9746a758a6",
+    "assets/image-rar-weight-clean-full-500.webp": "ea4f2414250ba5ea3947d3cd9961013f04a035cdb80d15bd7447015a0335525c",
+    "assets/image-rar-weight-clean-lora-2500.webp": "340cb22d309e95c11833dcae7b250408a246bd64833ebe6ff78d948c99e434c1",
+    "assets/image-rar-weight-clean-lora-500.webp": "0ad6311352b03a29b64be18affb5f5d5d2c572633c6e141ae6311ef02d450045",
+    "assets/image-rar-weight-merge-0-25.webp": "d13f3cb7e96f57a94ce2b0e6ed93bc03eebae1f3d1f25db9b0372b3d3a6e922f",
+    "assets/image-rar-weight-merge-0-5.webp": "619063481138f8e6859e0927208d33a70cb13db6d04fd9a939e02a27d3cab2c6",
+    "assets/image-rar-weight-merge-0-75.webp": "a9e0b95df80ca64ecc5079579d2550042c5031ed6b8b4a8f9ee8687da3ce1ebb",
+    "assets/image-rar-weight-merge-0.webp": "dfbd586b248dfaa02c6d7e962c3b0ac8e71748a3dd43f17105b2e2c9c33c095e",
+    "assets/image-rar-weight-unmodified-supplied.webp": "076175b74c73adf1132336f5f85aa4aa304cd9c1dbfedfa7bf47f18fc91f0c20",
+    "assets/legacy-dcae-base-watermarked-weight-0-25.webp": "422325d46afded2f095bd4d80fd3453f7394b904e44ee61ac1aee0c4107d20f0",
+    "assets/legacy-dcae-base-watermarked-weight-0-5.webp": "196779fb9425e3997834823a86fa0bafe64a9dbea93721e1c0f507199416caf4",
+    "assets/legacy-dcae-base-watermarked-weight-0-75.webp": "d3789d55ba6653fc2be7200eaa936e56cca364994b5ba3d336e8e1b7e7cf97a1",
+    "assets/legacy-dcae-base-watermarked-weight-0.webp": "42afddb09a62e9ab6a98db261edde2afccf572ec02d9b9a882bf66be635bc5ac",
+    "assets/legacy-dcae-clean-clean-step-2500.webp": "c0b7de89bb4b86f6f16fc6da9a295f767f61a4357c400298b9cd562a2bc6e2e2",
+    "assets/legacy-dcae-clean-clean-step-500.webp": "6afdbe90cb466d782a482eb3374f34fc1d337e1f1a25834b486b8b6635a46e81",
+    "assets/legacy-rar-base-watermarked-weight-0-25.webp": "9e5c51b48e70d4ba6bf7bea7dbc6a811095485bcc4c47069629d7def6c7427c2",
+    "assets/legacy-rar-base-watermarked-weight-0-5.webp": "45f096caa4382e0a5ccd2b0c686d9b36739b862ffb93993120ea125f81e8907f",
+    "assets/legacy-rar-base-watermarked-weight-0-75.webp": "4f8407b7c63baf8a5da41240a3a9581426bf818fabb3e86e56a6d8a26b6dd992",
+    "assets/legacy-rar-base-watermarked-weight-0.webp": "e1966bbe2361f71d5ef1be9dedc0cb847156633741470251730c31f2fc9ae68c",
+    "assets/legacy-rar-clean-clean-step-2500.webp": "c03b5c9dee0e88502d01fa8a736a187267b392bf236caa5c73ee4ff85652b4a6",
+    "assets/legacy-rar-clean-clean-step-500.webp": "f191818e374d4685b44cbf7a9cc971abc305943d076481404afebec730700d11",
+    "assets/paper-kgw-bira.webp": "254dc077cee502a89f8b8a76230d2be63271a134a6f99505bd511da5c9568e80",
+    "assets/paper-kgw-vanilla.webp": "13364412d850424000100d661e8c1d81517191059c6b9f42439bb49412f76836",
+    "assets/paper-sir-bira.webp": "89205fa231e4a56d299eb6242acf9fcc97028ab28c63bd0ea646da64359c20bd",
+    "assets/paper-sir-vanilla.webp": "05854ea5f7f6e48b2dc50849ec139ab7390871c92103e8547dee1a8fae57a9a6",
+    "assets/text-latent-bira.webp": "a8a967cb29ae925c60f5a24ca30afe895047bdacf62cbc05e2be96001a840dde",
+    "assets/text-latent-direct_topk.webp": "4bd9b45fefd6c45cc2ff4ac0f4c4c725cb07a5b627500c83a1973695b9fa064a",
+    "assets/text-latent-smoothing.webp": "e9187b068e4ba428c88abca13b63a8fd4e35f2c173b488c27755e432db98a42e",
+    "assets/text-latent-vanilla.webp": "718badf89009c0dfeb66e847302938b2b0e87dd99b381721f9907a2e30ff0008",
+    "assets/text-textseal2-bira.webp": "a6356d5b90a3e1295c5ca72258e0094a7cf300cbf57b85558fb854bf51de73e9",
+    "assets/text-textseal2-direct_topk.webp": "552dd927c9bf574ecefecddb2fd330c3514bc17053c807a380280571bb1fd537",
+    "assets/text-textseal2-smoothing.webp": "65a54cf19e1c94a749ad08867525a6973bc8acf5155a4ebfd99bb2d8dcd2d930",
+    "assets/text-textseal2-vanilla.webp": "c8af0ca8f0bda357fd909087061d2745ccca75590b09411aed345ac4e0ea5f8d",
+    "data/examples.json": "88abc795ca5164bd777d0d225c909cfd2a8b530bfb4545ce9e4d3a9b5b6212e5",
+    "data/metrics.json": "e7a01f4ddf8367ef9484e628c3eb713d1eac767b3672812dbaea50dc9a021904",
+    "data/sources.json": "c23447f50fe7a2234c03bf49e9c2f8ad8c32e364357f8bfff6743b83e6c8b5ed"
+  },
+  "documentation_format": "LaTeX",
+  "migration": {
+    "source_manifest": "../../tex/provenance/legacy_publication.json",
+    "source_manifest_sha256": "09e81c352b7d8cdb094fffcdad13edaab8b5e440cfe1f9d4b8964b6e7efac5f5",
+    "record_mapping": "../../tex/provenance/migration.json",
+    "record_mapping_sha256": "48177355a0d09761c865ead80817142be2da521d03b7c94926333691242fd4f9",
+    "note": "Original quantitative/qualitative assets retained. Research Markdown replaced only after all85records compiled and their hashes and full text snapshots were checked.",
+    "typesetting_revision": "Historical run identifier wrapping updated; source content unchanged."
+  }
+}

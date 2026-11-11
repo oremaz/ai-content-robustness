@@ -1,0 +1,36 @@
+{
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-teacher-20261106T175209Z/manifest.json",
+  "manifest_sha256": "d75bc0e487e19198b3ebb9d39ca49234df73e3443aacc76966187076e7d5d98f",
+  "result_sha256": "8c29af44d4c9417b43e05af7e44fdee808587e245837e3dfa0bc595c4d7ead6d",
+  "result": {
+    "threshold": 0.6875,
+    "conditions": {
+      "fixed": {
+        "n": 32,
+        "clean_detected": 0,
+        "marked_detected": 32,
+        "preserved": 31,
+        "mean_lpips": 0.0411123875528574
+      },
+      "adapted": {
+        "n": 32,
+        "clean_detected": 0,
+        "marked_detected": 32,
+        "preserved": 31,
+        "mean_lpips": 0.03962354295072146
+      }
+    },
+    "teacher_screen_passed": true,
+    "status": "Development teacher validation, not a robustness experiment."
+  },
+  "job_id": "2080317",
+  "h100_seconds": 622,
+  "validation": "All128 native PNG hashes,32 paired indices and class labels per condition, and preservation sums verified. These are teacher checks, not a defense result.",
+  "qualitative_positions": [
+    0,
+    8,
+    16,
+    24
+  ],
+  "position_selection": "Positions0,8,16,24 chosen after the run, without filtering by quality or detection. Uniform display resizing; nativePNG files unchanged."
+}

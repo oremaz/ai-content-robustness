@@ -1,0 +1,68 @@
+\section{RAR-XL: 50-image clean LoRA 500
+steps}\label{record-docs-watermarking-qualitative-legacy-rar-clean-clean-step-500-md-rar-xl-50-image-clean-lora-500-steps}
+
+Historical protocol. Class alignment and detection were recorded; paired
+perceptual quality metrics were not measured. The same fixed indices are
+shown without success filtering.
+
+Eight pairs use fixed original indices 0, 64, 128, 192, 256, 320, 384
+and 448. No detection or visual-quality filtering is applied.
+
+\begin{recordfigure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Eight original/after image pairs}]{figures/legacy-rar-clean-clean-step-500.png}}
+\caption{Eight original/after image pairs}
+\end{recordfigure}
+
+The lossless figure contains 16 panels. Each panel is displayed at 256
+pixels; metrics use original native-resolution PNGs. Labels report each
+output's detector result, not guaranteed removal.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Index
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Before
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+After
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+LPIPS
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 0 & class 0 \textbar{} bits=0.922 \textbar{} detected & class 0
+\textbar{} bits=0.609 \textbar{} not detected & not measured & 0.3144 \\
+64 & 0 & class 0 \textbar{} bits=0.984 \textbar{} detected & class 0
+\textbar{} bits=0.562 \textbar{} not detected & not measured & 0.3306 \\
+128 & 909 & class 909 \textbar{} bits=0.969 \textbar{} detected & class
+909 \textbar{} bits=0.781 \textbar{} detected & not measured & 0.2828 \\
+192 & 58 & class 58 \textbar{} bits=0.969 \textbar{} detected & class 58
+\textbar{} bits=0.719 \textbar{} detected & not measured & 0.2767 \\
+256 & 665 & class 665 \textbar{} bits=1.000 \textbar{} detected & class
+665 \textbar{} bits=0.703 \textbar{} detected & not measured & 0.3009 \\
+320 & 446 & class 446 \textbar{} bits=0.922 \textbar{} detected & class
+446 \textbar{} bits=0.578 \textbar{} not detected & not measured &
+0.2317 \\
+384 & 6 & class 6 \textbar{} bits=0.922 \textbar{} detected & class 6
+\textbar{} bits=0.688 \textbar{} detected & not measured & 0.2816 \\
+448 & 488 & class 488 \textbar{} bits=0.922 \textbar{} detected & class
+488 \textbar{} bits=0.797 \textbar{} detected & not measured & 0.2753 \\
+\end{longtable}
+}
+
+\href{records/docs/watermarking/images.tex}{Image metrics} \textbar{}
+\href{../docs/watermarking/README.md}{Report overview}

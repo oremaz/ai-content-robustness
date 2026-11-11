@@ -1,0 +1,30 @@
+{\small\begin{longtable}{lp{.36\linewidth}rrrr}\toprule
+Model & Condition & Initial + & Raw removed & Proxy pass & Joint\\\midrule\endhead
+RAR & \scriptsize weight\_\allowbreak{}unmodified\_\allowbreak{}supplied & 512 & 0 & 512 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0.75 & 512 & 16 & 0 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0.5 & 512 & 262 & 0 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0.25 & 512 & 498 & 0 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0 & 512 & 508 & 0 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}lora\_\allowbreak{}500 & 512 & 443 & 0 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}lora\_\allowbreak{}2500 & 512 & 487 & 0 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}full\_\allowbreak{}500 & 512 & 326 & 0 & 0 \\
+RAR & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}full\_\allowbreak{}2500 & 512 & 475 & 0 & 0 \\
+RAR & \scriptsize output\_\allowbreak{}resize\_\allowbreak{}only & 512 & 0 & 511 & 0 \\
+RAR & \scriptsize output\_\allowbreak{}nfpa\_\allowbreak{}0 & 512 & 22 & 105 & 3 \\
+RAR & \scriptsize output\_\allowbreak{}nfpa\_\allowbreak{}20 & 512 & 157 & 2 & 1 \\
+RAR & \scriptsize output\_\allowbreak{}nfpa\_\allowbreak{}40 & 512 & 402 & 0 & 0 \\
+DCAE & \scriptsize weight\_\allowbreak{}unmodified\_\allowbreak{}supplied & 512 & 0 & 512 & 0 \\
+DCAE & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0.75 & 512 & 512 & 0 & 0 \\
+DCAE & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0.5 & 512 & 512 & 0 & 0 \\
+DCAE & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0.25 & 512 & 512 & 0 & 0 \\
+DCAE & \scriptsize weight\_\allowbreak{}merge\_\allowbreak{}0 & 512 & 512 & 172 & 172 \\
+DCAE & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}lora\_\allowbreak{}500 & 512 & 504 & 298 & 293 \\
+DCAE & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}lora\_\allowbreak{}2500 & 512 & 511 & 284 & 283 \\
+DCAE & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}full\_\allowbreak{}500 & 512 & 487 & 163 & 155 \\
+DCAE & \scriptsize weight\_\allowbreak{}clean\_\allowbreak{}full\_\allowbreak{}2500 & 512 & 510 & 150 & 149 \\
+DCAE & \scriptsize output\_\allowbreak{}resize\_\allowbreak{}only & 512 & 0 & 512 & 0 \\
+DCAE & \scriptsize output\_\allowbreak{}nfpa\_\allowbreak{}0 & 512 & 76 & 83 & 12 \\
+DCAE & \scriptsize output\_\allowbreak{}nfpa\_\allowbreak{}20 & 512 & 162 & 1 & 1 \\
+DCAE & \scriptsize output\_\allowbreak{}nfpa\_\allowbreak{}40 & 512 & 340 & 0 & 0 \\
+\bottomrule\end{longtable}}
+\noindent Post-hoc image proxy: LPIPS $\leq .2$, SSIM $\geq .6$, image-image CLIP $\geq .9$ and class-text CLIP retention $\geq .95$. All 512 original outputs per model remain in the denominator; joint success also requires initial detection and final non-detection. Failure counts and LPIPS-floor sensitivity appear in the machine-readable receipt.

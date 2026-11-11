@@ -1,0 +1,296 @@
+\section{Historical KGW:
+BIRA}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-historical-kgw-bira}
+
+Historical OPT/Llama control. Fixed positions are drawn from the first
+500 responses available in all arms. Missing owner or quality scores
+remain explicitly unmeasured.
+
+Eight pairs selected by fixed test positions before inspecting detection
+or quality outcomes. Undetected originals and unsuccessful attacks
+remain included.
+
+\begin{recordfigure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Sixteen-panel text preview}]{figures/paper-kgw-bira.png}}
+\caption{Sixteen-panel text preview}
+\end{recordfigure}
+
+The figure previews up to the first 360 original characters per
+response; full texts below are unabridged. Emoji use Unicode codepoints
+in the preview to avoid missing-glyph boxes. Owner scores and quality
+metrics use full responses.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Example
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Test position
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Before
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+After
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Jina
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & 0 & Detected \textbar{} score=10.8328 & Not detected \textbar{}
+score=1.4343 & not measured \\
+2 & 62 & Not detected \textbar{} score=0.4201 & Not detected \textbar{}
+score=-2.3333 & not measured \\
+3 & 125 & Detected \textbar{} score=6.6530 & Not detected \textbar{}
+score=-0.1601 & not measured \\
+4 & 187 & Detected \textbar{} score=9.3386 & Not detected \textbar{}
+score=1.6874 & not measured \\
+5 & 250 & Detected \textbar{} score=9.8367 & Not detected \textbar{}
+score=0.3464 & not measured \\
+6 & 312 & Detected \textbar{} score=4.3133 & Not detected \textbar{}
+score=-0.4583 & not measured \\
+7 & 375 & Detected \textbar{} score=9.4631 & Not detected \textbar{}
+score=2.0660 & not measured \\
+8 & 437 & Detected \textbar{} score=9.2141 & Not detected \textbar{}
+score=1.3644 & not measured \\
+\end{longtable}
+}
+
+\subsection{Example 1: test position
+0}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-1-test-position-0}
+
+Prompt ID:
+\texttt{\seqsplit{e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Cluster comprises IBM's Opteron-based eServer 325 server and systems management software and storage devices that can run Linux and Windows operating systems
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Cluster comprises IBM's Opteron-based eServer 325 server and systems management software and storage devices that can run Linux and Windows operating systems. The system was targeted because it was in storage in a rack, and on the same machine.The attack was conducted by using a remote PC/networked server from Eastern Europe in that this method has worked before. According to Symantec, it is believed that if not stopped at once it could have infected over a dozen data centers along with a variety of server environments.The attack originated in May 2009 and began as a set of suspicious e-mails requesting information through the OpenSUSE Linux distribution, and continued to go after the data center. Upon arriving at the data center, attackers sent subsequent e-mails to various IT security personnel and in July of 2009 attempted to escalate it via e-mail, demanding "confidential and privileged privileged user" privileges.A compromise of OpenSUSE or Linux installations is an extremely dangerous breach as it has spread very fast, is easy to execute, and can be done without any known restrictions to data center administrators. Any information held on the system cannot be deleted by e-mail without compromising the entire data center.It is important to remember every computer system as a whole, not a particular computer,
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+The compromised system consists of the IBM's Opteron-based eServer 325, coupled with management software and compatible storage devices capable of running both Linux and Windows operating systems. It fell victim due to its inactive state within a racked environment, providing a vulnerable entry point for the attacker. The attack itself was carried out remotely using a compromised PC or networked server originating from Eastern Europe, a tactic that had proven successful previously, according to reports. If left unchecked, the malware could have potentially compromised over a dozen data centers, impacting multiple server ecosystems. Initially, the attack manifested in May 2009, beginning with a series of phishing emails transmitted via the OpenSUSE Linux platform, which ultimately led the perpetrators to the target data center. Subsequent emails were then dispatched to various members of the IT security team, culminating in a demand for elevated access rights, specifically seeking 'privileged' user permissions, made explicit in July of 2009. The exploitation of Linux-based systems, such as those utilizing the OpenSUSE distribution, poses a significant threat due to its rapid dissemination, ease of execution, and lack of restrictive measures for system administrators. Furthermore, any attempt to delete sensitive system information via email would inevitably lead to a catastrophic failure of the entire data center. It is crucial to adopt a holistic perspective when considering a system's vulnerability, recognizing each system as a unified entity rather than isolating individual components.
+\end{Verbatim}
+
+\subsection{Example 2: test position
+62}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-2-test-position-62}
+
+Prompt ID:
+\texttt{\seqsplit{b0c064862630e362062754f8f83a690bfe02f4e4b9c144ece28f5c7ca9e64ea0}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Whether it's sharing your Christmas wish list with Santa, enjoying the sounds of holiday music, or taking a trip back in time to celebrate the traditions
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Whether it's sharing your Christmas wish list with Santa, enjoying the sounds of holiday music, or taking a trip back in time to celebrate the traditions of America's holiday, we have you covered with our guide to the most-requested holiday gifts this year.
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+From compiling your festive gift list to immerse yourself in seasonal tunes or embarking on a journey through time to revisit historical American holiday customs, our comprehensive resource is at your disposal.
+\end{Verbatim}
+
+\subsection{Example 3: test position
+125}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-3-test-position-125}
+
+Prompt ID:
+\texttt{\seqsplit{fdc6d56377083be33893fcfd60d29bd6270f8e03e808c9f7b37cd3a08f8950cb}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Best lines of the night from the CNN News Democratic debate.
+“When I finish, you will have your turn.” Hillary Clinton
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Best lines of the night from the CNN News Democratic debate.
+“When I finish, you will have your turn.” Hillary Clinton to Elizabeth Warren.  “You know, Senator, I’m not going to tell you what you will say next, you’re going to have to just let that happen.” Elizabeth Warren to Hillary Clinton, about the first Democratic primary debate.  ‘”Let this happen.’ It wasn’t just a matter of someone saying ‘OK, let’s move on’ – it became their core objective in their campaign. Here are some of the best moments the candidates had on this stage:
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Key exchanges of the evening at the CNN News Democratic debate were marked by a sense of assertiveness and confidence among the contenders. A notable moment occurred when a speaker paused to allow a colleague to contribute.
+\end{Verbatim}
+
+\subsection{Example 4: test position
+187}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-4-test-position-187}
+
+Prompt ID:
+\texttt{\seqsplit{e188369d92ce518d76d24701bc4c37660804ecef2cff85053eb1a3cd3ed65b4e}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+I first lived in Quezon City in 1975, when I transferred in first-year in high school from Don Bosco Academy in Bacolor,
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+I first lived in Quezon City in 1975, when I transferred in first-year in high school from Don Bosco Academy in Bacolor, Purok II. I was a member of the Quezon City Christian Church. The Quizon Town Hall was literally next to our home. In 1992 (10-year reunion) for reunion, we had to take a taxi cab because transportation and parking is in dire need in Quezon. After the taxi cab, we have to take a car or a bus for to travel to Sta Teresita, Quezon City, Quizon or Quezon City East. After 5 or 6 or 8 hours of travel, one can only sleep in the car parked until the next day when one will travel again. I also lived at the corner of Pasig River Road, Quezon city (near F. Mamba High School). At the end of the long, long commute, it is no wonder I dream about Manila.
+
+My first visit to Manila took from my freshman to sophomore (and junior) years. I did not visit that much before. In the early days of the Republic, I went by bicycle back from Pasig River (I think it was my first time and I’ve never felt like doing it again!) to
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+In 1975, I initially resided in Quezon City during the time of my high school transfer from Don Bosco Academy in Bacolor, Purok II. As a high school student, I was an active participant of the local community within the confines of the Quezon City Christian Church. Our residence was conveniently situated adjacent to the Quizon Town Hall. When attending our 1992 high school reunion, the limited public transportation options necessitated a reliance on taxis due to the severe shortage of vehicles available for hire as well as the scarcity of suitable locations to park them within the area of Quezon City. Following the use of a taxi service, we would then need to board either a private vehicle or a public bus to continue our journey towards various destinations such as Sta Teresita, other parts of Quizon City, or even the eastern areas of the metropolis known as the eastern sector of the city of Quezon City. Despite the arduous 5-6-8 hour duration of these lengthy commutes, travelers were often left with little choice but to rest within their vehicles overnight prior to continuing their journey the following day. My personal experience of living on the intersection of Pasig River Road within the heart of Quezon City – situated near the vicinity of the educational institution known as F.Mamba High School – further served as a poignant reminder of the extended periods of time spent traversing the vast distances between various locations within the metropolis. Consequently, it comes as little surprise that even during the course of a prolonged period of commuting, the thought of visiting the nearby metropolitan center of Manila often crossed my mind.
+
+Upon initially commencing high school as a freshman student, the duration of time spent visiting the nearby metropolitan center of Manila was relatively limited compared to the extensive periods spent traveling during the subsequent years as both a sophomore as well as a junior student within the same institution of higher learning. Prior visits were not as frequent as they would eventually become during this extended period of study within the metropolitan area of the capital of the Philippines.
+\end{Verbatim}
+
+\subsection{Example 5: test position
+250}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-5-test-position-250}
+
+Prompt ID:
+\texttt{\seqsplit{d0a0bf543c370620eee59bb3506a28ba248d6793c3be6698eb4d84087d22588b}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+TOBYHANNA TOWNSHIP -- PennDOT is making an effort to improve safety conditions on two major highways in our
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+TOBYHANNA TOWNSHIP -- PennDOT is making an effort to improve safety conditions on two major highways in our region this summer.
+
+The first project is on Route 322 and is on the same stretch of roadway that was repaved and double-lined back in 2013. The project is in that stretch of roadway which was built a little under 150 years ago. In addition to being resurfaced, workers will lay down new asphalt on Route 322. Since the lanes are shared with Route 66, the entire construction effort requires the entire stretch of roadway to be closed to traffic.
+
+Pedestrians, bicycles, and motorists are advised to use the detour signs to stay onto Route 322. Signs will also be located along the construction zone alerting motorists and pedestrians to this situation. During reconstruction work, you may notice occasional road work projects adjacent or on the same roadway, such as surface or bridge repairs or concrete patching.
+
+PennDOT provides complete pavement condition reports, as well as a real-time highway closing and weather page. By getting these updates ahead of time and through the PennDOT mobile app, you’re at the fastest route to safety and convenience. These updates are provided as PennDOT completes projects, or is
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+This summer, PennDOT is working to enhance safety along two primary highways within our area by initiating improvement projects on them. 
+
+One of the key initiatives involves enhancing Route 322, focusing on a section previously improved with new lane markings in 2013. Notably, this particular stretch of the road has been around for nearly 150 years. The upcoming project will not only involve re-surfacing but also laying down fresh layers of asphalt to upgrade its overall quality. Due to its proximity to Route 66, it's essential for crews to close the entire affected area to traffic during construction to ensure safe working conditions for all parties involved.
+
+To navigate around the closure safely, drivers are urged to follow detour signs leading to alternative routes for both vehicles, pedestrians, and bicyclists using Route 322. Motorists will also be alerted to any necessary diversions via clear signage throughout the construction zone. Throughout the project's duration, additional localized maintenance tasks like repairs to surfaces or bridges might be undertaken nearby; however, all updates regarding potential disruptions will be promptly communicated to keep everyone informed of changing circumstances within their vicinity.
+
+To remain well-informed about ongoing construction progress, lane closures, and potential disruptions due to inclement weather, drivers can rely on comprehensive resources made available by PennDOT – including up-to-date pavement assessments along with current information about highways affected by closures – all easily accessible via their dedicated website or user-friendly app to help minimize disruptions while prioritizing public safety above all else.
+\end{Verbatim}
+
+\subsection{Example 6: test position
+312}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-6-test-position-312}
+
+Prompt ID:
+\texttt{\seqsplit{0a185b9c2378644f03cf5b0e8220ecd5867b6942f53bf49dc619cafba2b21996}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Buckeye Valley’s Zach Kreft completed the trifecta at Tuesday and Thursday’s MOAC Championships, winning individual
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Buckeye Valley’s Zach Kreft completed the trifecta at Tuesday and Thursday’s MOAC Championships, winning individual titles in both high jump and weight throw, and finishing with silver and bronze medals in both shot put and long jump competitions. But he was the night’s top performer for the Wildcats as the team of five finished a perfect 3-0 and captured their 12th consecutive conference title...
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+At the recent MOAC Championships, Buckeye Valley's standout athlete, Zach Kreft, demonstrated his exceptional versatility by securing top honors in two events. He successfully cleared his way to victory in both the high jump competition and the weight throw, showcasing his impressive range. Additionally, in other events, Kreft took home medals, specifically achieving second place in shot put and third place in long jump. However, his outstanding performance was not limited to his individual achievements; his team, comprising five members, successfully recorded an unblemished record of 3-0, thereby claiming their twelfth consecutive conference title.
+\end{Verbatim}
+
+\subsection{Example 7: test position
+375}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-7-test-position-375}
+
+Prompt ID:
+\texttt{\seqsplit{94aa002ac94b2a21a5235aa31a9cb0248012ffaef3dd8afa669e7c617b990240}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Two officers of a company that operates three Manhattan hotels were indicted yesterday in a scheme to help homeless people fraudulently obtain welfare checks and split the
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Two officers of a company that operates three Manhattan hotels were indicted yesterday in a scheme to help homeless people fraudulently obtain welfare checks and split the money between them.
+
+The two were arrested in October on charges that they pocketed $13,000 that was meant for about 40 people whose applications they rejected. The men were charged this month in U.S. District Court in Queens and have since been released while awaiting court appearances. Both men have pleaded not guilty.
+
+Prosecutors said that between June 2007 and November 2008 the officers, both with the Manhattan-based department of Immigration and Nationality Services, submitted applications to two or three of the individuals’ New York City addresses, and the recipients obtained checks on their behalf. The money was deposited into a bank account in Queens and later deposited at the same bank in Queens using a cashier’s check that was signed by the officers, prosecutors said.
+
+Two of the three companies involved have their premises in Chelsea. The women were from the same company, a spokeswoman said today. One was previously accused of taking $23,000 a year for about three years between 2001 and 2004, and the other was accused of taking an estimated $12,000 in 2008. The three hotels that the officers operated are the Chelsea
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Yesterday, two executives affiliated with a management firm overseeing three Manhattan hotels faced indictment after allegedly facilitating fraudulent claims to secure welfare benefits for homeless individuals. The benefits would then be divided among them. 
+
+The executives had been apprehended in October on charges involving embezzlement. It's claimed they diverted approximately $13,000 intended for around 40 applicants. These applicants' requests had been denied by the executives. The defendants subsequently pleaded not guilty after being formally charged earlier this month in U.S. District Court, located in Queens. They were granted release pending further proceedings. 
+
+According to prosecutors, over the period spanning June 2007 to November 2008, these executives working within the Manhattan-based office of Immigration and Nationality Services had filed benefit claims to multiple NYC addresses registered to these applicants. The applicants then received benefit checks addressed to these locations. The funds received through these checks would be transferred to a bank account based in Queens. These funds would eventually be withdrawn through a cashier's check. The check would be endorsed by these executives. 
+
+A spokesperson revealed today that the executives belonged to one specific management firm operating out of Chelsea. This firm is linked to two separate incidents. In one case dating back to 2001-2004, one executive allegedly received annual payments totaling approximately $23,000. In another case involving 2008, another executive allegedly received around $12,000. The executives managed operations across three distinct hotels.
+\end{Verbatim}
+
+\subsection{Example 8: test position
+437}\label{record-docs-watermarking-qualitative-paper-kgw-bira-md-example-8-test-position-437}
+
+Prompt ID:
+\texttt{\seqsplit{9d920d84388fd56a8cc14972c9c687f130e7db5d16add8a0f4ee6333ac5d7c70}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Everyone has one of these, a person in their lives who they are absolutely terrified to drive with. This person could be a friend, a family
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Everyone has one of these, a person in their lives who they are absolutely terrified to drive with. This person could be a friend, a family member, someone they met online and they're dreading the thought of having to deal with a passenger with a stoner-like attitude, someone whose eyes sparkle from too much smoke that you couldn't see before. In this car, we'll never have to worry about these types of people. We'll know to just put them down.
+
+Ferrari SF1300 Superfast, Pista Red
+
+The only part about the Pista is that, it was hard to come by. Superfast body panels were difficult to come by for years and this particular Pista is a very special example of a Ferrari Pista. If we had to guess, it'd hold no resale value, and probably won't ever be driven outside the track. I'm not sure we've ever seen this car without its nose. There's not going to be anyone on this road who would want to look at somebody who drives this car. There's no driver at all. We've said this before, but it's worth repeating, let Ferrari get away with it. They had every right to use this car as a promo for the new
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Each individual likely harbors apprehension towards driving alongside a specific acquaintance who exudes an unsettling demeanor reminiscent of substance abuse.  This unwanted companion could be an acquaintance or family member, or even an online acquaintance evoking anxiety due to their apparent reliance on substances, exemplified by an altered appearance characterized by sparkling eyes previously unseen or attributed to excessive smoking habits. Fortunately, within the confines of our vehicle, such individuals will be nonexistent; their presence will be precluded entirely.
+
+Ferrari SF1300 Superfast -  Pista Red
+
+A distinctive feature of the Pista model lies in the rarity and difficulty associated with acquiring its unique components known as the Superfast body panels. The specific instance featured here serves as an exceptional representation of the Ferrari Pista model. Given the circumstances, it's possible that the vehicle may lose its value over time due to its specialized nature; it's probable it will remain confined within the racing circuit rather than being driven casually on public roads. Notably, the vehicle's appearance remains unchanged since its inception – its signature snout intact – rendering it unlikely that anyone driving the vehicle will be perceived as an ordinary motorist by fellow drivers. It's clear that the manufacturer exercised the right to utilize the vehicle as promotional material for their new offerings, given its extraordinary characteristics.
+\end{Verbatim}
+
+\href{records/docs/watermarking/text.tex}{Text metrics} \textbar{}
+\href{../docs/watermarking/README.md}{Report overview}

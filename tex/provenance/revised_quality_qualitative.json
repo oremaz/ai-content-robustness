@@ -1,0 +1,69 @@
+{
+  "results_sha256": "eff6052b660ebdfe3508bd35687307321ac2a57d94a6afbff95cfb372cd89b52",
+  "figures": [
+    {
+      "figure": "tex/figures/revised-quality-horizon500-original-fixed.png",
+      "sha256": "ab8da9ffef383b35c1f1da89aa4d4684ee6b517a1aff68b01ab38b0ec64d4aca",
+      "case": "original",
+      "positions": [
+        0,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56
+      ],
+      "scope": "Every eighth final position, no outcome filtering."
+    },
+    {
+      "figure": "tex/figures/revised-quality-horizon500-original-newly-admitted.png",
+      "sha256": "517e17ff69a0fdbc8b41df643f18699daeac52043d41538fa66caf25638780de",
+      "case": "original",
+      "positions": [
+        0,
+        3,
+        9,
+        14,
+        27,
+        28,
+        51,
+        53
+      ],
+      "scope": "All seven newly passing original-model positions plus fixed rejected control0; diagnostic selection, not representative sampling."
+    },
+    {
+      "figure": "tex/figures/revised-quality-horizon500-fixed-fixed.png",
+      "sha256": "c8095672ab504993277d4173f6bccc052f6aa5b9f4bf8c87667905ff96c98fe4",
+      "case": "fixed",
+      "positions": [
+        0,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56
+      ],
+      "scope": "Every eighth final position, no outcome filtering."
+    },
+    {
+      "figure": "tex/figures/revised-quality-horizon500-adapted-fixed.png",
+      "sha256": "a77a8987c209027ff6d7ddf0ed49917e45372f25b450d6b8d4bf923951702179",
+      "case": "adapted",
+      "positions": [
+        0,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56
+      ],
+      "scope": "Every eighth final position, no outcome filtering."
+    }
+  ]
+}

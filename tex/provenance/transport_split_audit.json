@@ -1,0 +1,18 @@
+{
+  "support_samples": 2000,
+  "support_classes": 200,
+  "support_label_range": [
+    0,
+    199
+  ],
+  "attack_samples": 4000,
+  "attack_classes": 400,
+  "attack_label_range": [
+    400,
+    799
+  ],
+  "image_identities_disjoint": true,
+  "support_attack_labels_disjoint": true,
+  "final_labels_disjoint_from_fit": true,
+  "scope": "Disjoint within this development experiment, not a claim of novel ImageNet classes relative to pretraining or earlier retained research."
+}

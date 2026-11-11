@@ -1,0 +1,15 @@
+{
+  "records": 85,
+  "pages": 257,
+  "mapping_sha256": "48177355a0d09761c865ead80817142be2da521d03b7c94926333691242fd4f9",
+  "out_of_page_text": [],
+  "missing_glyphs": 0,
+  "overfull_vboxes": 0,
+  "undefined_references_or_citations": 0,
+  "duplicate_labels": 0,
+  "validation_pdf_sha256": "cfdc596b8c3e233e7930ee630b7c20f153c21ee9f19e5d16636e8aae45b91e70",
+  "scope": "All85convertedrecords compiled in a temporary document; main report selectively typesets scientific evidence while other protocols remain separate TeX sources.",
+  "mapping_at_initial_validation": "tex/provenance/migration_initial.json",
+  "current_mapping": "tex/provenance/migration.json",
+  "post_migration_typesetting_revision": "Historical run IDs permit line breaks; full report layout audit covers the updated TeX. Initial source snapshots and initial conversion mapping are retained."
+}

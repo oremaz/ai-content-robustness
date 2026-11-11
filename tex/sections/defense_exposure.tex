@@ -1,0 +1,16 @@
+\section{Which next-token probabilities does the API reveal?}
+\label{app:exposure}
+Let $\mathcal V$ be the vocabulary of size $V\in\mathbb N_{>0}$, $h\in\mathcal V^*$ a token prefix, and $k\in\mathcal K$ a fixed owner key in the scheme's key space $\mathcal K$. The vector $p(\cdot\mid h)\in\Delta(\mathcal V)$ gives the underlying model probabilities after sampling filters. For next token $Y\in\mathcal V$, the key-conditional sampler law is
+\[
+ q_k(v\mid h)=\Pr(Y=v\mid h,k)\in[0,1],
+ \qquad q_k(\cdot\mid h)\in\Delta(\mathcal V).
+\]
+The probability averages over the sampler's fresh noise at the fixed key. In the ideal fresh-context construction, averaging over independent keyed randomness restores the underlying marginal, whereas the fixed-key law carries the signal.
+
+A client sampling exactly from $q_k(\cdot\mid h)$ at each prefix reproduces the keyed token law for that prompt. For example, the underlying model might offer two tokens with equal probability while a particular key favors one. Returning the underlying probabilities lets a client undo that preference through resampling. Returning the conditional probabilities retains it under exact resampling. Rewriting a marked answer adds another dependency because the answer itself appears in the prompt and can carry key evidence.
+
+The implemented interface estimates each token's conditional winning probability in the clock race. Rather than count winners alone, it averages each token's chance of winning conditional on simulated competitor clocks. The raw estimate is $\widehat q=(\widehat q_v)_{v\in\mathcal V}\in[0,1]^V$. Given positive normalizing sum $s_q=\sum_{v\in\mathcal V}\widehat q_v\in(0,\infty)$, the advertised normalized estimate is $\widetilde q=\widehat q/s_q\in\Delta(\mathcal V)$. Normalization introduces finite-draw bias. The interface exposes at most ten positive-probability alternatives; truncation and client reweighting can further change the law.
+
+For probability vectors $a,b\in\Delta(\mathcal V)$, total variation distance is
+$\operatorname{TV}(a,b)=\tfrac12\sum_{v\in\mathcal V}|a_v-b_v|\in[0,1]$.
+It equals the greatest discrepancy in probability assigned to any token subset. Two audits compare the 256-draw estimate with high-budget race frequencies. The mean and maximum observed distances are $0.00079$ and $0.02363$ on 16 calibration prefixes, and $0.00431$ and $0.03535$ on 32 saved attack prefixes. The second set spans 1 to 170 active tokens. Native clipping and the ideal race agree on the winner in every coupled reference draw in both audits. The reference frequencies have sampling error, and these checks cover only the tested prefixes. Full tables are in \path{tex/generated/probability_estimation_audit.tex} and \path{tex/generated/probability_attack_prefix_audit.tex}.

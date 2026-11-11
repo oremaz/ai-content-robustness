@@ -1,0 +1,152 @@
+{
+  "scope": "All SSIM-only rejected final outputs across both retained full-training studies and all three models, irrespective of watermark decision. Ordered by lowest SSIM. This additional review uses already evaluated final outputs and makes the resulting reanalysis post-hoc; it is not fresh confirmation.",
+  "examples": [
+    {
+      "horizon": "horizon100",
+      "case": "adapted",
+      "index": 39,
+      "metrics": {
+        "lpips": 0.1950104534626007,
+        "ssim": 0.5649474859237671,
+        "clip_image_cosine": 0.9240605235099792,
+        "class_alignment_retention": 0.9941675110379177
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261107T200701Z/adapted/final-base/00039.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261107T200701Z/adapted/final-attack/00039.png",
+      "source_sha256": "e50cb5b30e1f0c88ec169831f041d8e73a56a30710dcdc67319b5a216e2c5ae5",
+      "attack_sha256": "232d87174da6f028dc21122faf397ebc8061c902d92ca5ac70bfa99b734c40ca"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "adapted",
+      "index": 18,
+      "metrics": {
+        "lpips": 0.19499534368515015,
+        "ssim": 0.579511284828186,
+        "clip_image_cosine": 0.9182531833648682,
+        "class_alignment_retention": 0.93595508715967
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/adapted/final-base/00018.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/adapted/final-attack/00018.png",
+      "source_sha256": "3779eb54c63ea6307a49822f791cf87e32b0564b23a51f198dd16276054395bf",
+      "attack_sha256": "1a24d136c76fa3ef94f4dcb5b0c0cf7c29785ac883a432ede6517e14e3b9e97e"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "fixed",
+      "index": 18,
+      "metrics": {
+        "lpips": 0.19397935271263123,
+        "ssim": 0.5837674140930176,
+        "clip_image_cosine": 0.9151790142059326,
+        "class_alignment_retention": 0.9173500835576667
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/fixed/final-base/00018.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/fixed/final-attack/00018.png",
+      "source_sha256": "1f2d9f8f016e4d674ef168ad693f63c59a3f7914df5eec4078f14ddda031d660",
+      "attack_sha256": "05f0a6adbaa173b2f695f7e7db94db6d8267fa7702a5690e363b6bd6f9a89b88"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "original",
+      "index": 18,
+      "metrics": {
+        "lpips": 0.19068628549575806,
+        "ssim": 0.5891948342323303,
+        "clip_image_cosine": 0.9120813608169556,
+        "class_alignment_retention": 0.9053623436877131
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/final-base/00018.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/final-attack/00018.png",
+      "source_sha256": "67bc7a006905d189b78a51d48ef79a46aae02ecb9087187f24f723fb5b29b030",
+      "attack_sha256": "72811d4bb2d2425079f6cd947ee85ca6aebb67dd3771d71e4ec58a838fb14d96"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "adapted",
+      "index": 15,
+      "metrics": {
+        "lpips": 0.19882629811763763,
+        "ssim": 0.5905084609985352,
+        "clip_image_cosine": 0.9542341232299805,
+        "class_alignment_retention": 1.0240887834691712
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/adapted/final-base/00015.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/adapted/final-attack/00015.png",
+      "source_sha256": "f356f89ff5ef7f4a0e4de3949ec2d0d29dc48978b4762f5902e984a2d64b829a",
+      "attack_sha256": "2b4bc4e2be18848d82c57c6b76766201aa3a1f991cafd11d70854d0f650baf46"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "fixed",
+      "index": 36,
+      "metrics": {
+        "lpips": 0.17461958527565002,
+        "ssim": 0.5919108390808105,
+        "clip_image_cosine": 0.9087280631065369,
+        "class_alignment_retention": 1.0207393249086656
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/fixed/final-base/00036.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/fixed/final-attack/00036.png",
+      "source_sha256": "df075ef8806aa9afefaaee38f4a63144b0bf4d81de6ab7287d50481c75e50b6e",
+      "attack_sha256": "8e8f759cdebf1036ef9dd6ac8bdd26056e7ad0345ee53ee19690bfb9f3756dd0"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "adapted",
+      "index": 36,
+      "metrics": {
+        "lpips": 0.17348003387451172,
+        "ssim": 0.5947989225387573,
+        "clip_image_cosine": 0.9069535732269287,
+        "class_alignment_retention": 1.0217544817104691
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/adapted/final-base/00036.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/adapted/final-attack/00036.png",
+      "source_sha256": "6861d4f19a260d5da2a810367f2a37dd788027938d23ff8ba58aa5e54063394d",
+      "attack_sha256": "5097ee13711c8fa9e8e0c7d6b16bd6338bcc67846cd8898e1d98c3381e5f5bda"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "original",
+      "index": 36,
+      "metrics": {
+        "lpips": 0.17187874019145966,
+        "ssim": 0.5969721078872681,
+        "clip_image_cosine": 0.9109064936637878,
+        "class_alignment_retention": 1.017416430063819
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/final-base/00036.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/final-attack/00036.png",
+      "source_sha256": "4d7b9b4c167b38c1096accda7ec0078474e8fb73e3f548daf85b9daf14055e5a",
+      "attack_sha256": "d96cae0672111eae55a11cfbc495e3bcb8d6ff72f4c31ae9daf11afb78278bed"
+    },
+    {
+      "horizon": "horizon500",
+      "case": "fixed",
+      "index": 15,
+      "metrics": {
+        "lpips": 0.19397759437561035,
+        "ssim": 0.596987247467041,
+        "clip_image_cosine": 0.9470236301422119,
+        "class_alignment_retention": 1.0308712391718673
+      },
+      "source": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/fixed/final-base/00015.png",
+      "attack": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/fixed/final-attack/00015.png",
+      "source_sha256": "31a77a25eeaea40c2148d6abed9922b104490b43cbdff8aafa0245932b57a497",
+      "attack_sha256": "205f23bf8638b59abaa5007dd8566356ca63bf754c1feb5d75a93f98c95fb4c9"
+    }
+  ],
+  "inspection": "Assistant visual inspection of all9SSIM-onlyrejections: the worst at native512px, the remaining8inpairedcontactsheet. All assessed as retaining main objects and scene under the user preference allowing minor appearance changes. Texture and local geometry can differ. Not independent human annotation.",
+  "decision": "Remove SSIM from the mandatory quality conjunction; continue reporting SSIM. Keep LPIPS<=0.2,CLIPimage>=0.9,classretention>=0.9. This does not remove preservation checks altogether.",
+  "figures": [
+    {
+      "path": "tex/figures/ssim-only-worst.png",
+      "sha256": "b6800cd504a241b7da801b6c43766a91384d36340721a7f43d21bf3c12ecaf6d"
+    },
+    {
+      "path": "tex/figures/ssim-only-other-eight.png",
+      "sha256": "1ec31ccd12514840df8c1ff5a69bd32de12ca26cbf27a544e4f89e39aa5e2e90"
+    }
+  ]
+}

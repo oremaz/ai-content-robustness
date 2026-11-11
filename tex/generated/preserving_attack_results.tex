@@ -1,0 +1,8 @@
+\begin{table}[ht]\centering\small
+\begin{tabular}{lrrrrr}\toprule
+Starting model & Updates & Anchor & Preserved & Raw removed & Joint removed\\\midrule
+Original & 25 & 16.0 & 60/64 & 0/64 & 0/64\\
+Fixed & 25 & 4.0 & 56/64 & 0/64 & 0/64\\
+Adapted & 25 & 4.0 & 57/64 & 0/64 & 0/64\\
+\bottomrule\end{tabular}
+\caption{Frozen quality-only-selected image attacks on 64 reserved final seeds and fitting-holdout classes. Each attack is paired with its own supplied marked checkpoint. The distinct selected anchor weights reflect the prespecified selection policy; they are not matched-coefficient comparisons.}\end{table}

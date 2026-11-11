@@ -486,7 +486,7 @@ def probabilities(config, case, stop):
 
 def freeze_attacks(config, case):
     output = case_path(config, case)
-    arms = ["vanilla", "bira"] + (["direct_topk", "smoothing"] if case["kind"] == "latent" else [])
+    arms = ["vanilla", "bira"] + (["direct_topk", "smoothing"] if case["kind"] in ("latent", "textseal2") else [])
     expected = inputs(config, case)
     hashes = {}
     for arm in arms:
@@ -650,7 +650,7 @@ def quality(config, case, stop):
             "bidirectional_entailment_fraction": float(np.mean([r["nli_label"]==r["reverse_nli_label"]=="entailment" for r in saved])),
             **{k: float(np.mean([r[k] for r in saved if r[k] is not None])) for k in
                ("sbert", "self_bleu", "mistral_perplexity", "numeric_set_f1", "nli_truncated", "wrapper_leakage", "long_letter_run")}}
-    if case["kind"] == "latent":
+    if case["kind"] in ("latent", "textseal2"):
         for arm in ("direct_topk", "smoothing"):
             rows = read(output/(arm+".json"))["rows"]
             path = output/(arm+"_quality.json")
@@ -879,7 +879,8 @@ if __name__ == "__main__":
     parser.add_argument("--quality-only", action="store_true")
     parser.add_argument("--quality-model", choices=("student", "base", "teacher"), default="student")
     args = parser.parse_args()
-    if args.action == "prepare": prepare(args.latent_manifest, args.latent_only, args.reuse_calibration, args.quality_only, args.quality_model)
+    if args.action == "prepare":
+        parser.error("Legacy Base-model watermark preparation is retired. Use scripts/instruct_watermark_experiments.py prepare.")
     elif args.action == "submit": submit(args.manifest)
     elif args.action == "phase": phase(read(args.manifest), args.task, args.case)
     else: run(read(args.manifest), args.manifest, args.task, args.case)

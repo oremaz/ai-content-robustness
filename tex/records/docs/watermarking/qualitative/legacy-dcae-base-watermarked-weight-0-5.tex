@@ -1,0 +1,71 @@
+\section{UViT-H/DC-AE: Historical merge: 50\%
+watermarked}\label{record-docs-watermarking-qualitative-legacy-dcae-base-watermarked-weight-0-5-md-uvit-hdc-ae-historical-merge-50-watermarked}
+
+Historical protocol. Class alignment and detection were recorded; paired
+perceptual quality metrics were not measured. The same fixed indices are
+shown without success filtering.
+
+Eight pairs use fixed original indices 0, 64, 128, 192, 256, 320, 384
+and 448. No detection or visual-quality filtering is applied.
+
+\begin{recordfigure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Eight original/after image pairs}]{figures/legacy-dcae-base-watermarked-weight-0-5.png}}
+\caption{Eight original/after image pairs}
+\end{recordfigure}
+
+The lossless figure contains 16 panels. Each panel is displayed at 256
+pixels; metrics use original native-resolution PNGs. Labels report each
+output's detector result, not guaranteed removal.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Index
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Before
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+After
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+LPIPS
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 0 & class 0 \textbar{} bits=1.000 \textbar{} detected & class 0
+\textbar{} bits=0.547 \textbar{} not detected & not measured & 0.2362 \\
+64 & 0 & class 0 \textbar{} bits=1.000 \textbar{} detected & class 0
+\textbar{} bits=0.547 \textbar{} not detected & not measured & 0.2299 \\
+128 & 909 & class 909 \textbar{} bits=1.000 \textbar{} detected & class
+909 \textbar{} bits=0.547 \textbar{} not detected & not measured &
+0.2421 \\
+192 & 58 & class 58 \textbar{} bits=1.000 \textbar{} detected & class 58
+\textbar{} bits=0.547 \textbar{} not detected & not measured & 0.2533 \\
+256 & 665 & class 665 \textbar{} bits=0.984 \textbar{} detected & class
+665 \textbar{} bits=0.422 \textbar{} not detected & not measured &
+0.2324 \\
+320 & 446 & class 446 \textbar{} bits=0.984 \textbar{} detected & class
+446 \textbar{} bits=0.500 \textbar{} not detected & not measured &
+0.2481 \\
+384 & 6 & class 6 \textbar{} bits=1.000 \textbar{} detected & class 6
+\textbar{} bits=0.578 \textbar{} not detected & not measured & 0.2118 \\
+448 & 488 & class 488 \textbar{} bits=1.000 \textbar{} detected & class
+488 \textbar{} bits=0.578 \textbar{} not detected & not measured &
+0.2620 \\
+\end{longtable}
+}
+
+\href{records/docs/watermarking/images.tex}{Image metrics} \textbar{}
+\href{../docs/watermarking/README.md}{Report overview}

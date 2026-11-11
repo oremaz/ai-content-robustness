@@ -1,0 +1,209 @@
+\section{Matched quality results: weight attacks and
+NFPA}\label{record-docs-matched-image-quality-results-md-matched-quality-results-weight-attacks-and-nfpa}
+
+Completed run: \texttt{\seqsplit{20261104T153348508006Z}}. RAR job
+\texttt{\seqsplit{1958522}} and DC-AE job \texttt{\seqsplit{1958524}}
+both completed successfully. Each of 13 conditions has 512 paired images
+per model, for 13,312 evaluated pairs. No generation, training or attack
+was repeated.
+
+All original reference PNGs were verified bit-for-bit identical across
+the two source experiments. Existing class-text CLIP and NFPA paired
+metrics were reproduced with a maximum absolute difference of 2.3842e-7
+on both GPUs. Four CPU tests and real-model CPU checks on both models
+also passed.
+
+LPIPS measures perceptual sample distance (lower means closer); SSIM,
+PSNR and image-image CLIP measure sample similarity (higher means
+closer). Class-text CLIP measures alignment with the requested ImageNet
+category. These are different notions of preservation.
+
+\subsection{RAR-XL}\label{record-docs-matched-image-quality-results-md-rar-xl}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Still detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+LPIPS ↓
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+SSIM ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+PSNR dB ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Image-image CLIP ↑
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 100.0\% & 0.0000 & 1.0000 & 120.0000 &
+1.0000 \\
+Merge: 75\% watermarked & 96.9\% & 0.6250 & 0.2187 & 10.2179 & 0.8166 \\
+Merge: 50\% watermarked & 48.8\% & 0.6529 & 0.2073 & 9.9176 & 0.7979 \\
+Merge: 25\% watermarked & 2.7\% & 0.6673 & 0.2024 & 9.8530 & 0.7929 \\
+Clean model replacement & 0.8\% & 0.6739 & 0.2005 & 9.7475 & 0.7874 \\
+Clean LoRA: 500 steps & 13.5\% & 0.6594 & 0.2186 & 10.0281 & 0.7889 \\
+Clean LoRA: 2,500 steps & 4.9\% & 0.6692 & 0.2071 & 9.7269 & 0.7884 \\
+Clean full training: 500 steps & 36.3\% & 0.6564 & 0.2140 & 9.8989 &
+0.7960 \\
+Clean full training: 2,500 steps & 7.2\% & 0.6618 & 0.2043 & 9.7729 &
+0.7917 \\
+Resize-only control & 100.0\% & 0.0044 & 0.9953 & 45.4711 & 0.9967 \\
+NFPA delta 0 & 95.7\% & 0.1824 & 0.7855 & 24.1610 & 0.8225 \\
+NFPA delta 20 & 69.3\% & 0.3045 & 0.3213 & 15.4247 & 0.8133 \\
+NFPA delta 40 & 21.5\% & 0.4221 & 0.2772 & 13.6116 & 0.8046 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Class-text CLIP ↑
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 0.3030 \\
+Merge: 75\% watermarked & 0.3045 \\
+Merge: 50\% watermarked & 0.3045 \\
+Merge: 25\% watermarked & 0.3046 \\
+Clean model replacement & 0.3034 \\
+Clean LoRA: 500 steps & 0.3028 \\
+Clean LoRA: 2,500 steps & 0.3044 \\
+Clean full training: 500 steps & 0.3031 \\
+Clean full training: 2,500 steps & 0.3032 \\
+Resize-only control & 0.3021 \\
+NFPA delta 0 & 0.2658 \\
+NFPA delta 20 & 0.2646 \\
+NFPA delta 40 & 0.2630 \\
+\end{longtable}
+}
+
+\href{../docs/watermarking/data/metrics.json}{Full summaries and 95\%
+bootstrap intervals}.
+
+\subsection{UViT-H/DC-AE}\label{record-docs-matched-image-quality-results-md-uvit-hdc-ae}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Still detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+LPIPS ↓
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+SSIM ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+PSNR dB ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Image-image CLIP ↑
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 100.0\% & 0.0000 & 1.0000 & 120.0000 &
+1.0000 \\
+Merge: 75\% watermarked & 0.0\% & 0.8684 & 0.3298 & 12.4682 & 0.5622 \\
+Merge: 50\% watermarked & 0.0\% & 0.9209 & 0.3375 & 12.4505 & 0.5819 \\
+Merge: 25\% watermarked & 0.0\% & 0.8896 & 0.3308 & 12.6278 & 0.5691 \\
+Clean model replacement & 0.0\% & 0.2146 & 0.6906 & 20.3918 & 0.8954 \\
+Clean LoRA: 500 steps & 1.6\% & 0.1464 & 0.7916 & 23.4915 & 0.9294 \\
+Clean LoRA: 2,500 steps & 0.2\% & 0.1510 & 0.7874 & 23.2978 & 0.9244 \\
+Clean full training: 500 steps & 4.9\% & 0.2045 & 0.7235 & 21.2917 &
+0.8927 \\
+Clean full training: 2,500 steps & 0.4\% & 0.2148 & 0.7146 & 21.1121 &
+0.8899 \\
+Resize-only control & 100.0\% & 0.0000 & 1.0000 & 120.0000 & 1.0000 \\
+NFPA delta 0 & 85.2\% & 0.1985 & 0.6797 & 23.3523 & 0.8557 \\
+NFPA delta 20 & 68.4\% & 0.3752 & 0.3483 & 15.4463 & 0.8438 \\
+NFPA delta 40 & 33.6\% & 0.5082 & 0.3103 & 13.4204 & 0.8338 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Class-text CLIP ↑
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 0.2934 \\
+Merge: 75\% watermarked & 0.2141 \\
+Merge: 50\% watermarked & 0.2327 \\
+Merge: 25\% watermarked & 0.2200 \\
+Clean model replacement & 0.2927 \\
+Clean LoRA: 500 steps & 0.2869 \\
+Clean LoRA: 2,500 steps & 0.2840 \\
+Clean full training: 500 steps & 0.2813 \\
+Clean full training: 2,500 steps & 0.2816 \\
+Resize-only control & 0.2934 \\
+NFPA delta 0 & 0.2684 \\
+NFPA delta 20 & 0.2677 \\
+NFPA delta 40 & 0.2664 \\
+\end{longtable}
+}
+
+\href{../docs/watermarking/data/metrics.json}{Full summaries and 95\%
+bootstrap intervals}.
+
+\subsection{Interpretation and
+limits}\label{record-docs-matched-image-quality-results-md-interpretation-and-limits}
+
+Weight-modified generators can produce a different valid image for the
+same class and seed. Large paired distances therefore describe sample
+drift and do not by themselves establish degraded generative quality. In
+particular, RAR weight attacks substantially change individual samples
+while retaining class-text alignment. NFPA operates on a particular
+input image and is expected to preserve that image, so both the access
+setting and the preservation requirement differ.
+
+For DC-AE, 2,500-step LoRA stays closer to the original samples than
+NFPA delta 40 across these paired metrics and has higher class alignment
+(0.2840 versus 0.2664). NFPA class alignment is 0.2630 for RAR versus
+its 0.3030 baseline, and 0.2664 for DC-AE versus its 0.2934 baseline.
+Neither CLIP measure certifies exact identity or factual detail.
+
+PSNR for identical pairs is explicitly capped at 120 dB. LPIPS is not a
+percentage, and a relative CLIP-score change is not a percentage of
+visual quality lost. Detection rates are copied from the original fixed
+owner thresholds; these quality measurements do not select an attack or
+change its detector threshold.
+
+\href{records/docs/matched_image_quality.tex}{Protocol and reproduction
+commands}.
+
+The \href{../docs/watermarking/README.md}{self-contained publication
+report} provides all retained methods, fixed-sample galleries and
+portable metric snapshots.

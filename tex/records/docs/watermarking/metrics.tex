@@ -1,0 +1,83 @@
+\section{Metric definitions and
+limits}\label{record-docs-watermarking-metrics-md-metric-definitions-and-limits}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Metric
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Meaning
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Direction / limit
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Detection rate & Fraction of marked outputs above the frozen owner
+threshold & Lower means more detector evasion; not necessarily useful
+removal \\
+False-positive rate & Fraction of independent clean/human outputs above
+that threshold & Lower is better; finite samples cannot prove extreme
+FPRs \\
+AUROC & Ranking marked versus negative outputs & 0.5 indicates chance
+ranking on this sample \\
+Bit accuracy & Fraction of registered watermark bits recovered &
+Different from per-output detection rate \\
+Jina v5 cosine & Original/candidate text embedding cosine, symmetric
+text-matching task & Continuous similarity; not a preservation
+percentage \\
+Bidirectional NLI & Original entails rewrite and rewrite entails
+original, both argmax labels & Automated equivalence proxy; 512-token
+truncation can affect it \\
+Numeric-set F1 & Set overlap of numbers between original and rewrite &
+Does not validate which number refers to which fact \\
+Mistral perplexity & Token likelihood under independent Mistral-7B &
+Lower is more probable, not necessarily true or useful \\
+LPIPS-Alex v0.1 & Perceptual distance between paired images & Lower
+means closer; not a percentage \\
+SSIM & Native-resolution structural similarity & Higher means closer;
+sensitive to alignment/viewpoint \\
+PSNR & Native-resolution pixel error on unit-range images & Higher means
+closer; identity capped at 120 dB \\
+Image-image CLIP & Cosine between paired image embeddings & Broad
+semantic similarity, not identical details or identity \\
+Class-text CLIP & Cosine with
+\texttt{\seqsplit{a photo of a <ImageNet class>}} & Agreement with
+requested class, not comprehensive visual quality \\
+\end{longtable}
+}
+
+Text tables derive exact 95\% Clopper-Pearson binomial intervals from
+the saved counts. Image binomial intervals are those in the original
+owner evaluation. Jina and matched image-quality mean intervals are
+paired-example bootstrap intervals from the saved analyses (2,000
+resamples). Intervals describe these fixed data, not a guarantee across
+new domains, languages or generators.
+
+The text watermark thresholds differ: TextSeal 2 uses a Gamma p-value
+test, whereas the student uses a learned extractor score with thresholds
+fitted on disjoint validation outputs. A nominal or target FPR label is
+not an observed false-positive rate. Primary and secondary thresholds
+are both shown.
+
+Image weight changes can generate another valid sample even for the same
+class and seed. Paired metrics therefore measure sample drift and must
+be considered alongside class alignment. NFPA modifies a particular
+input image, so its access and preservation setting differs. Neither
+setting has a universal quality floor or human-verified preservation
+pass rate in this repository.
+
+Qualitative examples use eight fixed positions, not best-performing
+outputs. Their owner decisions and failure cases remain visible. Image
+grids use lossless display encoding after uniform resizing; quantitative
+metrics always use native images. Text figures are labeled previews,
+with full verbatim responses and questions on the linked pages. Public
+snapshots omit watermark secrets, payloads, checkpoints and
+machine-specific paths.
+
+\href{../docs/watermarking/README.md}{Overview}

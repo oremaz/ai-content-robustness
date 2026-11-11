@@ -1,0 +1,14 @@
+{
+  "document": "Pedagogical report with one TeX source per section",
+  "pedagogy": "Introduce each method near its results with its intuition and key equations. Target at most about 40 text pages, excluding illustrations, tables and references.",
+  "evidence": "quantitative results, qualitative paired samples, reproducible sources; distinguish original methods and local adaptations",
+  "migration": "remove research Markdown only after validated migration; preserve operational Markdown, third-party files and frozen snapshots",
+  "compute": {
+    "maximum_h100_hours": 60,
+    "parallel_h100s": 4,
+    "qos": "dev",
+    "resumption": "rolling checkpoints and automatic requeue"
+  },
+  "attack_preservation_required": "Attack success must include overall quality and similarity to original content. Report joint preservation-qualified success and raw evasion separately, include failed cases, and distinguish fresh generation from rewriting.",
+  "notation": "Define mathematical objects locally with explicit domains, scalar/vector/tensor dimensions, and input/output spaces for maps."
+}

@@ -1,0 +1,68 @@
+\section{Why keyed exponential races preserve marginals and remain detectable}
+\label{app:race_proofs}
+Fix a finite vocabulary $\mathcal V$ and a probability vector $p=(p_v)_v$. For every $v$ with $p_v>0$, draw independent $U_v\sim\mathcal U(0,1)$ and define $T_v=-\log U_v/p_v$. Set $T_v=+\infty$ when $p_v=0$. The following are standard facts behind Gumbel-max watermarking, not new watermark guarantees.
+
+\begin{proposition}[Winning probabilities of an exponential race]
+With $Y=\arg\min_vT_v$, $\Pr(Y=v)=p_v$.
+\end{proposition}
+\begin{proof}
+For $s\geq0$ and $p_v>0$, the survival function is
+\begin{align}
+\Pr(T_v>s)
+&=\Pr(-\log U_v>p_vs)\\
+&=\Pr(U_v<e^{-p_vs})=e^{-p_vs}.
+\end{align}
+Thus $T_v$ has density $p_ve^{-p_vs}$. Independent continuous variables have ties with probability zero. Conditioning on the winning clock's time and using independence,
+\begin{align}
+\Pr(Y=v)
+&=\int_0^\infty \Pr(T_w>s\ \forall w\ne v\mid T_v=s)
+ p_ve^{-p_vs}\,ds\\
+&=\int_0^\infty\prod_{w\ne v}e^{-p_ws}\,p_ve^{-p_vs}\,ds\\
+&=p_v\int_0^\infty e^{-s\sum_wp_w}\,ds\\
+&=p_v\int_0^\infty e^{-s}\,ds=p_v.
+\end{align}
+A zero-probability token never wins, so the conclusion holds for all vocabulary entries. The statement averages over the ideal independent uniforms. With a fixed key and repeated keyed contexts, the joint sequence law needs an additional argument; marginal preservation alone is insufficient.
+\end{proof}
+
+\begin{proposition}[The ideal unmarked score has an exponential null]
+Suppose an observed token $Y$ is independent of the key-derived uniform $U_Y$ under the null, with distinct scored pairs receiving independent uniforms. Then $S=-\log(1-U_Y)$ has an exponential distribution of rate one. The sum of $n$ such independent scores has a Gamma distribution of shape $n$ and scale one.
+\end{proposition}
+\begin{proof}
+Independence from the key makes $U_Y$ uniform even after conditioning on the observed token. For $s\geq0$,
+\begin{align}
+\Pr(S\leq s)
+&=\Pr(-\log(1-U_Y)\leq s)\\
+&=\Pr(1-U_Y\geq e^{-s})\\
+&=\Pr(U_Y\leq1-e^{-s})=1-e^{-s}.
+\end{align}
+Hence $S$ has density $e^{-s}\ind\{s\geq0\}$. To derive the sum law, its moment-generating function for $z<1$ is
+\begin{align}
+M_S(z)&=\int_0^\infty e^{zs}e^{-s}\,ds=(1-z)^{-1},\\
+M_{\sum_iS_i}(z)&=\prod_{i=1}^nM_{S_i}(z)=(1-z)^{-n}.
+\end{align}
+This is the moment-generating function of $\operatorname{Gamma}(n,1)$, proving the claim. Dependence from reused PRF pairs invalidates the product step. Deduplication and independent-null calibration are therefore scientific requirements, not cosmetic implementation details.
+\end{proof}
+
+\begin{proposition}[Gaussian copula mixing preserves ideal race marginals]
+Let $Z_v^{(1)},\ldots,Z_v^{(M)},\eta_v$ be independent standard normal variables, independently across $v$, and let $\rho\in[0,1]$. Define
+\begin{align}
+Z_v^\star&=M^{-1/2}\sum_{j=1}^M Z_v^{(j)},\\
+A_v&=\rho Z_v^\star+\sqrt{1-\rho^2}\eta_v,\qquad \widetilde U_v=\Phi(A_v).
+\end{align}
+Then the $\widetilde U_v$ are independent uniforms, and racing with them returns the original token marginal $p$.
+\end{proposition}
+\begin{proof}
+A linear combination of independent Gaussians is Gaussian, and
+\begin{align}
+\E Z_v^\star&=0,&\operatorname{Var}(Z_v^\star)&=M^{-1}\sum_j1=1,\\
+\E A_v&=0,&\operatorname{Var}(A_v)&=\rho^2+(1-\rho^2)=1.
+\end{align}
+Thus $A_v\sim\mathcal N(0,1)$. For $u\in(0,1)$, monotonicity of $\Phi$ gives
+\begin{align}
+\Pr(\widetilde U_v\leq u)
+&=\Pr(\Phi(A_v)\leq u)\\
+&=\Pr(A_v\leq\Phi^{-1}(u))
+ =\Phi(\Phi^{-1}(u))=u.
+\end{align}
+Independence across tokens is preserved because each transformation uses only that token's independent inputs. The exponential-race proposition now applies. This proves ideal marginal preservation; it does not prove robustness to paraphrasing, exposed probabilities, or model updates.
+\end{proof}

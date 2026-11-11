@@ -1,0 +1,21 @@
+{
+  "report": {
+    "pages": 38,
+    "references_pages": 1,
+    "text_only_pages_excluding_references": 28,
+    "text_only_count_method": "Recompiled the same sources without table and figure environments, including captions, and counted pages before References. Front matter and equations are included.",
+    "pdf_sha256": "b1268acdf434313ff91c5a98f3573a09873a1b1428351f7acf68684d89837ae4",
+    "out_of_page_text_pages": [],
+    "overfull_vboxes": 0,
+    "overfull_hboxes": 0,
+    "missing_glyphs": 0,
+    "undefined_citations_or_references": 0,
+    "duplicate_labels": 0,
+    "pedagogy_validation": {
+      "included_source_files": 51,
+      "generated_evidence_tables_unchanged": 13,
+      "mathematical_checks": "Coordinate-averaged prediction retention and Jacobian dimensions, subset-pruning total variation, and GRPO clipping examples checked numerically.",
+      "visual_review": "GRPO introduction, DDPO, TextSeal 2 and prediction-retention pages inspected."
+    }
+  }
+}

@@ -1,0 +1,86 @@
+\section{Matched quality evaluation for image
+attacks}\label{record-docs-matched-image-quality-md-matched-quality-evaluation-for-image-attacks}
+
+This extends all preserved model-weight attacks with the paired metrics
+used for NFPA, and adds the earlier class-text CLIP metric to every NFPA
+arm. It reads existing PNGs; no model training, image generation or
+attack is repeated.
+
+For each of RAR-XL and UViT-H/DC-AE, all 512 original watermarked
+reference PNGs were verified byte-for-byte identical across the earlier
+weight-attack and NFPA runs. Weight outputs are paired by original
+generation index and checked against the same ImageNet class; NFPA pairs
+are recovered using the hash of its original input PNG. Missing,
+duplicate or mismatched pairs cause an error. Native resolutions are
+retained for paired pixel/perceptual metrics.
+
+Every condition now receives the same metrics:
+
+\begin{itemize}
+\tightlist
+\item
+  LPIPS with AlexNet v0.1, using input pixels scaled to {[}-1, 1{]}.
+  Lower is better for preservation of the reference image.
+\item
+  SSIM at native resolution with unit pixel range. Higher is better.
+\item
+  PSNR with unit pixel range, capped at 120 dB for identical images,
+  matching the existing NFPA evaluator.
+\item
+  CLIP image-image cosine between original and candidate embeddings.
+\item
+  CLIP image-class-text cosine against
+  \texttt{\seqsplit{a photo of a <ImageNet class>}} using torchvision's
+  canonical 1,000-class ordering. This reproduces the earlier alignment
+  metric and adds it to NFPA.
+\end{itemize}
+
+The pinned CLIP ViT-B/32 checkpoint and LPIPS weights/cache are shared
+with the existing evaluation. All outputs, data tables, relevant model
+assets and source are hashed. Previous class-alignment scores and NFPA
+paired scores are checked against recomputation (maximum permitted
+absolute discrepancy 0.001); actual maximum differences are saved.
+Results include per-image scores, means, percentiles and 95\% bootstrap
+intervals over image pairs. Detection rates are copied from the original
+frozen owner evaluation without recalibration.
+
+Nine weight conditions include the unmodified supplied model, all four
+merge settings (including clean replacement), and both 500/2,500-step
+LoRA/full updates. Four output conditions include resize-only and NFPA
+delta 0/20/40. This gives 13 conditions with 512 pairs per model, 13,312
+candidate/reference pairs overall.
+
+Paired distances measure how much a generated sample changes. A model
+whose weights changed can generate a different valid image for the same
+class/seed. Consequently, high LPIPS or low SSIM alone does not
+establish worse generation quality. Class alignment is a complementary
+semantic proxy; neither metric certifies exact identity, factual content
+or overall visual quality.
+
+\subsection{Commands}\label{record-docs-matched-image-quality-md-commands}
+
+\begin{Verbatim}
+PYTHONPATH=. uv run --no-sync python scripts/compare_image_attack_quality.py prepare
+PYTHONPATH=. uv run --no-sync python scripts/compare_image_attack_quality.py submit RUN/manifest.json
+PYTHONPATH=. uv run --no-sync python -m pytest ai_content_detector/tests/test_image_quality.py -q
+\end{Verbatim}
+
+Dependencies already belong to
+\texttt{\seqsplit{requirements\_watermarking.in}} and the existing
+research environment. One restartable H100 dev-QoS job runs per image
+family. Metrics are saved every eight pairs; jobs checkpoint and requeue
+on the Slurm advance signal. Source image and prior result files are not
+overwritten.
+
+Prepared run: \texttt{\seqsplit{20261104T153348508006Z}}. Submitted
+one-GPU jobs \texttt{\seqsplit{1958522}} (RAR) and
+\texttt{\seqsplit{1958524}} (DC-AE). Four targeted CPU tests passed,
+including pairing, PNG integrity/native geometry, PSNR range and
+corresponding-label CLIP lookup. GPU completion and numerical agreement
+are recorded in per-family receipts.
+
+Both full jobs completed successfully. See the
+\href{records/docs/matched_image_quality_results.tex}{combined matched
+results}. Every condition has 512 pairs; maximum prior-metric
+discrepancy was 2.3842e-7 on each GPU. The real-metric CPU smoke passed
+on both targets as well.

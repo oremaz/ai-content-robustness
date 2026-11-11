@@ -1,0 +1,14 @@
+\section{Adaptive probability reweighting defeats conditional exposure}
+\label{sec:ratio_failure}
+The source-blocked pilot in Section~\ref{sec:exposure_control} motivates a stronger client rather than a robustness claim. On the same 32 development sources, an independent Qwen3.5-0.8B reference supplies probabilities on the target API's advertised top-ten token IDs. At a fixed prefix, let $\mathcal V$ be the vocabulary and $C\subseteq\mathcal V$ its nonempty advertised positive-probability support, of size $K_C=|C|\in\{1,\ldots,10\}$. For token $v\in C$, the scalar advertised probability is $q_v\in(0,1]$ and the numerically floored reference probability is $r_v\in(0,1]$. The vectors $(q_v)_{v\in C},(r_v)_{v\in C}\in(0,1]^{K_C}$ contain the advertised-support coordinates before client normalization. With scalar tilt strength $\beta\in[1,\infty)$, define weights $w_v=q_v^{1-\beta}r_v^\beta\in(0,\infty)$ and normalized client law
+\[
+ a_v=\frac{w_v}{\sum_{u\in C}w_u}\in(0,1],\qquad
+ (a_v)_{v\in C}\in\Delta(C).
+\]
+The three attempts use $\beta\in\{1,2,4\}$. At $\beta=1$, advertised probabilities cancel and the client samples the reference distribution restricted to $C$. Increasing $\beta$ favors tokens that the reference rates more highly relative to the advertised model. The implementation excludes zero-probability lanes, computes weights in log space with an explicit numerical floor, and applies the same source-pair blocking after reweighting. This is an exposed-support adaptation of prior ratio attacks, not a replication of their repeated-query protocol or an optimality result~\citep{omidi2026unified}.
+
+\input{generated/exposure_ratio_results}
+
+Every quality-selected output evades the native detector under both interfaces. Quality passes are 27/32 for the pre-watermark interface and 21/32 for conditional exposure. Consequently, the smaller conditional joint-removal count is entirely quality attrition: it is not evidence that the watermark survives. This negative control overturns a general robustness interpretation of the earlier direct-resampling result. All attempts precede owner evaluation, and selection still uses the first attempt passing the unchanged quality gates.
+
+The 128 fresh-source confirmation cohort was frozen before this development outcome. It evaluates all six unguarded arms and therefore tests whether both the restricted benefit and adaptive failure transfer to new questions. It does not test the later support-pruning candidate, does not supply independent keys, and must not be relabeled as confirmation of that candidate.

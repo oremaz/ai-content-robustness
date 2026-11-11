@@ -1,0 +1,67 @@
+\section{Distillation objectives and finite-sample calibration}
+\label{app:distill_proofs}
+Let $h$ be a response prediction context, $q(\cdot\mid h)$ a fixed teacher distribution, and $p(\cdot\mid h)$ a candidate student distribution over a finite vocabulary. The context distribution $\mu$ is fixed by the training data and response mask.
+
+\begin{proposition}[Forward-KL distillation and its conditional optimum]
+For contexts with positive $\mu$ mass,
+\begin{align}
+L(p)&=\E_{h\sim\mu}\KL(q(\cdot\mid h)\Vert p(\cdot\mid h))\\
+&=\E_h\sum_v[-q(v\mid h)\log p(v\mid h)]-\E_hH(q(\cdot\mid h)).
+\end{align}
+Among unrestricted conditional distributions, the minimum is zero, achieved by $p=q$ almost everywhere under $\mu$.
+\end{proposition}
+\begin{proof}
+Expand the logarithm without discarding constants:
+\begin{align}
+\KL(q\Vert p)
+&=\sum_vq(v)\log\frac{q(v)}{p(v)}\\
+&=\sum_vq(v)\log q(v)-\sum_vq(v)\log p(v)\\
+&=-H(q)+\sum_v[-q(v)\log p(v)].
+\end{align}
+For nonnegativity, use $-\log x\geq1-x$ for $x>0$ on the positive support of $q$:
+\begin{align}
+\KL(q\Vert p)
+&=\sum_{v:q(v)>0}q(v)\left[-\log\frac{p(v)}{q(v)}\right]\\
+&\geq\sum_{v:q(v)>0}q(v)\left[1-\frac{p(v)}{q(v)}\right]\\
+&=1-\sum_{v:q(v)>0}p(v)\geq0.
+\end{align}
+Equality requires $p(v)/q(v)=1$ on the positive support of $q$ and no remaining mass outside it. Thus $p=q$. Taking expectation over $\mu$ preserves the lower bound, and choosing $p=q$ attains it at each relevant context.
+
+If $Y\mid h\sim q(\cdot\mid h)$, the same expansion shows
+\begin{align}
+\E_h\E_{Y\mid h}[-\log p(Y\mid h)]
+&=\E_h\sum_v[-q(v\mid h)\log p(v\mid h)]\\
+&=\E_hH(q(\cdot\mid h))+L(p).
+\end{align}
+The entropy term is independent of the student, so the minimizer is unchanged. Keeping it is necessary for the displayed equality to be correct.
+\end{proof}
+
+\paragraph{Why this does not prove a successful text watermark.}
+The proposition assumes unrestricted conditional distributions and the fixed training-context law $\mu$. A LoRA student has restricted capacity and finite optimization. At generation time, the student conditions on its own previous tokens, which can differ from teacher-forced training contexts. Exact fitting on $\mu$ alone therefore does not establish free-running watermark detection. This distinction is visible in the repository's teacher/student and fresh-response measurements.
+
+\begin{proposition}[What zero observed false positives permits]
+Suppose $N$ independent null outputs each produce a false-positive indicator with common probability $\alpha$. If zero false positives are observed, the exact one-sided $(1-\delta)$ upper confidence endpoint is
+\begin{equation}
+\alpha_{\rm upper}=1-\delta^{1/N}.
+\end{equation}
+\end{proposition}
+\begin{proof}
+For a binomial count $B$, independence gives
+\begin{align}
+\Pr_\alpha(B=0)
+&=\prod_{i=1}^N\Pr_\alpha(B_i=0)=(1-\alpha)^N.
+\end{align}
+The upper endpoint inverts the lower-tail event at the observed count zero. Solve
+\begin{align}
+(1-\alpha_{\rm upper})^N&=\delta,\\
+1-\alpha_{\rm upper}&=\delta^{1/N},\\
+\alpha_{\rm upper}&=1-\delta^{1/N}.
+\end{align}
+For larger $\alpha$, observing zero is even less probable. With $N=256$ and $\delta=.05$, the endpoint is approximately 0.0116. To make this zero-count endpoint no larger than a target $\alpha_0$, one needs
+\begin{align}
+1-\delta^{1/N}\leq\alpha_0
+&\iff\frac{\log\delta}{N}\geq\log(1-\alpha_0)\\
+&\iff N\geq\frac{\log\delta}{\log(1-\alpha_0)}.
+\end{align}
+Both logarithms are negative. For $\alpha_0=.001$, at least 2,995 independent null outputs with zero positives are required by this particular one-sided criterion. This is not a promise that collecting that many outputs will yield zero positives, nor does it replace representative calibration and independent testing.
+\end{proof}

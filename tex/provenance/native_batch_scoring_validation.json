@@ -1,0 +1,13 @@
+{
+  "n_text_probes": 12,
+  "n_token_id_probes": 4,
+  "chunk_sizes": [
+    17,
+    3
+  ],
+  "native_p_values_match": true,
+  "scalar_seconds": 0.881362592917867,
+  "batched_seconds": 0.02872558601666242,
+  "implementation_sha256": "1c57dcd9172d7d02a42124c272039909828786e6fc2aef5bd31a04ffd177bb1c",
+  "scope": "CPU comparison against released native v2 detector on fixed real, Unicode, empty, short and repeated cases; no model generation or attack feedback."
+}

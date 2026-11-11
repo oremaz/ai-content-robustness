@@ -1,0 +1,27 @@
+\section{DDPO and the reference reward}
+Denoising Diffusion Policy Optimization (DDPO) \citep{black2024ddpo} views a denoising trajectory as an episode. The state contains the noisy latent, timestep and prompt. The action is the next latent. A frozen scorer evaluates the decoded image at the end.
+
+\paragraph{How a final reward trains earlier steps.}
+Retain the previous section's latent dimension $d\in\mathbb N_{>0}$, conditioning $c\in\mathcal C$ and parameter vector $\theta\in\mathbb R^{d_\theta}$, with $d_\theta\in\mathbb N_{>0}$. An inference schedule has $J\in\mathbb N_{>0}$ transitions at integer indices $t_0=T>t_1>\cdots>t_J=0$, where $T\in\mathbb N_{>0}$ is the training noise horizon. The trajectory is $\xi=(x_{t_0},\ldots,x_{t_J})\in(\mathbb R^d)^{J+1}$. Let $\mathcal S\subseteq\{1,\ldots,J\}$ index its positive-variance transitions. Their scalar log densities are
+$\ell_{\theta,j}=\log p_\theta(x_{t_j}\mid x_{t_{j-1}},c)\in\mathbb R$.
+The terminal reward $R(\xi,c)\in\mathbb R$ and a prompt-dependent baseline $b(c)\in\mathbb R$ give the policy-gradient update direction
+\[
+ g(\theta)=\mathbb E_{\xi\sim P_\theta(\cdot\mid c)}
+ \left[(R(\xi,c)-b(c))
+       \sum_{j\in\mathcal S}\nabla_\theta\ell_{\theta,j}\right]
+ \in\mathbb R^{d_\theta},
+\]
+where $P_\theta(\cdot\mid c)$ is the probability law on trajectories in $(\mathbb R^d)^{J+1}$ and each $\nabla_\theta\ell_{\theta,j}\in\mathbb R^{d_\theta}$. Under the score-function assumptions, including a parameter-independent initial noise law and reward with no explicit parameter dependence, this is the reward gradient when all parameter-dependent sampling steps are covered. The local trainer treats saved rewards as fixed during an update and omits deterministic terminal steps. A parameter-dependent deterministic terminal map makes this an update surrogate for the full generation pipeline.
+
+For intuition, suppose an image receives reward $0.8$ against baseline $0.5$. The positive difference $0.3$ encourages the sampled denoising actions that produced it. A below-baseline image reverses that incentive. The scorer supplies one number; learning acts through the transition log densities. Averaging many sampled trajectories supplies the statistical credit assignment.
+
+\paragraph{Reusing trajectories and measuring drift.}
+For a saved stochastic transition, the current-to-rollout density ratio is
+$u_j=\exp(\ell_{\theta,j}-\ell_{{\rm old},j})\in(0,\infty)$, with $\ell_{{\rm old},j}\in\mathbb R$ recorded at generation. It evaluates the same saved successor under both models. DDPO uses such ratios with clipping, analogously to GRPO. The local implementation averages log densities over coordinates and therefore uses $\exp[(\ell_{\theta,j}-\ell_{{\rm old},j})/d]$. This changes the scale on which clipping acts.
+
+At one state, write $p_\theta$ and $p_{\rm ref}$ for current and frozen-reference Gaussian transition laws on $\mathbb R^d$. With mean vectors $\mu_\theta,\mu_{\rm ref}\in\mathbb R^d$ and equal scalar variance $\sigma^2\in(0,\infty)$, their scalar conditional divergence is
+\[
+ \KL(p_\theta\Vert p_{\rm ref})
+ =\frac{\|\mu_\theta-\mu_{\rm ref}\|_2^2}{2\sigma^2}\in[0,\infty).
+\]
+The project averages this divergence over coordinates and stochastic steps to obtain $\bar K\in[0,\infty)$, then uses reference reward $1/(1+\bar K/s_0)\in(0,1]$ for scale $s_0\in(0,\infty)$ fitted on training probes. Similar transition means earn a higher reward. Because a weighted reward can trade reference similarity for evasion, held-out prompt alignment is also measured directly.

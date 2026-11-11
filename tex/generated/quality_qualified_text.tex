@@ -1,0 +1,9 @@
+\begin{table}[ht]\centering\small
+\begin{tabular}{llrrrr}\toprule
+Scheme & Rewrite & Initial + & Raw removed & Proxy pass & Joint success\\\midrule
+TextSeal 2 & vanilla & 253 & 238 & 154 & 141 \\
+TextSeal 2 & bira & 253 & 253 & 62 & 62 \\
+Text student & vanilla & 118 & 110 & 152 & 60 \\
+Text student & bira & 118 & 117 & 62 & 28 \\
+\bottomrule\end{tabular}
+\caption{Post-hoc joint text diagnostics, 256 outputs per arm. Proxy pass requires the stated automatic checks and Jina cosine at least .90. Joint success also requires original detection followed by non-detection. These are counts, not certified factual-preservation rates.}\end{table}

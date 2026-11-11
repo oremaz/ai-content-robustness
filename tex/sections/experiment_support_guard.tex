@@ -1,0 +1,18 @@
+\section{Support pruning resists a supported ratio client in development}
+\label{sec:support_guard_results}
+\paragraph{A matched development comparison.}
+The experiment in Section~\ref{app:support_guard} has completed generation, preservation selection and native owner scoring. It reuses the same 32 marked answers as the earlier blocked-source and ratio experiments. The source-answer files are byte-identical; the watermark key, sampling settings and quality-selection rule also match. Each interface uses its own public-prefix confidence calibration. The guard was designed after observing the earlier ratio failure, so this is a development comparison rather than an independent confirmation. Three attempts per source are frozen before selecting the first quality-passing output. No source is replaced by the original answer when all attempts fail.
+
+\input{generated/exposure_guard_results}
+
+\paragraph{A gain against supported reweighting.}
+Without pruning, conditional ratio reweighting removes all 32 selected watermarks, including all 21 quality-preserving rewrites. Retaining at least 90\% of the ordinary top-ten estimated mass reduces raw removals to 4/32 and joint removals to 3/32, with 25/32 quality passes. At 80\% retained mass, the corresponding counts are 2/32 raw removals, 1/32 joint removals and 24/32 quality passes. Thus the development gain is not explained by rejecting more outputs. Among quality-preserving outputs, watermark removal falls from 21/21 to 3/25 and 1/24. All selected guarded outputs differ from their sources under normalized-word equality; this check excludes literal copying but does not certify substantive rewriting or factual equivalence.
+
+\paragraph{The access boundary is visible in the failures.}
+Direct conditional resampling has 5/32 joint removals without pruning and 3/32 at either guard budget, a small development difference. Smoothing does not improve: its 12/32 baseline joint removals become 15/32 and 13/32. The independent reference removes all 32 watermarks, including all 22 outputs passing the preservation gates. These controls show that supported ratio resistance does not establish resistance to external rewriting. They also prevent describing the guard as a generally robust watermark or a defense for open-weight models.
+
+\paragraph{Checking the mathematical relation against native scoring.}
+All 672 attempts were scored as actual decoded text and as saved generated token IDs. Every generated-ID statistic satisfies the frozen pathwise evidence bound, including the native first-occurrence masking rule. Decode--encode roundtrips hold for all 96 attempts in each direct and ratio arm, 96/96 and 94/96 in the two smoothing arms, and 92/96 independent-reference attempts. The remaining paths receive no decoded-text certificate. At the native nominal threshold, the bound certifies 40/96 ratio paths at 90\% retention and 62/96 at 80\% retention. These are certificates across all attempts, not quality-selected success counts; an uncertified path can still be detected. The relation does not prove the nominal Gamma calibration for adaptive paths. The separate human-null audit addresses one fixed-key diagnostic, rather than repairing this limitation.
+
+\paragraph{What remains to establish.}
+The existing 128-question confirmation concerns conditional exposure without support pruning. It cannot confirm this new treatment. Independent prompts, keys and model pairs, an attack that adapts to the guard, and additional watermark families are still required. The complete native scores, quality outcomes, support-path certificates and selected strings are retained in the hashed owner results and portable development receipts.

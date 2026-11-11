@@ -1,0 +1,38 @@
+{
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-screen-20261106T182359Z/manifest.json",
+  "manifest_sha256": "96902c82cbb899806bbf87059823e182df5f03c0e22541fbfda0f3e37d785177",
+  "result_sha256": "58b6575c96f42219579be704581667a4158bc97c9af7b5cf79f877da9faa115f",
+  "results": {
+    "threshold": 0.6875,
+    "conditions": {
+      "original": {
+        "n": 32,
+        "detected": 32,
+        "preserved": 32,
+        "mean_lpips": 0.0,
+        "mean_bit_accuracy": 0.99365234375,
+        "screen_passed": true
+      },
+      "fixed": {
+        "n": 32,
+        "detected": 32,
+        "preserved": 24,
+        "mean_lpips": 0.12189592502545565,
+        "mean_bit_accuracy": 0.99609375,
+        "screen_passed": false
+      },
+      "adapted": {
+        "n": 32,
+        "detected": 32,
+        "preserved": 20,
+        "mean_lpips": 0.1253725659335032,
+        "mean_bit_accuracy": 0.9970703125,
+        "screen_passed": false
+      }
+    },
+    "status": "Initial generation screen only. No removal robustness claim."
+  },
+  "job_id": "2081366",
+  "elapsed_seconds": 296,
+  "validation": "All96nativePNGhashes,indices,labelsandqualitysumscrosschecked. Bothtrainedcandidatesfailqualityscreen;noattacklaunched."
+}

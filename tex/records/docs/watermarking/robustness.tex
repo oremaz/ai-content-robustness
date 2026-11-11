@@ -1,0 +1,254 @@
+\section{Recorded JPEG and crop
+robustness}\label{record-docs-watermarking-robustness-md-recorded-jpeg-and-crop-robustness}
+
+These are all recorded JPEG-quality-50 and center-crop-area-50 detector
+measurements for the retained weight-update and historical image
+conditions. Each transform uses its separately frozen clean-calibration
+threshold. These rows do not measure paired perceptual quality; those
+cells are not silently filled from untransformed images.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Weight condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Output transform
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RAR-XL & Unmodified watermarked model & jpeg50 & 512 & 100.0\% &
+0.4\% \\
+RAR-XL & Unmodified watermarked model &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.8\% & 0.2\% \\
+RAR-XL & Merge: 75\% watermarked & jpeg50 & 512 & 96.7\% & 0.4\% \\
+RAR-XL & Merge: 75\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.0\% & 0.2\% \\
+RAR-XL & Merge: 50\% watermarked & jpeg50 & 512 & 41.6\% & 0.4\% \\
+RAR-XL & Merge: 50\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.0\% & 0.2\% \\
+RAR-XL & Merge: 25\% watermarked & jpeg50 & 512 & 4.5\% & 0.4\% \\
+RAR-XL & Merge: 25\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.2\% \\
+RAR-XL & Original clean model replacement & jpeg50 & 512 & 0.4\% &
+0.4\% \\
+RAR-XL & Original clean model replacement &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.2\% \\
+RAR-XL & Clean LoRA: 500 steps & jpeg50 & 512 & 10.7\% & 0.4\% \\
+RAR-XL & Clean LoRA: 500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.4\% & 0.2\% \\
+RAR-XL & Clean LoRA: 2,500 steps & jpeg50 & 512 & 2.7\% & 0.4\% \\
+RAR-XL & Clean LoRA: 2,500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.0\% & 0.2\% \\
+RAR-XL & Clean full training: 500 steps & jpeg50 & 512 & 32.4\% &
+0.4\% \\
+RAR-XL & Clean full training: 500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.2\% \\
+RAR-XL & Clean full training: 2,500 steps & jpeg50 & 512 & 7.8\% &
+0.4\% \\
+RAR-XL & Clean full training: 2,500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.2\% \\
+UViT-H/DC-AE & Unmodified watermarked model & jpeg50 & 512 & 100.0\% &
+0.6\% \\
+UViT-H/DC-AE & Unmodified watermarked model &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 1.0\% & 0.6\% \\
+UViT-H/DC-AE & Merge: 75\% watermarked & jpeg50 & 512 & 1.0\% & 0.6\% \\
+UViT-H/DC-AE & Merge: 75\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 1.0\% & 0.6\% \\
+UViT-H/DC-AE & Merge: 50\% watermarked & jpeg50 & 512 & 0.8\% & 0.6\% \\
+UViT-H/DC-AE & Merge: 50\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.6\% \\
+UViT-H/DC-AE & Merge: 25\% watermarked & jpeg50 & 512 & 0.8\% & 0.6\% \\
+UViT-H/DC-AE & Merge: 25\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE & Original clean model replacement & jpeg50 & 512 & 0.6\% &
+0.6\% \\
+UViT-H/DC-AE & Original clean model replacement &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE & Clean LoRA: 500 steps & jpeg50 & 512 & 8.4\% & 0.6\% \\
+UViT-H/DC-AE & Clean LoRA: 500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE & Clean LoRA: 2,500 steps & jpeg50 & 512 & 3.9\% & 0.6\% \\
+UViT-H/DC-AE & Clean LoRA: 2,500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.4\% & 0.6\% \\
+UViT-H/DC-AE & Clean full training: 500 steps & jpeg50 & 512 & 14.3\% &
+0.6\% \\
+UViT-H/DC-AE & Clean full training: 500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.4\% & 0.6\% \\
+UViT-H/DC-AE & Clean full training: 2,500 steps & jpeg50 & 512 & 1.8\% &
+0.6\% \\
+UViT-H/DC-AE & Clean full training: 2,500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.0\% & 0.6\% \\
+RAR-XL (original control) & watermarked & jpeg50 & 512 & 100.0\% &
+0.4\% \\
+RAR-XL (original control) & watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.8\% & 0.2\% \\
+RAR-XL (original control) & base & jpeg50 & 512 & 0.4\% & 0.4\% \\
+RAR-XL (original control) & base &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.2\% \\
+RAR-XL (historical) & Historical merge: 75\% watermarked & jpeg50 & 512
+& 97.9\% & 0.4\% \\
+RAR-XL (historical) & Historical merge: 75\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.0\% & 0.2\% \\
+RAR-XL (historical) & Historical merge: 50\% watermarked & jpeg50 & 512
+& 44.3\% & 0.4\% \\
+RAR-XL (historical) & Historical merge: 50\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.0\% & 0.2\% \\
+RAR-XL (historical) & Historical merge: 25\% watermarked & jpeg50 & 512
+& 6.6\% & 0.4\% \\
+RAR-XL (historical) & Historical merge: 25\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.4\% & 0.2\% \\
+RAR-XL (historical) & Historical merge: 0\% watermarked & jpeg50 & 512 &
+0.4\% & 0.4\% \\
+RAR-XL (historical) & Historical merge: 0\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.2\% \\
+RAR-XL (historical) & 50-image clean LoRA 500 steps & jpeg50 & 512 &
+65.6\% & 0.4\% \\
+RAR-XL (historical) & 50-image clean LoRA 500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.6\% & 0.2\% \\
+RAR-XL (historical) & 50-image clean LoRA 2500 steps & jpeg50 & 512 &
+59.6\% & 0.4\% \\
+RAR-XL (historical) & 50-image clean LoRA 2500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.2\% \\
+UViT-H/DC-AE (original control) & watermarked & jpeg50 & 512 & 100.0\% &
+0.6\% \\
+UViT-H/DC-AE (original control) & watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 1.0\% & 0.6\% \\
+UViT-H/DC-AE (original control) & base & jpeg50 & 512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE (original control) & base &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 75\% watermarked & jpeg50
+& 512 & 0.8\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 75\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.4\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 50\% watermarked & jpeg50
+& 512 & 0.4\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 50\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 25\% watermarked & jpeg50
+& 512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 25\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 1.0\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 0\% watermarked & jpeg50 &
+512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE (historical) & Historical merge: 0\% watermarked &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.6\% & 0.6\% \\
+UViT-H/DC-AE (historical) & 50-image clean LoRA 500 steps & jpeg50 & 512
+& 100.0\% & 0.6\% \\
+UViT-H/DC-AE (historical) & 50-image clean LoRA 500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.2\% & 0.6\% \\
+UViT-H/DC-AE (historical) & 50-image clean LoRA 2500 steps & jpeg50 &
+512 & 100.0\% & 0.6\% \\
+UViT-H/DC-AE (historical) & 50-image clean LoRA 2500 steps &
+center\_\allowbreak{}crop\_\allowbreak{}area50 & 512 & 0.0\% & 0.6\% \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Threshold
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RAR-XL & 1.0000 & 0.6406 \\
+RAR-XL & 0.5717 & 0.6719 \\
+RAR-XL & 0.9862 & 0.6406 \\
+RAR-XL & 0.5413 & 0.6719 \\
+RAR-XL & 0.8778 & 0.6406 \\
+RAR-XL & 0.5292 & 0.6719 \\
+RAR-XL & 0.6376 & 0.6406 \\
+RAR-XL & 0.4928 & 0.6719 \\
+RAR-XL & 0.5000 & 0.6406 \\
+RAR-XL & 0.5000 & 0.6719 \\
+RAR-XL & 0.7361 & 0.6406 \\
+RAR-XL & 0.5176 & 0.6719 \\
+RAR-XL & 0.6031 & 0.6406 \\
+RAR-XL & 0.5142 & 0.6719 \\
+RAR-XL & 0.8357 & 0.6406 \\
+RAR-XL & 0.5452 & 0.6719 \\
+RAR-XL & 0.6727 & 0.6406 \\
+RAR-XL & 0.5250 & 0.6719 \\
+UViT-H/DC-AE & 1.0000 & 0.6406 \\
+UViT-H/DC-AE & 0.3442 & 0.6719 \\
+UViT-H/DC-AE & 0.5173 & 0.6406 \\
+UViT-H/DC-AE & 0.5337 & 0.6719 \\
+UViT-H/DC-AE & 0.4766 & 0.6406 \\
+UViT-H/DC-AE & 0.4005 & 0.6719 \\
+UViT-H/DC-AE & 0.4706 & 0.6406 \\
+UViT-H/DC-AE & 0.5065 & 0.6719 \\
+UViT-H/DC-AE & 0.5000 & 0.6406 \\
+UViT-H/DC-AE & 0.5000 & 0.6719 \\
+UViT-H/DC-AE & 0.7206 & 0.6406 \\
+UViT-H/DC-AE & 0.5085 & 0.6719 \\
+UViT-H/DC-AE & 0.6629 & 0.6406 \\
+UViT-H/DC-AE & 0.4910 & 0.6719 \\
+UViT-H/DC-AE & 0.7979 & 0.6406 \\
+UViT-H/DC-AE & 0.4730 & 0.6719 \\
+UViT-H/DC-AE & 0.5696 & 0.6406 \\
+UViT-H/DC-AE & 0.5211 & 0.6719 \\
+RAR-XL (original control) & 1.0000 & 0.6406 \\
+RAR-XL (original control) & 0.5717 & 0.6719 \\
+RAR-XL (original control) & 0.5000 & 0.6406 \\
+RAR-XL (original control) & 0.5000 & 0.6719 \\
+RAR-XL (historical) & 0.9950 & 0.6406 \\
+RAR-XL (historical) & 0.5212 & 0.6719 \\
+RAR-XL (historical) & 0.8799 & 0.6406 \\
+RAR-XL (historical) & 0.5375 & 0.6719 \\
+RAR-XL (historical) & 0.6551 & 0.6406 \\
+RAR-XL (historical) & 0.5325 & 0.6719 \\
+RAR-XL (historical) & 0.5000 & 0.6406 \\
+RAR-XL (historical) & 0.5000 & 0.6719 \\
+RAR-XL (historical) & 0.8935 & 0.6406 \\
+RAR-XL (historical) & 0.5468 & 0.6719 \\
+RAR-XL (historical) & 0.8477 & 0.6406 \\
+RAR-XL (historical) & 0.5190 & 0.6719 \\
+UViT-H/DC-AE (original control) & 1.0000 & 0.6406 \\
+UViT-H/DC-AE (original control) & 0.3442 & 0.6719 \\
+UViT-H/DC-AE (original control) & 0.5000 & 0.6406 \\
+UViT-H/DC-AE (original control) & 0.5000 & 0.6719 \\
+UViT-H/DC-AE (historical) & 0.5175 & 0.6406 \\
+UViT-H/DC-AE (historical) & 0.5239 & 0.6719 \\
+UViT-H/DC-AE (historical) & 0.4820 & 0.6406 \\
+UViT-H/DC-AE (historical) & 0.3960 & 0.6719 \\
+UViT-H/DC-AE (historical) & 0.4654 & 0.6406 \\
+UViT-H/DC-AE (historical) & 0.5094 & 0.6719 \\
+UViT-H/DC-AE (historical) & 0.5000 & 0.6406 \\
+UViT-H/DC-AE (historical) & 0.5000 & 0.6719 \\
+UViT-H/DC-AE (historical) & 1.0000 & 0.6406 \\
+UViT-H/DC-AE (historical) & 0.4320 & 0.6719 \\
+UViT-H/DC-AE (historical) & 1.0000 & 0.6406 \\
+UViT-H/DC-AE (historical) & 0.4467 & 0.6719 \\
+\end{longtable}
+}
+
+\href{records/docs/watermarking/images.tex}{Image metrics and transform
+galleries} \textbar{}
+\href{records/docs/watermarking/historical.tex}{Historical protocols}
+\textbar{} \href{../docs/watermarking/README.md}{Overview}

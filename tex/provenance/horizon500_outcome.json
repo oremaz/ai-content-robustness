@@ -1,0 +1,21 @@
+{
+  "event": "Horizon500 image final owner evaluation complete; stop this training direction",
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+  "joint_removals_of64": {
+    "original": 20,
+    "fixed": 21,
+    "adapted": 20
+  },
+  "raw_quality_passes_of64": {
+    "original": 21,
+    "fixed": 23,
+    "adapted": 21
+  },
+  "returned_quality_passes_of64": {
+    "original": 64,
+    "fixed": 64,
+    "adapted": 64
+  },
+  "conclusion": "No robustness gain. Following the frozen horizon500 protocol, stop meta-distillation expansion; do not run additional watermark families for this failed candidate.",
+  "next": "Independent confirmation of the limited text support-guard result remains outstanding. A distinct, literature-checked image defense would be required for the original broader contribution goal."
+}

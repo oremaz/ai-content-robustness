@@ -106,9 +106,19 @@ def channel(embedder, extractor, head, hidden, messages, temperature=.8, chunk=3
 
 def train_batch(model, tokenizer, embedder, extractor, rows, config, generator):
     length = config["length"]
-    ids = torch.tensor([row["tokens"][:length+50] for row in rows], device="cuda")
-    with torch.no_grad():
-        hidden = model.model(input_ids=ids, use_cache=False).last_hidden_state[:, 49:49+length]
+    if "prompt_length" in rows[0]:
+        sequences = [row["tokens"][:row["prompt_length"]+length] for row in rows]
+        if any(len(ids) < row["prompt_length"]+length for ids, row in zip(sequences, rows)):
+            raise ValueError("Latent training response is shorter than the channel length")
+        ids, mask = pack_tokens(sequences, "cuda", max_length=max(map(len, sequences)))
+        with torch.no_grad():
+            states = model.model(input_ids=ids, attention_mask=mask, use_cache=False).last_hidden_state
+            hidden = torch.stack([states[i, row["prompt_length"]-1:row["prompt_length"]-1+length]
+                                  for i, row in enumerate(rows)])
+    else:
+        ids = torch.tensor([row["tokens"][:length+50] for row in rows], device="cuda")
+        with torch.no_grad():
+            hidden = model.model(input_ids=ids, use_cache=False).last_hidden_state[:, 49:49+length]
     hidden = hidden.repeat_interleave(2, 0)
     message = torch.randint(2, (len(rows), config["bits"]), generator=generator, device="cuda").float()
     messages = torch.stack((message, 1-message), 1).flatten(0, 1)

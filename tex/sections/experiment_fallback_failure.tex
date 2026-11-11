@@ -1,0 +1,11 @@
+\section{A stronger image client reveals no defense gain}
+\label{sec:fallback_failure}
+The first quality-selected image attack in Section~\ref{sec:preserving_attack} cannot distinguish the models because it removes no watermark from the released model. A second development client retains its supplied marked source generator at inference, generates a source and an adapted output with coupled randomness, and evaluates their quality without owner feedback. If the adaptation fails any frozen preservation gate, the client returns the source. This costs two generation paths and quality evaluation, and is distinct from releasing one adapted checkpoint.
+
+All three quality-only validation selections choose 500 clean updates with zero prediction anchor. Before fallback, validation quality passes are 13/32 for the released model, 14/32 for the fixed-target model and 13/32 for the adapted-target model. Fallback makes every returned validation sample preserve its source. Final generation uses 64 fresh seeds; class identities are reused, so this is seed replication rather than a new class-disjoint study.
+
+\input{generated/preserving_fallback_results}
+
+Before fallback, raw removal counts are 54/64, 52/64 and 55/64, while preservation counts are 24/64, 27/64 and 26/64. Their intersections are 20/64, 22/64 and 22/64. Returning the detected source on a quality failure reduces removals to those intersections and preserves all 64 returned outputs. Neither trained variant improves on the released model. These are development outcomes; they provide no positive robustness evidence for the training method.
+
+This failure motivates one prespecified horizon revision: increase both teacher adaptation and the student's simulated inner attack from 100 to 500 updates, keeping the 100 outer updates and prediction-retention coefficient 32. The new teacher passes its prerequisite screen: 32/32 marked detections for both targets, with 30/32 fixed-target and 31/32 adapted-target preservation passes. That prerequisite establishes target quality, not robustness of a trained student. If the revised students again show no benefit under the independent attack, this meta-distillation direction stops rather than expanding to more watermark families.

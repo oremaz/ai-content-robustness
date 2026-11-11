@@ -1,0 +1,21 @@
+{
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+  "index": 36,
+  "bit_accuracy": 0.640625,
+  "metrics": {
+    "lpips": 0.17187874019145966,
+    "ssim": 0.5969721078872681,
+    "clip_image_cosine": 0.9109064936637878,
+    "class_alignment_retention": 1.017416430063819
+  },
+  "failures": [
+    "ssim:outside_bounds"
+  ],
+  "selection": "Minimum summed relative boundary violation among original-model raw final outputs that evade watermark detection and fail the revised gate.",
+  "figure": "tex/figures/rejected-evasion-example-36.png",
+  "figure_sha256": "24dfb0c6d90b6b1474f8c295845570a7e39449a6af9da33f315d788e6b617911",
+  "source_sha256": "4d7b9b4c167b38c1096accda7ec0078474e8fb73e3f548daf85b9daf14055e5a",
+  "attack_sha256": "d96cae0672111eae55a11cfbc495e3bcb8d6ff72f4c31ae9daf11afb78278bed",
+  "visual_assessment": "Same foreground fruit piles, container, framing and main background structures. Some surface texture and background lighting change, particularly in the upper right. Under the user criterion of same main objects and scene with minor appearance changes allowed, this appears acceptable, despite narrowly failingSSIM. One diagnostic example is not a general threshold validation.",
+  "scope": "Post-hoc examination of the closest rejected evasion, selected by quality boundary distance rather than by visual attractiveness. No aggregate result or threshold changed."
+}

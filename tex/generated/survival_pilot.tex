@@ -1,0 +1,9 @@
+\begin{table}[ht]\centering\small
+\begin{tabular}{lrrrr}\toprule
+Candidate & Detected & Preservation pass & Mean bit acc. & LPIPS\\\midrule
+original & 32/32 & 32/32 & 0.9966 & 0.0000 \\
+inverse & 0/32 & 0/32 & 0.5112 & 0.9295 \\
+survival1 & 0/32 & 0/32 & 0.4995 & 0.9657 \\
+survival4 & 0/32 & 0/32 & 0.5098 & 0.9647 \\
+\bottomrule\end{tabular}
+\caption{New DC-AE development pilot, before any removal attack. All filtered candidates fail the initial detection and paired-preservation screen. No robustness comparison is performed on them.}\end{table}

@@ -1,0 +1,26 @@
+\section{Image watermarking: weight changes versus output purification}
+\label{sec:image_watermarks}
+\paragraph{Question and prerequisites.} This part asks whether a watermark survives changes to a released generator or transformations of one generated image. It can be read independently of text watermarking. The key distinction is that a model-level intervention changes future generations, while an output-level intervention changes only the supplied image.
+
+\paragraph{Native models and independent fitting.} The experiments use released DistSeal RAR-XL at 256 pixels and UViT-H/DC-AE at 512 pixels, retaining their original decoders and owner extractors. RAR predicts discrete image tokens autoregressively. UViT-H is a diffusion generator over continuous DC-AE latents; DC-AE supplies the image encoder and decoder. Each primary condition has 512 marked test outputs, 512 clean-generator controls and 256 clean calibration outputs. Current clean-data attacks fit on 8,000 ImageNet training images from 800 classes, with 800 separate validation images. The remaining 200 classes are excluded from attack fitting, and the original synset ordering is preserved.
+
+The historical pilot instead uses 50 images of a single class. Its outcomes differ sharply from the broad-fitting experiment, especially for DC-AE. They remain separate protocols in the detailed tables. A similar method name does not justify pooling their measurements.
+
+\paragraph{Weight access.} Merging uses the compatible original clean checkpoint and predetermined marked fractions 0.75, 0.5, 0.25 and zero. Full clean replacement is a sanity control requiring stronger access than possession of marked weights alone. Continued clean LoRA or full training uses the generator's native objective without owner scores or clean reference weights. Task schemas, frozen artifacts and separate owner evaluation constrain this research workflow's inputs; they are not an operating-system security boundary against arbitrary code on the same account.
+
+\input{generated/image_summary}
+
+\paragraph{Detection and sample drift.} After 2,500 clean LoRA updates, detection falls from 100\% to 4.9\% for RAR and 0.2\% for DC-AE. Full updates yield 7.2\% and 0.4\%. RAR's class-text CLIP remains close to its baseline mean even though LPIPS between paired seed outputs is large. Changing autoregressive weights can change which valid scene is sampled. Thus paired LPIPS measures sample drift and cannot by itself establish poor population-level generation quality.
+
+DC-AE partial merging provides a different warning. At 75\% marked weights, detection falls to zero, but LPIPS is 0.8684 and class-text CLIP falls from 0.2934 to 0.2141. That is suppression with a substantial measured utility cost. Clean LoRA is much closer to the original samples under the recorded perceptual measurements.
+
+\paragraph{Output-only NFPA.} NFPA receives saved image outputs and an independent public SD2.1 model. It receives neither target weights nor owner detector feedback. The experiment simulates an output-only provider; it does not query a commercial service. Strengths zero, 20 and 40 are fixed in advance, with 40 the primary setting. Zero strength still performs regeneration; a separate resize-only arm measures the resizing intervention.
+
+At strength 40, 110/512 RAR images and 172/512 DC-AE images remain detected: 21.5\% and 33.6\%. LPIPS is 0.4221 and 0.5082, respectively. Class-text CLIP falls to 0.2630 and 0.2664, compared with original means 0.3030 and 0.2934. Qualitative examples show changes to faces, objects and framing. This is neither universal removal nor exact content preservation.
+
+\paragraph{Matched quality, not incomparable score names.} The later quality extension verifies that all source reference PNGs are bit-identical across the weight and NFPA experiments, then measures the same metrics for all 13 conditions per model: 13,312 paired evaluations. It reproduces earlier overlapping metrics within a maximum absolute discrepancy of $2.3842\times10^{-7}$. No attack or model training is repeated for that extension.
+
+Image-image CLIP and class-text CLIP answer different questions. SSIM and PSNR depend strongly on alignment; LPIPS is a perceptual distance, not a percentage. None provides an automatic guarantee that every identity or detail survives. New attack comparisons therefore need joint preservation-qualified outcomes, with thresholds fixed independently of the final owner scores and with failures retained.
+
+\paragraph{Simple transforms and residual scope.} JPEG quality 50 retains 100\% detection on both unmodified marked models in the recorded experiment. A center crop retaining half the area reduces detection to 0.8\% for RAR and 1.0\% for DC-AE under separately calibrated transformed-null thresholds. These transform results do not include matched perceptual-quality measurements and must not inherit them from the untransformed images. They motivate robust synchronization or augmentation research, but do not establish that cropping preserves every requested object.
+

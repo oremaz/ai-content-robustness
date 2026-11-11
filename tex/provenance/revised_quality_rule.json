@@ -1,0 +1,62 @@
+{
+  "frozen_at_utc": "2026-11-08T12:13:56.954111+00:00",
+  "quality_rule": {
+    "lpips": [
+      0.0,
+      0.2
+    ],
+    "ssim": [
+      0.6,
+      1.000001
+    ],
+    "clip_image_cosine": [
+      0.9,
+      1.000001
+    ],
+    "class_alignment_retention": [
+      0.9,
+      null
+    ]
+  },
+  "calibration": "tex/provenance/revised_quality_calibration.json",
+  "calibration_sha256": "4725917d35b880af88943811301d058fb74bb56c8ad2ee9e5f2f9f8fbdc0cacc",
+  "grid": "tex/provenance/revised_quality_calibration_broad_grid.json",
+  "grid_sha256": "8e269e47bb67fb57af37e93aeee3d34a520fd966bb51c906db2d5c69ec867c02",
+  "selected_validation_fit": {
+    "thresholds": {
+      "lpips": 0.2,
+      "ssim": 0.6,
+      "clip_image_cosine": 0.9,
+      "class_alignment_retention": 0.9
+    },
+    "false_accept": 0,
+    "false_reject": 6,
+    "balanced_error": 0.15789473684210525,
+    "distance_from_old": 0.9999999999999987,
+    "passes": [
+      1,
+      2,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11,
+      15,
+      16,
+      17,
+      19,
+      26,
+      29
+    ],
+    "true_accept": 13,
+    "true_reject": 11
+  },
+  "user_preference": "Same main objects and scene; minor appearance changes allowed.",
+  "scope": "Exploratory assistant-rated32-imagevalidationcalibration.30unambiguousratings;19accept,11reject,2ambiguous. No watermark scores enter fitting. Rule frozen before revised final counts are calculated. This is a post-hoc reanalysis of previously evaluated final outputs, not fresh confirmation.",
+  "limitations": "In-sample recall13/19 and specificity11/11 on assistant visual labels; not an independently validated human-quality guarantee. Metrics still reject some acceptable edits.",
+  "apply_to": [
+    "horizon100",
+    "horizon500"
+  ]
+}

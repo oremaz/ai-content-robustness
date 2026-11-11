@@ -1,0 +1,29 @@
+\section{DistSeal and the local text adaptation}
+\label{app:distseal}
+DistSeal \citep{distseal} first learns to hide a bit message in an image latent, then trains a generator or decoder to reproduce the marked targets. This places learned marking behavior in model weights.
+
+\paragraph{Objects and network roles.}
+Let $\mathcal X\subseteq\mathbb R^{H\times W\times3}$ be the RGB image space, with $H,W\in\mathbb N_{>0}$. An encoder $\mathcal E:\mathcal X\to\mathbb R^{d_z}$ compresses an image $x\in\mathcal X$ into $z=\mathcal E(x)\in\mathbb R^{d_z}$, where $d_z=C_zH_zW_z$ counts latent coordinates and $C_z,H_z,W_z\in\mathbb N_{>0}$ are its channel, height and width dimensions. Here the latent is continuous before any codebook quantization. Flattening changes only its representation. A decoder $\mathcal D:\mathbb R^{d_z}\to\mathcal X$ reconstructs an image.
+
+For payload length $B\in\mathbb N_{>0}$, the message is $m\in\{0,1\}^B$. An embedder $\mathcal W:\mathbb R^{d_z}\times\{0,1\}^B\to\mathbb R^{d_z}$ predicts a message-dependent residual. With scalar strength $\lambda_w\in[0,\infty)$, form
+\[
+ z_w=z+\lambda_w\mathcal W(z,m)\in\mathbb R^{d_z},
+ \qquad x_w=\mathcal D(z_w)\in\mathcal X.
+\]
+An extractor $\mathcal F:\mathcal X\to\mathbb R^B$ predicts one real logit per bit. With sigmoid $\operatorname{sigmoid}(a)=1/(1+e^{-a})\in(0,1)$ for $a\in\mathbb R$, thresholding each logit at zero produces $\widehat m\in\{0,1\}^B$. For example, payload length $B=3$ with message $(1,0,1)\in\{0,1\}^3$ asks the embedder to alter the latent so that the extractor later predicts those bits. It adds no visible text label.
+
+Post-hoc training combines recovery after image augmentations with a pixel-space adversarial discriminator. Quantization converts a continuous latent to discrete codebook tokens. Embedding before or after that conversion changes which targets are available for generator training. A straight-through gradient supplies a training surrogate through the discrete step.
+
+\paragraph{What distillation transfers.}
+Generator distillation fits marked latents with the architecture's native objective, such as categorical prediction for RAR or denoising for DC-AE. Decoder distillation trains a decoder receiving the original latent to reconstruct the teacher-marked image. For a fixed release payload, the student can then produce marked outputs directly. Later clean-data fine-tuning can change this learned behavior, which motivates the removal experiments.
+
+\paragraph{The local text version.}
+The text prototype applies an embedder to hidden states, then distils teacher token probabilities into Qwen LoRA weights. Let $\mathcal V$ be its vocabulary of size $V\in\mathbb N_{>0}$, $c\in\mathcal V^*$ a prompt, and $y=(y_1,\ldots,y_L)\in\mathcal V^L$ a training response of length $L\in\mathbb N_{>0}$. Write its hidden-state matrix as $H_{\rm resp}\in\mathbb R^{L\times d_h}$, with hidden width $d_h\in\mathbb N_{>0}$. The corresponding teacher and student token-logit matrices are $\Lambda_T,\Lambda_\theta\in\mathbb R^{L\times V}$. The subscript $T$ denotes the teacher. A text extractor $\mathcal F_{\rm text}:\mathcal V^*\to\mathbb R^B$ maps a finite token sequence to its message logits.
+
+At response position $t\in\{1,\ldots,L\}$, let $p_T(\cdot\mid c,y_{<t})$ and $p_\theta(\cdot\mid c,y_{<t})$ be teacher and student probability vectors in $\Delta(\mathcal V)$, with student parameters $\theta\in\mathbb R^{d_\theta}$ for $d_\theta\in\mathbb N_{>0}$. Each probability vector is the vocabulary softmax of its corresponding real-valued logit row, so its theoretical coordinates are strictly positive. A summed forward-KL distillation loss is
+\[
+ L_{\rm student}(\theta)=\sum_{t=1}^L\sum_{v\in\mathcal V}
+ p_T(v\mid c,y_{<t})
+ \log\frac{p_T(v\mid c,y_{<t})}{p_\theta(v\mid c,y_{<t})}\in[0,\infty).
+\]
+The loss penalizes the student for assigning too little probability to tokens favored by the teacher. Teacher forcing supplies the saved training tokens as the prefix at each position, so both models see the same prefix. Response masks exclude prompt and padding positions, and the training reduction may average eligible positions. In free generation the student visits its own prefixes, so teacher recovery alone cannot establish detection on fresh answers. This is a local text adaptation of the latent teacher/student idea.

@@ -1,0 +1,458 @@
+\section{Image watermarking and
+removal}\label{record-docs-watermarking-images-md-image-watermarking-and-removal}
+
+Targets are released DistSeal \textbf{RAR-XL} (256 pixels) and
+\textbf{UViT-H/DC-AE} (512 pixels). All current conditions have 512
+marked test outputs, 512 clean test controls and 256 clean calibration
+images. Owner detectors evaluate frozen outputs after attacks.
+
+\subsection{Access
+settings}\label{record-docs-watermarking-images-md-access-settings}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Target weights
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Original clean weights
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Other access
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Merging / clean replacement & Yes & Yes & No detector feedback \\
+Clean LoRA / full updates & Yes & No & Independent clean fitting
+images \\
+NFPA & No & No & Output PNGs plus independent public SD2.1 model \\
+JPEG / center crop & No & No & Output images only \\
+\end{longtable}
+}
+
+NFPA is the authors'
+\href{https://proceedings.neurips.cc/paper_files/paper/2025/hash/b48405307576689bea14d221ccba73ae-Abstract-Conference.html}{NeurIPS
+2025 method}, using an independent SD2.1 public mirror. The original
+SD2.1 host returned 404; byte-for-byte equality with that unavailable
+host is not claimed. This is output purification using preserved PNGs to
+simulate a closed provider, not a live API or modification of the
+provider's weights.
+
+All quality metrics use the same 512 reference PNGs, verified
+bit-identical across source experiments. High paired distances after a
+weight change can reflect a different valid generated sample; they are
+not automatically degraded generation quality. Class-text CLIP
+complements image similarity.
+
+\subsection{RAR-XL}\label{record-docs-watermarking-images-md-rar-xl}
+
+Original frozen owner threshold: \textbf{\textgreater0.640625}. Higher
+bit agreement indicates watermark detection. Every primary row uses this
+same threshold.
+
+\subsubsection{Detection at the fixed original
+threshold}\label{record-docs-watermarking-images-md-detection-at-the-fixed-original-threshold}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detection 95\% CI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 512 & 100.0\% & {[}99.3\%, 100.0\%{]} &
+0.8\% & 1.0000 \\
+Merge: 75\% watermarked & 512 & 96.9\% & {[}95.0\%, 98.2\%{]} & 0.8\% &
+0.9847 \\
+Merge: 50\% watermarked & 512 & 48.8\% & {[}44.4\%, 53.3\%{]} & 0.8\% &
+0.8938 \\
+Merge: 25\% watermarked & 512 & 2.7\% & {[}1.5\%, 4.5\%{]} & 0.8\% &
+0.6556 \\
+Original clean model replacement & 512 & 0.8\% & {[}0.2\%, 2.0\%{]} &
+0.8\% & 0.5000 \\
+Clean LoRA: 500 steps & 512 & 13.5\% & {[}10.6\%, 16.7\%{]} & 0.8\% &
+0.7414 \\
+Clean LoRA: 2,500 steps & 512 & 4.9\% & {[}3.2\%, 7.1\%{]} & 0.8\% &
+0.6121 \\
+Clean full training: 500 steps & 512 & 36.3\% & {[}32.2\%, 40.7\%{]} &
+0.8\% & 0.8556 \\
+Clean full training: 2,500 steps & 512 & 7.2\% & {[}5.1\%, 9.8\%{]} &
+0.8\% & 0.6829 \\
+Resize-only control & 512 & 100.0\% & {[}99.3\%, 100.0\%{]} & 1.0\% &
+1.0000 \\
+NFPA delta 0 (regeneration control) & 512 & 95.7\% & {[}93.6\%,
+97.3\%{]} & 0.4\% & 0.9892 \\
+NFPA delta 20 & 512 & 69.3\% & {[}65.1\%, 73.3\%{]} & 0.4\% & 0.8922 \\
+NFPA delta 40 (primary) & 512 & 21.5\% & {[}18.0\%, 25.3\%{]} & 0.2\% &
+0.5717 \\
+\end{longtable}
+}
+
+\subsubsection{Matched quality
+metrics}\label{record-docs-watermarking-images-md-matched-quality-metrics}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+LPIPS ↓
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+SSIM ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+PSNR dB ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Image CLIP ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP ↑
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 0.0000 & 1.0000 & 120.0000 & 1.0000 &
+0.3030 \\
+Merge: 75\% watermarked & 0.6250 & 0.2187 & 10.2179 & 0.8166 & 0.3045 \\
+Merge: 50\% watermarked & 0.6529 & 0.2073 & 9.9176 & 0.7979 & 0.3045 \\
+Merge: 25\% watermarked & 0.6673 & 0.2024 & 9.8530 & 0.7929 & 0.3046 \\
+Original clean model replacement & 0.6739 & 0.2005 & 9.7475 & 0.7874 &
+0.3034 \\
+Clean LoRA: 500 steps & 0.6594 & 0.2186 & 10.0281 & 0.7889 & 0.3028 \\
+Clean LoRA: 2,500 steps & 0.6692 & 0.2071 & 9.7269 & 0.7884 & 0.3044 \\
+Clean full training: 500 steps & 0.6564 & 0.2140 & 9.8989 & 0.7960 &
+0.3031 \\
+Clean full training: 2,500 steps & 0.6618 & 0.2043 & 9.7729 & 0.7917 &
+0.3032 \\
+Resize-only control & 0.0044 & 0.9953 & 45.4711 & 0.9967 & 0.3021 \\
+NFPA delta 0 (regeneration control) & 0.1824 & 0.7855 & 24.1610 & 0.8225
+& 0.2658 \\
+NFPA delta 20 & 0.3045 & 0.3213 & 15.4247 & 0.8133 & 0.2646 \\
+NFPA delta 40 (primary) & 0.4221 & 0.2772 & 13.6116 & 0.8046 & 0.2630 \\
+\end{longtable}
+}
+
+Means are over the same 512 pairs. Per-condition quantiles and 95\%
+bootstrap intervals, plus class-zero and unseen-class groups, are
+retained in the \href{../docs/watermarking/data/metrics.json}{portable
+metric snapshot}. PSNR identity values are capped at 120 dB.
+
+\subsubsection{NFPA with separately transformed
+calibration}\label{record-docs-watermarking-images-md-nfpa-with-separately-transformed-calibration}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Recalibrated threshold
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Resize-only control & 0.6562 & 100.0\% & 0.2\% & 1.0000 \\
+NFPA delta 0 (regeneration control) & 0.6875 & 94.3\% & 0.0\% &
+0.9892 \\
+NFPA delta 20 & 0.6250 & 71.3\% & 1.2\% & 0.8922 \\
+NFPA delta 40 (primary) & 0.6406 & 21.5\% & 0.2\% & 0.5717 \\
+\end{longtable}
+}
+
+These owner-side recalibrations use separate attacked clean calibration
+images; they do not select the attack strength. Original-threshold
+results above remain the primary comparison.
+
+\subsection{UViT-H/DC-AE}\label{record-docs-watermarking-images-md-uvit-hdc-ae}
+
+Original frozen owner threshold: \textbf{\textgreater0.6875}. Higher bit
+agreement indicates watermark detection. Every primary row uses this
+same threshold.
+
+\subsubsection{Detection at the fixed original
+threshold}\label{record-docs-watermarking-images-md-detection-at-the-fixed-original-threshold-1}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detection 95\% CI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 512 & 100.0\% & {[}99.3\%, 100.0\%{]} &
+0.0\% & 1.0000 \\
+Merge: 75\% watermarked & 512 & 0.0\% & {[}0.0\%, 0.7\%{]} & 0.0\% &
+0.4698 \\
+Merge: 50\% watermarked & 512 & 0.0\% & {[}0.0\%, 0.7\%{]} & 0.0\% &
+0.4725 \\
+Merge: 25\% watermarked & 512 & 0.0\% & {[}0.0\%, 0.7\%{]} & 0.0\% &
+0.4568 \\
+Original clean model replacement & 512 & 0.0\% & {[}0.0\%, 0.7\%{]} &
+0.0\% & 0.5000 \\
+Clean LoRA: 500 steps & 512 & 1.6\% & {[}0.7\%, 3.1\%{]} & 0.0\% &
+0.7231 \\
+Clean LoRA: 2,500 steps & 512 & 0.2\% & {[}0.0\%, 1.1\%{]} & 0.0\% &
+0.6316 \\
+Clean full training: 500 steps & 512 & 4.9\% & {[}3.2\%, 7.1\%{]} &
+0.0\% & 0.7980 \\
+Clean full training: 2,500 steps & 512 & 0.4\% & {[}0.0\%, 1.4\%{]} &
+0.0\% & 0.5657 \\
+Resize-only control & 512 & 100.0\% & {[}99.3\%, 100.0\%{]} & 0.0\% &
+1.0000 \\
+NFPA delta 0 (regeneration control) & 512 & 85.2\% & {[}81.8\%,
+88.1\%{]} & 0.0\% & 0.9637 \\
+NFPA delta 20 & 512 & 68.4\% & {[}64.1\%, 72.4\%{]} & 0.0\% & 0.9299 \\
+NFPA delta 40 (primary) & 512 & 33.6\% & {[}29.5\%, 37.9\%{]} & 0.0\% &
+0.7648 \\
+\end{longtable}
+}
+
+\subsubsection{Matched quality
+metrics}\label{record-docs-watermarking-images-md-matched-quality-metrics-1}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+LPIPS ↓
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+SSIM ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+PSNR dB ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Image CLIP ↑
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP ↑
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 0.0000 & 1.0000 & 120.0000 & 1.0000 &
+0.2934 \\
+Merge: 75\% watermarked & 0.8684 & 0.3298 & 12.4682 & 0.5622 & 0.2141 \\
+Merge: 50\% watermarked & 0.9209 & 0.3375 & 12.4505 & 0.5819 & 0.2327 \\
+Merge: 25\% watermarked & 0.8896 & 0.3308 & 12.6278 & 0.5691 & 0.2200 \\
+Original clean model replacement & 0.2146 & 0.6906 & 20.3918 & 0.8954 &
+0.2927 \\
+Clean LoRA: 500 steps & 0.1464 & 0.7916 & 23.4915 & 0.9294 & 0.2869 \\
+Clean LoRA: 2,500 steps & 0.1510 & 0.7874 & 23.2978 & 0.9244 & 0.2840 \\
+Clean full training: 500 steps & 0.2045 & 0.7235 & 21.2917 & 0.8927 &
+0.2813 \\
+Clean full training: 2,500 steps & 0.2148 & 0.7146 & 21.1121 & 0.8899 &
+0.2816 \\
+Resize-only control & 0.0000 & 1.0000 & 120.0000 & 1.0000 & 0.2934 \\
+NFPA delta 0 (regeneration control) & 0.1985 & 0.6797 & 23.3523 & 0.8557
+& 0.2684 \\
+NFPA delta 20 & 0.3752 & 0.3483 & 15.4463 & 0.8438 & 0.2677 \\
+NFPA delta 40 (primary) & 0.5082 & 0.3103 & 13.4204 & 0.8338 & 0.2664 \\
+\end{longtable}
+}
+
+Means are over the same 512 pairs. Per-condition quantiles and 95\%
+bootstrap intervals, plus class-zero and unseen-class groups, are
+retained in the \href{../docs/watermarking/data/metrics.json}{portable
+metric snapshot}. PSNR identity values are capped at 120 dB.
+
+\subsubsection{NFPA with separately transformed
+calibration}\label{record-docs-watermarking-images-md-nfpa-with-separately-transformed-calibration-1}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Recalibrated threshold
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Resize-only control & 0.6875 & 100.0\% & 0.0\% & 1.0000 \\
+NFPA delta 0 (regeneration control) & 0.6406 & 87.7\% & 0.6\% &
+0.9637 \\
+NFPA delta 20 & 0.6406 & 74.0\% & 0.8\% & 0.9299 \\
+NFPA delta 40 (primary) & 0.6719 & 35.5\% & 0.0\% & 0.7648 \\
+\end{longtable}
+}
+
+These owner-side recalibrations use separate attacked clean calibration
+images; they do not select the attack strength. Original-threshold
+results above remain the primary comparison.
+
+\subsection{Qualitative
+comparisons}\label{record-docs-watermarking-images-md-qualitative-comparisons}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Eight pairs
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RAR-XL & Unmodified watermarked model &
+\href{records/docs/watermarking/qualitative/image-rar-weight-unmodified-supplied.tex}{View} \\
+RAR-XL & Merge: 75\% watermarked &
+\href{records/docs/watermarking/qualitative/image-rar-weight-merge-0-75.tex}{View} \\
+RAR-XL & Merge: 50\% watermarked &
+\href{records/docs/watermarking/qualitative/image-rar-weight-merge-0-5.tex}{View} \\
+RAR-XL & Merge: 25\% watermarked &
+\href{records/docs/watermarking/qualitative/image-rar-weight-merge-0-25.tex}{View} \\
+RAR-XL & Original clean model replacement &
+\href{records/docs/watermarking/qualitative/image-rar-weight-merge-0.tex}{View} \\
+RAR-XL & Clean LoRA: 500 steps &
+\href{records/docs/watermarking/qualitative/image-rar-weight-clean-lora-500.tex}{View} \\
+RAR-XL & Clean LoRA: 2,500 steps &
+\href{records/docs/watermarking/qualitative/image-rar-weight-clean-lora-2500.tex}{View} \\
+RAR-XL & Clean full training: 500 steps &
+\href{records/docs/watermarking/qualitative/image-rar-weight-clean-full-500.tex}{View} \\
+RAR-XL & Clean full training: 2,500 steps &
+\href{records/docs/watermarking/qualitative/image-rar-weight-clean-full-2500.tex}{View} \\
+RAR-XL & Resize-only control &
+\href{records/docs/watermarking/qualitative/image-rar-output-resize-only.tex}{View} \\
+RAR-XL & NFPA delta 0 (regeneration control) &
+\href{records/docs/watermarking/qualitative/image-rar-output-nfpa-0.tex}{View} \\
+RAR-XL & NFPA delta 20 &
+\href{records/docs/watermarking/qualitative/image-rar-output-nfpa-20.tex}{View} \\
+RAR-XL & NFPA delta 40 (primary) &
+\href{records/docs/watermarking/qualitative/image-rar-output-nfpa-40.tex}{View} \\
+RAR-XL & jpeg50 on original marked output &
+\href{records/docs/watermarking/qualitative/image-rar-jpeg50.tex}{View} \\
+RAR-XL & center\_\allowbreak{}crop\_\allowbreak{}area50 on original
+marked output &
+\href{records/docs/watermarking/qualitative/image-rar-center_crop_area50.tex}{View} \\
+UViT-H/DC-AE & Unmodified watermarked model &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-unmodified-supplied.tex}{View} \\
+UViT-H/DC-AE & Merge: 75\% watermarked &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-merge-0-75.tex}{View} \\
+UViT-H/DC-AE & Merge: 50\% watermarked &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-merge-0-5.tex}{View} \\
+UViT-H/DC-AE & Merge: 25\% watermarked &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-merge-0-25.tex}{View} \\
+UViT-H/DC-AE & Original clean model replacement &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-merge-0.tex}{View} \\
+UViT-H/DC-AE & Clean LoRA: 500 steps &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-500.tex}{View} \\
+UViT-H/DC-AE & Clean LoRA: 2,500 steps &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-clean-lora-2500.tex}{View} \\
+UViT-H/DC-AE & Clean full training: 500 steps &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-clean-full-500.tex}{View} \\
+UViT-H/DC-AE & Clean full training: 2,500 steps &
+\href{records/docs/watermarking/qualitative/image-dcae-weight-clean-full-2500.tex}{View} \\
+UViT-H/DC-AE & Resize-only control &
+\href{records/docs/watermarking/qualitative/image-dcae-output-resize-only.tex}{View} \\
+UViT-H/DC-AE & NFPA delta 0 (regeneration control) &
+\href{records/docs/watermarking/qualitative/image-dcae-output-nfpa-0.tex}{View} \\
+UViT-H/DC-AE & NFPA delta 20 &
+\href{records/docs/watermarking/qualitative/image-dcae-output-nfpa-20.tex}{View} \\
+UViT-H/DC-AE & NFPA delta 40 (primary) &
+\href{records/docs/watermarking/qualitative/image-dcae-output-nfpa-40.tex}{View} \\
+UViT-H/DC-AE & jpeg50 on original marked output &
+\href{records/docs/watermarking/qualitative/image-dcae-jpeg50.tex}{View} \\
+UViT-H/DC-AE & center\_\allowbreak{}crop\_\allowbreak{}area50 on
+original marked output &
+\href{records/docs/watermarking/qualitative/image-dcae-center_crop_area50.tex}{View} \\
+\end{longtable}
+}
+
+\href{records/docs/watermarking/historical.tex}{Historical image pilots}
+have their own galleries and are not pooled with the current
+eight-thousand-image fitting protocol.
+
+\href{records/docs/watermarking/robustness.tex}{JPEG/crop robustness
+tables} \textbar{} \href{../docs/watermarking/README.md}{Overview}
+\textbar{} \href{records/docs/watermarking/metrics.tex}{Metric
+definitions}

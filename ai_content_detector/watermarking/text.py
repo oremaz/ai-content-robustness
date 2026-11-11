@@ -22,7 +22,7 @@ def configured_cache(model):
     return DynamicCache(config=model.config)
 
 
-def load_model(path, training=False, training_mode="lora"):
+def load_model(path, training=False, training_mode="lora", lora_rank=64):
     from transformers import AutoModelForCausalLM, AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
     tokenizer.pad_token = tokenizer.eos_token
@@ -34,7 +34,7 @@ def load_model(path, training=False, training_mode="lora"):
     if training:
         if training_mode == "lora":
             from peft import LoraConfig, get_peft_model
-            model = get_peft_model(model, LoraConfig(r=64, lora_alpha=128, lora_dropout=0.0,
+            model = get_peft_model(model, LoraConfig(r=lora_rank, lora_alpha=2*lora_rank, lora_dropout=0.0,
                                                    target_modules="all-linear", task_type="CAUSAL_LM"))
         elif training_mode == "full":
             model.requires_grad_(True)
@@ -94,6 +94,12 @@ def forward_kl(student_logits, teacher_logits, mask, chunk=32):
     return loss / valid.sum()
 
 
+def response_mask(sequence_length, prompt_length, device):
+    if not 0 <= prompt_length < sequence_length:
+        raise ValueError("Training sequence must contain response tokens")
+    return (torch.arange(sequence_length-1, device=device) >= max(0, prompt_length-1))[None]
+
+
 def fit(manifest, stop, clean=False):
     root = Path(manifest["directory"])
     name = manifest.get("clean_stage", "text_clean") if clean else manifest.get("distillation_stage", "distill")
@@ -104,7 +110,7 @@ def fit(manifest, stop, clean=False):
     steps = config["clean_steps"] if clean else config["steps"]
     source = manifest.get("clean_source", str(root / manifest.get("distilled_model", "distill/model"))) if clean else manifest["qwen"]["path"]
     mode = config.get("mode", "lora")
-    model, tokenizer = load_model(source, training=True, training_mode=mode)
+    model, tokenizer = load_model(source, training=True, training_mode=mode, lora_rank=config.get("lora_rank", 64))
     teacher = None
     if not clean:
         teacher, _ = load_model(source)
@@ -153,16 +159,20 @@ def fit(manifest, stop, clean=False):
             group["lr"] = lr
         indices = np.random.default_rng(manifest["seed"] + step).integers(len(rows), size=config["accumulation"])
         for index in indices:
-            ids = torch.tensor([rows[index]["tokens"][:config["length"]]], device="cuda")
+            row = rows[index]
+            prompt_length = row.get("prompt_length", 0)
+            ids = torch.tensor([row["tokens"][:prompt_length+config["length"]]], device="cuda")
+            mask = response_mask(ids.shape[-1], prompt_length, ids.device)
             if clean:
+                labels = ids.clone()
+                labels[:, :prompt_length] = -100
                 with torch.autocast("cuda", dtype=torch.bfloat16):
-                    loss = model(input_ids=ids, labels=ids, use_cache=False).loss
+                    loss = model(input_ids=ids, labels=labels, use_cache=False).loss
             else:
                 with torch.no_grad():
                     target = teacher(input_ids=ids, use_cache=False).logits[:, :-1].detach()
                 logits = model(input_ids=ids, use_cache=False).logits[:, :-1]
                 # Logit at position t predicts token t+1, seeded by token t.
-                mask = torch.ones_like(ids[:, :-1], dtype=torch.bool)
                 loss = (forward_kl(logits, target, mask) if latent else
                         distillation_loss(logits, target, ids[:, :-1, None], mask, wm_config))
                 del target, logits
@@ -170,7 +180,7 @@ def fit(manifest, stop, clean=False):
                 raise FloatingPointError("Non-finite watermark training loss")
             (loss / config["accumulation"]).backward()
             loss_sum += float(loss.detach()) / config["accumulation"]
-            tokens_seen += ids.numel()-1
+            tokens_seen += int(mask.sum())
         norm = torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.)
         if not torch.isfinite(norm):
             raise FloatingPointError("Non-finite text training gradient")

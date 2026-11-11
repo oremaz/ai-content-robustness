@@ -1,0 +1,67 @@
+\section{RAR-XL: NFPA delta 0 (regeneration
+control)}\label{record-docs-watermarking-qualitative-image-rar-output-nfpa-0-md-rar-xl-nfpa-delta-0-regeneration-control}
+
+Candidate images are transformations of the original PNG. NFPA uses only
+the image and an independent public model. Delta 0 still executes
+VAE/DDIM and zero-flow resampling.
+
+Eight pairs use fixed original indices 0, 64, 128, 192, 256, 320, 384
+and 448. No detection or visual-quality filtering is applied.
+
+\begin{recordfigure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Eight original/after image pairs}]{figures/image-rar-output-nfpa-0.png}}
+\caption{Eight original/after image pairs}
+\end{recordfigure}
+
+The lossless figure contains 16 panels. Each panel is displayed at 256
+pixels; metrics use original native-resolution PNGs. Labels report each
+output's detector result, not guaranteed removal.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Index
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Before
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+After
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+LPIPS
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 0 & class 0 \textbar{} bits=0.922 \textbar{} detected & class 0
+\textbar{} bits=0.891 \textbar{} detected & 0.1184 & 0.3133 \\
+64 & 0 & class 0 \textbar{} bits=0.984 \textbar{} detected & class 0
+\textbar{} bits=0.984 \textbar{} detected & 0.1147 & 0.3021 \\
+128 & 909 & class 909 \textbar{} bits=0.969 \textbar{} detected & class
+909 \textbar{} bits=0.891 \textbar{} detected & 0.1214 & 0.2968 \\
+192 & 58 & class 58 \textbar{} bits=0.969 \textbar{} detected & class 58
+\textbar{} bits=0.922 \textbar{} detected & 0.2581 & 0.1520 \\
+256 & 665 & class 665 \textbar{} bits=1.000 \textbar{} detected & class
+665 \textbar{} bits=0.984 \textbar{} detected & 0.1510 & 0.2260 \\
+320 & 446 & class 446 \textbar{} bits=0.922 \textbar{} detected & class
+446 \textbar{} bits=0.875 \textbar{} detected & 0.1914 & 0.2232 \\
+384 & 6 & class 6 \textbar{} bits=0.922 \textbar{} detected & class 6
+\textbar{} bits=0.906 \textbar{} detected & 0.1535 & 0.2665 \\
+448 & 488 & class 488 \textbar{} bits=0.922 \textbar{} detected & class
+488 \textbar{} bits=0.891 \textbar{} detected & 0.0984 & 0.2764 \\
+\end{longtable}
+}
+
+\href{records/docs/watermarking/images.tex}{Image metrics} \textbar{}
+\href{../docs/watermarking/README.md}{Report overview}

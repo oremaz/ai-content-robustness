@@ -146,7 +146,9 @@ def probability_run(config, stop):
         estimates = []
         rng = np.random.default_rng(config["seed"])
         for row in data["train"][:config["confidence_prefixes"]]:
-            length = int(rng.integers(30, min(256, len(row["tokens"])) + 1))
+            lower = row.get("prompt_length", 29)+1
+            upper = min(len(row["tokens"]), row.get("prompt_length", 0)+256)
+            length = int(rng.integers(lower, upper+1))
             ids = torch.tensor([row["tokens"][:length]], device="cuda")
             logits = model(ids, use_cache=False).logits[:, -1]
             estimates.append(float(confidence(exposed(logits, config))[0]))
@@ -189,8 +191,11 @@ def probability_run(config, stop):
                 prev = position
             for i, row in enumerate(batch):
                 ids = tokens[i, lengths[i]:lengths[i]+config["generation_tokens"]].tolist()
-                if tokenizer.eos_token_id in ids:
-                    ids = ids[:ids.index(tokenizer.eos_token_id)]
+                eos = model.generation_config.eos_token_id
+                eos = eos if isinstance(eos, list) else [eos]
+                ends = [ids.index(t) for t in set(eos+[tokenizer.eos_token_id]) if t in ids]
+                if ends:
+                    ids = ids[:min(ends)]
                 saved.append({"id": row["id"], "prompt": row["prompt"], "text": tokenizer.decode(ids), "tokens": ids,
                               "mean_target_weight": float(torch.stack(weights)[:, i].mean()) if weights else None})
             write_json(path, {"signature": config["protocol_sha256"], "rows": saved})
@@ -514,7 +519,7 @@ if __name__ == "__main__":
     parser.add_argument("stage", nargs="?", choices=("preflight", "probability", "calibrate", "vanilla", "rewrite", "evaluate"))
     args = parser.parse_args()
     if args.action == "prepare":
-        prepare()
+        parser.error("TextSeal 1 preparation is retired. Use scripts/instruct_watermark_experiments.py prepare.")
     elif args.action == "submit":
         submit(args.manifest)
     else:

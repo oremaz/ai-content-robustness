@@ -1,0 +1,114 @@
+{
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-audit-20261107T201658Z/manifest.json",
+  "result_sha256": "f87ef9da1918a80d733ffe03321407d755d45d2fc26f00015cb819a2552de45d",
+  "n_prefixes": 16,
+  "active_supports": [
+    29,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "native_ideal_disagreements": 0,
+  "native_ideal_coupled_races": 1048576,
+  "draw_budget_summaries": {
+    "64": {
+      "native_tv": {
+        "mean": 0.0021639192305937206,
+        "median": 0.0,
+        "max": 0.04477212427616318
+      },
+      "native_max_abs": {
+        "mean": 0.0021521716357999535,
+        "median": 0.0,
+        "max": 0.04426613674491603
+      },
+      "cuda_ms": {
+        "mean": 39.564902629082404,
+        "median": 0.2226720005273819,
+        "max": 1887.059326171875
+      },
+      "raw_sum": {
+        "mean": 0.9980907401699037,
+        "median": 1.0,
+        "max": 1.039568293066319
+      },
+      "omitted_top10_estimated_mass": {
+        "mean": 1.9862290299201466e-06,
+        "median": 0.0,
+        "max": 3.5803134391332314e-05
+      }
+    },
+    "256": {
+      "native_tv": {
+        "mean": 0.0007881498773528969,
+        "median": 0.0,
+        "max": 0.023629487072293082
+      },
+      "native_max_abs": {
+        "mean": 0.0007760793636267573,
+        "median": 0.0,
+        "max": 0.023616397358233954
+      },
+      "cuda_ms": {
+        "mean": 0.22440600115805864,
+        "median": 0.2094240039587021,
+        "max": 0.4859200119972229
+      },
+      "raw_sum": {
+        "mean": 0.99957708258784,
+        "median": 1.0,
+        "max": 1.014084998506454
+      },
+      "omitted_top10_estimated_mass": {
+        "mean": 2.2334510058017822e-06,
+        "median": 0.0,
+        "max": 3.727160269417773e-05
+      }
+    },
+    "1024": {
+      "native_tv": {
+        "mean": 0.00026474925456566265,
+        "median": 0.0,
+        "max": 0.0067468568431212055
+      },
+      "native_max_abs": {
+        "mean": 0.0002456891388254873,
+        "median": 0.0,
+        "max": 0.006432773626298405
+      },
+      "cuda_ms": {
+        "mean": 0.2221886652211348,
+        "median": 0.20795200020074844,
+        "max": 0.48476800322532654
+      },
+      "raw_sum": {
+        "mean": 1.0004805321304564,
+        "median": 1.0,
+        "max": 1.0157050782031527
+      },
+      "omitted_top10_estimated_mass": {
+        "mean": 2.0458449586392238e-06,
+        "median": 0.0,
+        "max": 3.468097038705764e-05
+      }
+    }
+  },
+  "limitations": [
+    "Only16fixedcalibrationprefixes, active support1to29; do not generalize to diverse attack prefixes.",
+    "Empirical reference uses65536racesperprefix and has sampling error.",
+    "CUDA estimator timing excludes model forward/filtering/PRF/API overhead; first64drawcall includes coldkernelcost.",
+    "No observed clipping disagreement is a finite-sample finding, not an exact equivalence proof."
+  ]
+}

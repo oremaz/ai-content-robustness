@@ -1,0 +1,1280 @@
+{
+  "evaluation_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+  "validation_design": {
+    "seed": 2026110813,
+    "labels": [
+      810,
+      994,
+      957,
+      837,
+      835,
+      920,
+      961,
+      962,
+      940,
+      866,
+      902,
+      803,
+      958,
+      840,
+      813,
+      907,
+      911,
+      992,
+      855,
+      947,
+      856,
+      842,
+      928,
+      901,
+      946,
+      964,
+      859,
+      937,
+      923,
+      933,
+      852,
+      918
+    ],
+    "n": 32,
+    "selection_uses_owner_scores": false
+  },
+  "scope": "Post-hoc qualitative calibration using validation inputs only; final64inputs and owner decisions excluded from judging/fitting. Existing original/fixed/adapted model runs will be reanalysed, not claimed as fresh confirmation.",
+  "rubric": "Accept the same main objects and scene with minor texture, lighting, expression or shape changes. Reject missing/replaced main objects, added important people/objects, major layout changes, changes to meaningful text/pattern content, or clear major perceptual degradation. Mark borderline changes ambiguous.",
+  "images": {
+    "base": [
+      {
+        "index": 0,
+        "label": 810,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00000.png",
+        "sha256": "6f8ab044e24e00da516f1ffaf0f1fba4a2b8bb174192d87de0b53d1fe76a8b46"
+      },
+      {
+        "index": 1,
+        "label": 994,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00001.png",
+        "sha256": "fc87feb32b1ad88fa00e86520ccae83379964aa3e34514d9d82f27413dd99686"
+      },
+      {
+        "index": 2,
+        "label": 957,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00002.png",
+        "sha256": "ba967f71c1a9a7d7ecd44f3822b0cbf506a78bf733ee081fa33a3c99a3417696"
+      },
+      {
+        "index": 3,
+        "label": 837,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00003.png",
+        "sha256": "c4aee7c155b1138784cad6b6441030050587c8feb2492bc861131e6de47c1a20"
+      },
+      {
+        "index": 4,
+        "label": 835,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00004.png",
+        "sha256": "506343e84247bb949341f329391ac03dab83d64cdc22fc03f1ee0c029f71ea71"
+      },
+      {
+        "index": 5,
+        "label": 920,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00005.png",
+        "sha256": "a59d64aa60a923522aa913fbdc2868d6694a72c21adc34310e0ccc79e5267b8a"
+      },
+      {
+        "index": 6,
+        "label": 961,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00006.png",
+        "sha256": "3484e1275151d4d3c0c5088faaad62009f45a54bb901b13ad093abfeca37ac40"
+      },
+      {
+        "index": 7,
+        "label": 962,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00007.png",
+        "sha256": "8c3f2ef9cbb3ff431772b19c9c0652e2ef4422ccdf18da8c2177b5a6b943a85b"
+      },
+      {
+        "index": 8,
+        "label": 940,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00008.png",
+        "sha256": "332e94535262bec8f1c37de1a5ce08759ec56760b842f74a39c362a207611820"
+      },
+      {
+        "index": 9,
+        "label": 866,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00009.png",
+        "sha256": "369055f86299e2a611bad523664db28b50abb05938452ee61f83c6d2c3acb2be"
+      },
+      {
+        "index": 10,
+        "label": 902,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00010.png",
+        "sha256": "c22036a2b3c7de85857c5765131d0ae00707be0307a5d6dc6371c299c78dbb13"
+      },
+      {
+        "index": 11,
+        "label": 803,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00011.png",
+        "sha256": "327bb08c9ddb16c7b5b516cc805dff987990805516f3f733e9310c4df97b1122"
+      },
+      {
+        "index": 12,
+        "label": 958,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00012.png",
+        "sha256": "ad5b0a0151411b468d4997a03c6809b6303f2346d4d06d9f1b3754f2edeed72d"
+      },
+      {
+        "index": 13,
+        "label": 840,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00013.png",
+        "sha256": "e36a94a8d63c3e75e206b990c2b026bf6a71457a781454be35ff311d342f60d6"
+      },
+      {
+        "index": 14,
+        "label": 813,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00014.png",
+        "sha256": "332f233863a3051eb34c837e6b47d572f85a923383544563402b7286daae93aa"
+      },
+      {
+        "index": 15,
+        "label": 907,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00015.png",
+        "sha256": "d703cc5473d4f82c27cca969cddb225dc6663eeefa98cd72a7f7c30dd01baf55"
+      },
+      {
+        "index": 16,
+        "label": 911,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00016.png",
+        "sha256": "b75a554ba4d336d9cbd242130f1eda61bebc2d57712af227f579fed0c6c1f13e"
+      },
+      {
+        "index": 17,
+        "label": 992,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00017.png",
+        "sha256": "d71a129080ee71c3ad3a659a4a27798cf7bce670444ae4f4e0c779c2271cb741"
+      },
+      {
+        "index": 18,
+        "label": 855,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00018.png",
+        "sha256": "85b38bee9831dc6cda836a9e5d39bcd1917e49c83f53b19cfe3e621f8cb77286"
+      },
+      {
+        "index": 19,
+        "label": 947,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00019.png",
+        "sha256": "4871d30296ab43b60a6c38174e15efd3694d178b19a1b55b0410241ab297a6cb"
+      },
+      {
+        "index": 20,
+        "label": 856,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00020.png",
+        "sha256": "7a8a95519a9cf77e89316d170df0739640dbd777c568741921b7e0c5896b4cb6"
+      },
+      {
+        "index": 21,
+        "label": 842,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00021.png",
+        "sha256": "e60551b45d165e826b64fb932b9f19c3efe15d4e76063ad1232334ab142fab49"
+      },
+      {
+        "index": 22,
+        "label": 928,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00022.png",
+        "sha256": "3276ccd90909babdd7c05bea3d368b4b6425561a8b8d55a395e8b9f45c71f178"
+      },
+      {
+        "index": 23,
+        "label": 901,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00023.png",
+        "sha256": "c84b0ada20e94bd42a46151958024500812ac419b236a614db49880684b44425"
+      },
+      {
+        "index": 24,
+        "label": 946,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00024.png",
+        "sha256": "c9959b91e820ba7f6c4ae56c57fa72b11f8c1b8112e0f64c16540ca890d41c87"
+      },
+      {
+        "index": 25,
+        "label": 964,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00025.png",
+        "sha256": "2a6944c0b8c27f97abd8439b87f8285c954bde089082ba349c2c01380c886f9b"
+      },
+      {
+        "index": 26,
+        "label": 859,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00026.png",
+        "sha256": "f8a3f26992862aa3f45be814e3178b25f2e2690afe6b7bac11124daf058f66a2"
+      },
+      {
+        "index": 27,
+        "label": 937,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00027.png",
+        "sha256": "56ed034cd1f10eaa69a2a601fe8ff7b6ab3e7b56d276316b3c529d28b2d78d5c"
+      },
+      {
+        "index": 28,
+        "label": 923,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00028.png",
+        "sha256": "3c0dc3ade24499690bd2291f7aace29454537c77eb3e2d137be21eab94526003"
+      },
+      {
+        "index": 29,
+        "label": 933,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00029.png",
+        "sha256": "e845072d9296a749efc0800e8b991c1611a522d36f6b6c488da682830c15baa3"
+      },
+      {
+        "index": 30,
+        "label": 852,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00030.png",
+        "sha256": "ef0c20e09aab6c703522521c416e0724ce1ac96298e135f77c301a24e56b1b53"
+      },
+      {
+        "index": 31,
+        "label": 918,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/validation-base/00031.png",
+        "sha256": "5f56a4819c3e521c5e72da3ae6ecdc2322acac7b5cd8eb4dd0f41ef0dc165247"
+      }
+    ],
+    "attack": [
+      {
+        "index": 0,
+        "label": 810,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00000.png",
+        "sha256": "443731d04426d111f545642d316f07f7b4ea376710712d1e79a8102c55343a64"
+      },
+      {
+        "index": 1,
+        "label": 994,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00001.png",
+        "sha256": "3dab23329badf77f5c1f1d23eb1f047f61bd8bf5a544132365a556f66948c5d8"
+      },
+      {
+        "index": 2,
+        "label": 957,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00002.png",
+        "sha256": "669bad6984741c4c4a220c1ffe477ae5c235dff6493ae7a58d25fdc701e78c27"
+      },
+      {
+        "index": 3,
+        "label": 837,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00003.png",
+        "sha256": "f79b79782c9f6f3396e56694298e56847d97a6eed1b91c410d4acc1484719884"
+      },
+      {
+        "index": 4,
+        "label": 835,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00004.png",
+        "sha256": "f9c6edd7293bef0499b481364582ce1ee9339304648f0ab0c649de0cd8ae2da7"
+      },
+      {
+        "index": 5,
+        "label": 920,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00005.png",
+        "sha256": "2b0ca1f6a6ea6114d251e3008d4fd9986ac8271f0560c1360d4ded8597e14ee2"
+      },
+      {
+        "index": 6,
+        "label": 961,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00006.png",
+        "sha256": "90d8daf0397f69732f79de65e19607f8c514001aff754e0809f8f565396cf116"
+      },
+      {
+        "index": 7,
+        "label": 962,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00007.png",
+        "sha256": "0940421b3619026cf10cba8827f8155a24f4aa7e9481b901ab4b698621a04cc9"
+      },
+      {
+        "index": 8,
+        "label": 940,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00008.png",
+        "sha256": "f4a82fcbb70ef6f6efe5637bafca117f1b34699a6aff2898fd839da015324629"
+      },
+      {
+        "index": 9,
+        "label": 866,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00009.png",
+        "sha256": "af99aca70061a081cbe2b29071a2eafc6fa419353a4157616615011ca9019f3c"
+      },
+      {
+        "index": 10,
+        "label": 902,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00010.png",
+        "sha256": "4180d54013a3ffe789c2c57894a39f0289c9f2254ec95029c25bc61dd3d33564"
+      },
+      {
+        "index": 11,
+        "label": 803,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00011.png",
+        "sha256": "9208964c369c54051eaf16455c9bb1e376592f2c8f8c95bc4ed794e04d4d4019"
+      },
+      {
+        "index": 12,
+        "label": 958,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00012.png",
+        "sha256": "48e59014d097bb034a560e890069bb3997bdadc1bd8b4550d8e496150f73e244"
+      },
+      {
+        "index": 13,
+        "label": 840,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00013.png",
+        "sha256": "4b57e901a598559508c146d9dc5ebf329c3abc6ca9468abd20f790d1f9c1b33a"
+      },
+      {
+        "index": 14,
+        "label": 813,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00014.png",
+        "sha256": "663aea21c2e1ba48d2c374d8cf40a3ee95ac25485ea4411c46dab876007dcd4d"
+      },
+      {
+        "index": 15,
+        "label": 907,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00015.png",
+        "sha256": "c827a02c7c9863928833641a1c00b8af9a8dba2cd611edbfd8188700e70a7574"
+      },
+      {
+        "index": 16,
+        "label": 911,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00016.png",
+        "sha256": "0b925a136adfa3b7468251f18788bfc0afeb741dfa56b267310a183fae2e80c0"
+      },
+      {
+        "index": 17,
+        "label": 992,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00017.png",
+        "sha256": "50903b0b95c050974334ade36764c604538631c5349ec3597732b01d93f7e09b"
+      },
+      {
+        "index": 18,
+        "label": 855,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00018.png",
+        "sha256": "2d7cc674bf1dda83a9852b4ba57adb343d1dc5410cec83b57c03fe5f3b3f6734"
+      },
+      {
+        "index": 19,
+        "label": 947,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00019.png",
+        "sha256": "1854c01b2180c4a900e78ba7420a852ad5403bbe55eb2c36d6c7a269cb02074d"
+      },
+      {
+        "index": 20,
+        "label": 856,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00020.png",
+        "sha256": "106601e5ecada051602acb9af807c8098139c3d769bddbc83b10c04a0afa6413"
+      },
+      {
+        "index": 21,
+        "label": 842,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00021.png",
+        "sha256": "65e29bb9791c8e57b4ec377fea15f6dae6d0cea9f76fc7ffcf34b6b7dd755184"
+      },
+      {
+        "index": 22,
+        "label": 928,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00022.png",
+        "sha256": "5ae888452a78d29d7703d349d14d84e2a16ec8859e8d106e11d39291a66829a6"
+      },
+      {
+        "index": 23,
+        "label": 901,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00023.png",
+        "sha256": "e151d3e850f367059881cd34ef08816fb272f278fa2afa1399220d608cae01be"
+      },
+      {
+        "index": 24,
+        "label": 946,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00024.png",
+        "sha256": "9901ee06b5fbcf0c600080ec3ddb3084f3fefaeca51a94ff94c555d1d3c859e3"
+      },
+      {
+        "index": 25,
+        "label": 964,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00025.png",
+        "sha256": "f4c12f83c49a9c37aabb47dece63d4e9283f9880c1f2a7a607195c5d26b340ed"
+      },
+      {
+        "index": 26,
+        "label": 859,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00026.png",
+        "sha256": "98faa8945c24ec3d69b5475d85649df2d2ea46e4648b54234b691b97565d9fe4"
+      },
+      {
+        "index": 27,
+        "label": 937,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00027.png",
+        "sha256": "cb97cdc8110d4aa12846b0ff04a3ca68c9fca1471149c2b355893d663e4fbb4f"
+      },
+      {
+        "index": 28,
+        "label": 923,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00028.png",
+        "sha256": "4b170ba405d888d5ad299542a5b11fac768b0076fa96c39391eafeef05001325"
+      },
+      {
+        "index": 29,
+        "label": 933,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00029.png",
+        "sha256": "0591f89fbad5a20ce463c1b39bd4095c645f0dbcba5e753e92097ebc1743664e"
+      },
+      {
+        "index": 30,
+        "label": 852,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00030.png",
+        "sha256": "a04282566ea144c9c0c734f63a01ac8d03a64a8bf6fd1211614ef8f6c77ccbb8"
+      },
+      {
+        "index": 31,
+        "label": 918,
+        "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/original/anchor-0-step-500/00031.png",
+        "sha256": "947c296ffc80ae59991dddc78c136463492555b0f9d1369c9f9bdb27728ac6ab"
+      }
+    ]
+  },
+  "metrics": [
+    {
+      "index": 0,
+      "lpips": 0.5405558943748474,
+      "ssim": 0.38767263293266296,
+      "psnr": 12.298659324645996,
+      "clip_image_cosine": 0.7629722952842712,
+      "clip_alignment": 0.2107294499874115,
+      "reference_clip_alignment": 0.22694125771522522,
+      "class_alignment_retention": 0.9285638588107371,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "ssim:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "lpips": 0.1817682534456253,
+      "ssim": 0.6506505012512207,
+      "psnr": 20.610660552978516,
+      "clip_image_cosine": 0.9315047860145569,
+      "clip_alignment": 0.31985002756118774,
+      "reference_clip_alignment": 0.30323612689971924,
+      "class_alignment_retention": 1.0547886586975264,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 2,
+      "lpips": 0.13236463069915771,
+      "ssim": 0.8179017305374146,
+      "psnr": 22.233036041259766,
+      "clip_image_cosine": 0.9099293947219849,
+      "clip_alignment": 0.28262120485305786,
+      "reference_clip_alignment": 0.2629600763320923,
+      "class_alignment_retention": 1.0747684925986085,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 3,
+      "lpips": 0.2500988245010376,
+      "ssim": 0.8384357690811157,
+      "psnr": 21.061552047729492,
+      "clip_image_cosine": 0.8315191864967346,
+      "clip_alignment": 0.2286386489868164,
+      "reference_clip_alignment": 0.23480647802352905,
+      "class_alignment_retention": 0.9737322875900614,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "lpips": 0.295950710773468,
+      "ssim": 0.5694862604141235,
+      "psnr": 20.439178466796875,
+      "clip_image_cosine": 0.8585171103477478,
+      "clip_alignment": 0.2626557946205139,
+      "reference_clip_alignment": 0.3211597502231598,
+      "class_alignment_retention": 0.8178353434326872,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "ssim:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "lpips": 0.06382478773593903,
+      "ssim": 0.9238871335983276,
+      "psnr": 27.34191131591797,
+      "clip_image_cosine": 0.9608540534973145,
+      "clip_alignment": 0.3274518549442291,
+      "reference_clip_alignment": 0.33583590388298035,
+      "class_alignment_retention": 0.9750352810946843,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 6,
+      "lpips": 0.07308710366487503,
+      "ssim": 0.9498429298400879,
+      "psnr": 28.176727294921875,
+      "clip_image_cosine": 0.9606977701187134,
+      "clip_alignment": 0.3196781277656555,
+      "reference_clip_alignment": 0.3450562059879303,
+      "class_alignment_retention": 0.9264523350634578,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "lpips": 0.16631647944450378,
+      "ssim": 0.7838643789291382,
+      "psnr": 22.972393035888672,
+      "clip_image_cosine": 0.9048329591751099,
+      "clip_alignment": 0.29669123888015747,
+      "reference_clip_alignment": 0.2861783504486084,
+      "class_alignment_retention": 1.0367354428281148,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 8,
+      "lpips": 0.13974490761756897,
+      "ssim": 0.749630868434906,
+      "psnr": 23.334806442260742,
+      "clip_image_cosine": 0.9469377994537354,
+      "clip_alignment": 0.2598794400691986,
+      "reference_clip_alignment": 0.26328152418136597,
+      "class_alignment_retention": 0.9870781509536394,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 9,
+      "lpips": 0.17381811141967773,
+      "ssim": 0.7227298021316528,
+      "psnr": 21.05982208251953,
+      "clip_image_cosine": 0.9594202041625977,
+      "clip_alignment": 0.30435001850128174,
+      "reference_clip_alignment": 0.29666078090667725,
+      "class_alignment_retention": 1.025919292638225,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 10,
+      "lpips": 0.1404649168252945,
+      "ssim": 0.8750402927398682,
+      "psnr": 22.530405044555664,
+      "clip_image_cosine": 0.869621992111206,
+      "clip_alignment": 0.21522554755210876,
+      "reference_clip_alignment": 0.24003304541110992,
+      "class_alignment_retention": 0.896649655815045,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 11,
+      "lpips": 0.1315300017595291,
+      "ssim": 0.8404040336608887,
+      "psnr": 25.412656784057617,
+      "clip_image_cosine": 0.9341473579406738,
+      "clip_alignment": 0.2746601104736328,
+      "reference_clip_alignment": 0.27929601073265076,
+      "class_alignment_retention": 0.9834014805766218,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 12,
+      "lpips": 0.308540940284729,
+      "ssim": 0.5055451393127441,
+      "psnr": 21.23273468017578,
+      "clip_image_cosine": 0.7916587591171265,
+      "clip_alignment": 0.2699207365512848,
+      "reference_clip_alignment": 0.30959564447402954,
+      "class_alignment_retention": 0.8718492697461935,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "ssim:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 13,
+      "lpips": 0.3306906819343567,
+      "ssim": 0.6265460848808289,
+      "psnr": 19.482276916503906,
+      "clip_image_cosine": 0.7069559097290039,
+      "clip_alignment": 0.20283633470535278,
+      "reference_clip_alignment": 0.23178184032440186,
+      "class_alignment_retention": 0.8751174570944085,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 14,
+      "lpips": 0.4074430763721466,
+      "ssim": 0.6633385419845581,
+      "psnr": 17.43048667907715,
+      "clip_image_cosine": 0.6597511172294617,
+      "clip_alignment": 0.21006888151168823,
+      "reference_clip_alignment": 0.23366235196590424,
+      "class_alignment_retention": 0.8990275059045082,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 15,
+      "lpips": 0.17490100860595703,
+      "ssim": 0.7200870513916016,
+      "psnr": 20.608854293823242,
+      "clip_image_cosine": 0.9312541484832764,
+      "clip_alignment": 0.2925233542919159,
+      "reference_clip_alignment": 0.28417837619781494,
+      "class_alignment_retention": 1.0293652817844665,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 16,
+      "lpips": 0.1138780415058136,
+      "ssim": 0.7801555395126343,
+      "psnr": 25.444583892822266,
+      "clip_image_cosine": 0.9703065156936646,
+      "clip_alignment": 0.29262498021125793,
+      "reference_clip_alignment": 0.2937365770339966,
+      "class_alignment_retention": 0.9962156676776076,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 17,
+      "lpips": 0.16428464651107788,
+      "ssim": 0.8145897388458252,
+      "psnr": 21.030017852783203,
+      "clip_image_cosine": 0.9465889930725098,
+      "clip_alignment": 0.32704824209213257,
+      "reference_clip_alignment": 0.3308267891407013,
+      "class_alignment_retention": 0.9885784731690465,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 18,
+      "lpips": 0.17714610695838928,
+      "ssim": 0.8173116445541382,
+      "psnr": 22.33579444885254,
+      "clip_image_cosine": 0.8813146948814392,
+      "clip_alignment": 0.3006403148174286,
+      "reference_clip_alignment": 0.2953852415084839,
+      "class_alignment_retention": 1.0177905750541494,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "clip_image_cosine:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 19,
+      "lpips": 0.15971069037914276,
+      "ssim": 0.8246280550956726,
+      "psnr": 24.87339973449707,
+      "clip_image_cosine": 0.9432719945907593,
+      "clip_alignment": 0.29300588369369507,
+      "reference_clip_alignment": 0.303793728351593,
+      "class_alignment_retention": 0.9644895741711537,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 20,
+      "lpips": 0.26176461577415466,
+      "ssim": 0.7381498217582703,
+      "psnr": 18.88752555847168,
+      "clip_image_cosine": 0.8909167051315308,
+      "clip_alignment": 0.318491131067276,
+      "reference_clip_alignment": 0.3320366442203522,
+      "class_alignment_retention": 0.959204764326895,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 21,
+      "lpips": 0.13656148314476013,
+      "ssim": 0.797075629234314,
+      "psnr": 23.951187133789062,
+      "clip_image_cosine": 0.8898153305053711,
+      "clip_alignment": 0.23883894085884094,
+      "reference_clip_alignment": 0.2777857780456543,
+      "class_alignment_retention": 0.8597954241544633,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 22,
+      "lpips": 0.21195852756500244,
+      "ssim": 0.8146369457244873,
+      "psnr": 23.19343376159668,
+      "clip_image_cosine": 0.8389525413513184,
+      "clip_alignment": 0.2553158402442932,
+      "reference_clip_alignment": 0.28326472640037537,
+      "class_alignment_retention": 0.9013329809494942,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 23,
+      "lpips": 0.2020813673734665,
+      "ssim": 0.8541175723075867,
+      "psnr": 22.313308715820312,
+      "clip_image_cosine": 0.8056920766830444,
+      "clip_alignment": 0.24349677562713623,
+      "reference_clip_alignment": 0.32406795024871826,
+      "class_alignment_retention": 0.7513756773548738,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 24,
+      "lpips": 0.26956528425216675,
+      "ssim": 0.6747864484786987,
+      "psnr": 16.480995178222656,
+      "clip_image_cosine": 0.9309983253479004,
+      "clip_alignment": 0.337437242269516,
+      "reference_clip_alignment": 0.31452494859695435,
+      "class_alignment_retention": 1.072847301222907,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 25,
+      "lpips": 0.273621141910553,
+      "ssim": 0.605616569519043,
+      "psnr": 18.237281799316406,
+      "clip_image_cosine": 0.8418979644775391,
+      "clip_alignment": 0.2508170008659363,
+      "reference_clip_alignment": 0.29507964849472046,
+      "class_alignment_retention": 0.8499976265575085,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 26,
+      "lpips": 0.13486525416374207,
+      "ssim": 0.7807978391647339,
+      "psnr": 22.9112548828125,
+      "clip_image_cosine": 0.9061577320098877,
+      "clip_alignment": 0.2675110697746277,
+      "reference_clip_alignment": 0.2821613550186157,
+      "class_alignment_retention": 0.94807834246819,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 27,
+      "lpips": 0.16593801975250244,
+      "ssim": 0.7466955184936523,
+      "psnr": 21.813220977783203,
+      "clip_image_cosine": 0.8377235531806946,
+      "clip_alignment": 0.26805412769317627,
+      "reference_clip_alignment": 0.30803382396698,
+      "class_alignment_retention": 0.8702100446018247,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 28,
+      "lpips": 0.09983298182487488,
+      "ssim": 0.9068406820297241,
+      "psnr": 24.26105499267578,
+      "clip_image_cosine": 0.8987393379211426,
+      "clip_alignment": 0.26793164014816284,
+      "reference_clip_alignment": 0.2646622955799103,
+      "class_alignment_retention": 1.0123528912990383,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "clip_image_cosine:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 29,
+      "lpips": 0.14454886317253113,
+      "ssim": 0.72884601354599,
+      "psnr": 22.273435592651367,
+      "clip_image_cosine": 0.9552689790725708,
+      "clip_alignment": 0.3005175292491913,
+      "reference_clip_alignment": 0.30952441692352295,
+      "class_alignment_retention": 0.9709008815399623,
+      "preservation": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    {
+      "index": 30,
+      "lpips": 0.13198938965797424,
+      "ssim": 0.823427677154541,
+      "psnr": 20.18949317932129,
+      "clip_image_cosine": 0.8798176646232605,
+      "clip_alignment": 0.23577101528644562,
+      "reference_clip_alignment": 0.30930259823799133,
+      "class_alignment_retention": 0.7622665203252925,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    },
+    {
+      "index": 31,
+      "lpips": 0.2089371681213379,
+      "ssim": 0.6291265487670898,
+      "psnr": 19.385772705078125,
+      "clip_image_cosine": 0.7909018993377686,
+      "clip_alignment": 0.29591065645217896,
+      "reference_clip_alignment": 0.3487154245376587,
+      "class_alignment_retention": 0.8485734660131812,
+      "preservation": {
+        "passed": false,
+        "failures": [
+          "lpips:outside_bounds",
+          "clip_image_cosine:outside_bounds",
+          "class_alignment_retention:outside_bounds"
+        ]
+      }
+    }
+  ],
+  "galleries": [
+    "tex/figures/threshold-calibration-full-original-00.png",
+    "tex/figures/threshold-calibration-full-original-08.png",
+    "tex/figures/threshold-calibration-full-original-16.png",
+    "tex/figures/threshold-calibration-full-original-24.png"
+  ],
+  "visual_ratings_pending": false,
+  "visual_ratings": [
+    {
+      "index": 0,
+      "rating": "reject",
+      "reason": "Typewriter replaced by printed collage."
+    },
+    {
+      "index": 1,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 2,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 3,
+      "rating": "reject",
+      "reason": "Main face disappears."
+    },
+    {
+      "index": 4,
+      "rating": "reject",
+      "reason": "Circular object becomes substantially different rectangular structure."
+    },
+    {
+      "index": 5,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 6,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 7,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 8,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 9,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 10,
+      "rating": "reject",
+      "reason": "A second prominent person appears."
+    },
+    {
+      "index": 11,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 12,
+      "rating": "reject",
+      "reason": "A person or doll appears in the straw."
+    },
+    {
+      "index": 13,
+      "rating": "reject",
+      "reason": "Mop-like object is replaced by a different structure."
+    },
+    {
+      "index": 14,
+      "rating": "reject",
+      "reason": "Food changes into people."
+    },
+    {
+      "index": 15,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 16,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 17,
+      "rating": "ambiguous",
+      "reason": "Uncertain whether stem distortion/blur is acceptable minor appearance variation."
+    },
+    {
+      "index": 18,
+      "rating": "reject",
+      "reason": "A large new foreground structure changes the content."
+    },
+    {
+      "index": 19,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 20,
+      "rating": "reject",
+      "reason": "Major mechanical structure and shape change."
+    },
+    {
+      "index": 21,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 22,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 23,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 24,
+      "rating": "ambiguous",
+      "reason": "Uncertain whether flower displacement and partial crop remain minor."
+    },
+    {
+      "index": 25,
+      "rating": "reject",
+      "reason": "Single round food item becomes split or additional pieces."
+    },
+    {
+      "index": 26,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 27,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 28,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 29,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 30,
+      "rating": "accept",
+      "reason": "Same main objects and scene; changes assessed as minor under user preference."
+    },
+    {
+      "index": 31,
+      "rating": "reject",
+      "reason": "Puzzle pattern and text layout change."
+    }
+  ],
+  "rater": "Assistant visual inspection of all32previewpairs, with native512pxcloseups for10,17,20,21,24,27. Not independent human ground truth.",
+  "fit_policy": {
+    "grid": {
+      "lpips": [
+        0.2,
+        0.25,
+        0.3,
+        0.35
+      ],
+      "ssim": [
+        0.5,
+        0.6
+      ],
+      "clip_image_cosine": [
+        0.85,
+        0.9,
+        0.95
+      ],
+      "class_alignment_retention": [
+        0.8,
+        0.85,
+        0.9,
+        0.95
+      ]
+    },
+    "loss": "Balanced classification error: mean(false_accept/11,false_reject/19). Exclude2ambiguouscases. Ties: fewer false accepts, then smallest normalized threshold change from old rule. No watermark scores used.",
+    "reason": "User clarified the preservation target after the first strict-detail inspection. The initial conservative3:1cost produced a nearly reject-all rule and is retained as an unsuccessful exploratory fit, not used on final data.",
+    "limitation": "Exploratory assistant visual calibration, not independent human annotation;30unambiguousimages from one validation cohort."
+  },
+  "previous_strict_visual_ratings": [
+    {
+      "index": 0,
+      "rating": "reject"
+    },
+    {
+      "index": 1,
+      "rating": "ambiguous"
+    },
+    {
+      "index": 2,
+      "rating": "accept"
+    },
+    {
+      "index": 3,
+      "rating": "reject"
+    },
+    {
+      "index": 4,
+      "rating": "reject"
+    },
+    {
+      "index": 5,
+      "rating": "accept"
+    },
+    {
+      "index": 6,
+      "rating": "accept"
+    },
+    {
+      "index": 7,
+      "rating": "accept"
+    },
+    {
+      "index": 8,
+      "rating": "accept"
+    },
+    {
+      "index": 9,
+      "rating": "accept"
+    },
+    {
+      "index": 10,
+      "rating": "reject"
+    },
+    {
+      "index": 11,
+      "rating": "accept"
+    },
+    {
+      "index": 12,
+      "rating": "reject"
+    },
+    {
+      "index": 13,
+      "rating": "reject"
+    },
+    {
+      "index": 14,
+      "rating": "reject"
+    },
+    {
+      "index": 15,
+      "rating": "accept"
+    },
+    {
+      "index": 16,
+      "rating": "accept"
+    },
+    {
+      "index": 17,
+      "rating": "reject"
+    },
+    {
+      "index": 18,
+      "rating": "reject"
+    },
+    {
+      "index": 19,
+      "rating": "reject"
+    },
+    {
+      "index": 20,
+      "rating": "reject"
+    },
+    {
+      "index": 21,
+      "rating": "ambiguous"
+    },
+    {
+      "index": 22,
+      "rating": "accept"
+    },
+    {
+      "index": 23,
+      "rating": "accept"
+    },
+    {
+      "index": 24,
+      "rating": "reject"
+    },
+    {
+      "index": 25,
+      "rating": "reject"
+    },
+    {
+      "index": 26,
+      "rating": "accept"
+    },
+    {
+      "index": 27,
+      "rating": "ambiguous"
+    },
+    {
+      "index": 28,
+      "rating": "accept"
+    },
+    {
+      "index": 29,
+      "rating": "accept"
+    },
+    {
+      "index": 30,
+      "rating": "accept"
+    },
+    {
+      "index": 31,
+      "rating": "reject"
+    }
+  ],
+  "user_preservation_preference": "Same main objects and scene; minor appearance changes allowed."
+}

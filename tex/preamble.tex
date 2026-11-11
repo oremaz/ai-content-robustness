@@ -1,0 +1,23 @@
+\usepackage[margin=27mm]{geometry}
+\usepackage[round,authoryear]{natbib}
+\setlength{\emergencystretch}{2em}
+\usepackage{amsmath,amssymb,amsthm,graphicx,booktabs,longtable,array,calc}
+\usepackage{adjustbox,seqsplit}
+\usepackage{fancyvrb,fvextra,xcolor,url,hyperref}
+\usepackage{unicode-math}
+\setmainfont{texgyretermes-regular.otf}[BoldFont=texgyretermes-bold.otf,ItalicFont=texgyretermes-italic.otf,BoldItalicFont=texgyretermes-bolditalic.otf]
+\setmathfont{latinmodern-math.otf}
+\newtheorem{proposition}{Proposition}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\KL}{\operatorname{KL}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\newcommand{\passthrough}[1]{#1}
+\newcommand{\pandocbounded}[1]{\begin{adjustbox}{max totalsize={\linewidth}{.8\textheight},keepaspectratio}#1\end{adjustbox}}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,fontsize=\scriptsize}
+\fvset{breaklines,breakanywhere,fontsize=\scriptsize}
+\makeatletter
+\newenvironment{recordfigure}{\par\medskip\noindent\begin{minipage}{\linewidth}\def\@captype{figure}\centering}{\end{minipage}\par\medskip}
+\makeatother
+\hypersetup{hidelinks}
+\urlstyle{same}

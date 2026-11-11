@@ -1,0 +1,78 @@
+\section{Policy-gradient identities, with all conditioning explicit}
+\label{app:policy_proofs}
+The results in this section are standard identities. They are included to explain the estimators used in the project, not as new theoretical contributions. Fix a prompt $c$. Let $\mathcal Y$ be a finite response space, let $\pi_\theta(y\mid c)>0$ on its support, and assume the support does not change locally with $\theta$. Let $R(c,y)$ be a reward independent of $\theta$ once $c,y$ are fixed. Finite response spaces avoid analytic interchange issues; for infinite spaces the same argument requires a dominating integrable derivative.
+
+\begin{proposition}[Score-function gradient and action-independent baselines]
+For $J_c(\theta)=\E_{Y\sim\pi_\theta(\cdot\mid c)}R(c,Y)$ and any baseline $b(c)$ independent of $Y$,
+\begin{align}
+\nabla_\theta J_c(\theta)
+&=\E_{Y\sim\pi_\theta}\left[R(c,Y)\nabla_\theta\log\pi_\theta(Y\mid c)\right]\\
+&=\E_{Y\sim\pi_\theta}\left[(R(c,Y)-b(c))\nabla_\theta\log\pi_\theta(Y\mid c)\right].
+\end{align}
+\end{proposition}
+\begin{proof}
+Expand the expectation before differentiating:
+\begin{align}
+\nabla_\theta J_c(\theta)
+&=\nabla_\theta\sum_{y\in\mathcal Y}\pi_\theta(y\mid c)R(c,y)\\
+&=\sum_{y\in\mathcal Y}R(c,y)\nabla_\theta\pi_\theta(y\mid c)\\
+&=\sum_{y\in\mathcal Y}\pi_\theta(y\mid c)R(c,y)
+ \frac{\nabla_\theta\pi_\theta(y\mid c)}{\pi_\theta(y\mid c)}\\
+&=\sum_{y\in\mathcal Y}\pi_\theta(y\mid c)R(c,y)
+ \nabla_\theta\log\pi_\theta(y\mid c).
+\end{align}
+The second equality uses the assumption that $R(c,y)$ does not depend explicitly on $\theta$. The baseline term has zero expectation because
+\begin{align}
+\E\left[b(c)\nabla_\theta\log\pi_\theta(Y\mid c)\right]
+&=b(c)\sum_y\pi_\theta(y\mid c)
+ \frac{\nabla_\theta\pi_\theta(y\mid c)}{\pi_\theta(y\mid c)}\\
+&=b(c)\nabla_\theta\sum_y\pi_\theta(y\mid c)\\
+&=b(c)\nabla_\theta 1=0.
+\end{align}
+Subtracting this zero term proves the second identity. For autoregressive responses, the product rule additionally gives
+\begin{align}
+\log\pi_\theta(y\mid c)
+&=\log\prod_{t=1}^{L(y)}\pi_\theta(y_t\mid c,y_{<t})
+ =\sum_{t=1}^{L(y)}\log\pi_\theta(y_t\mid c,y_{<t}),\\
+\nabla_\theta\log\pi_\theta(y\mid c)
+&=\sum_{t=1}^{L(y)}\nabla_\theta\log\pi_\theta(y_t\mid c,y_{<t}).
+\end{align}
+Prompt tokens condition these factors; they are not sampled response actions and do not supply additional reward-weighted terms.
+\end{proof}
+
+\begin{proposition}[Why a sampled group mean is different]
+Let $Y_1,\ldots,Y_G$ be independent samples from $\pi_\theta(\cdot\mid c)$, let $R_i=R(c,Y_i)$, $g_i=\nabla_\theta\log\pi_\theta(Y_i\mid c)$ and $\bar R=G^{-1}\sum_jR_j$. Then
+\begin{equation}
+\E\left[\frac1G\sum_i(R_i-\bar R)g_i\right]
+ =\left(1-\frac1G\right)\nabla_\theta J_c(\theta).
+\end{equation}
+\end{proposition}
+\begin{proof}
+For every $i$, independence implies that $R_j$ and $g_i$ are independent if $j\ne i$. The preceding proposition gives $\E g_i=0$. Therefore
+\begin{align}
+\E[\bar Rg_i]
+&=\frac1G\sum_{j=1}^G\E[R_jg_i]\\
+&=\frac1G\E[R_ig_i]+\frac1G\sum_{j\ne i}\E[R_j]\E[g_i]\\
+&=\frac1G\nabla_\theta J_c(\theta).
+\end{align}
+Consequently,
+\begin{align}
+\E\left[\frac1G\sum_i(R_i-\bar R)g_i\right]
+&=\frac1G\sum_i\left(\E[R_ig_i]-\E[\bar Rg_i]\right)\\
+&=\frac1G\sum_i\left(1-\frac1G\right)\nabla_\theta J_c(\theta)\\
+&=\left(1-\frac1G\right)\nabla_\theta J_c(\theta).
+\end{align}
+A leave-one-out baseline removes this particular factor because it is independent of $Y_i$. Dividing by the group's random standard deviation introduces further dependence and does not follow from this unbiased-baseline argument. This proposition explains one component of group-relative estimation; it is not a complete characterization of clipped GRPO updates.
+\end{proof}
+
+\paragraph{Importance sampling before clipping.}
+For behavior policy $\pi_{\rm old}$ with support covering $\pi_\theta$, any integrable function $f$ satisfies
+\begin{align}
+\E_{Y\sim\pi_\theta}[f(Y)]
+&=\sum_y\pi_\theta(y\mid c)f(y)\\
+&=\sum_y\pi_{\rm old}(y\mid c)
+ \frac{\pi_\theta(y\mid c)}{\pi_{\rm old}(y\mid c)}f(y)\\
+&=\E_{Y\sim\pi_{\rm old}}\left[
+ \exp\{\log\pi_\theta(Y\mid c)-\log\pi_{\rm old}(Y\mid c)\}f(Y)\right].
+\end{align}
+This equality uses the full relevant log probability. Clipping the ratio creates a surrogate objective and generally breaks the exact change-of-measure identity. Averaging a log probability before exponentiating also changes the ratio. These operations can be useful design choices, but their mathematical roles must be stated.

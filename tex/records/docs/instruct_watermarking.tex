@@ -1,0 +1,127 @@
+\section{Instruction-model watermark
+experiments}\label{record-docs-instruct-watermarking-md-instruction-model-watermark-experiments}
+
+The generator is \textbf{Qwen/Qwen3.5-4B}, using its native chat
+template with thinking disabled. The rewriter is
+\textbf{meta-llama/Meta-Llama-3.1-8B-Instruct}, using the released BIRA
+implementation and its published Llama bias (-4), with at most 20
+retries. The families differ; the rewriter does not share the target
+checkpoint.
+
+Two watermark conditions are run:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{TextSeal 2}, from the
+  \href{https://arxiv.org/pdf/2610.40613}{full paper} and
+  \href{https://github.com/facebookresearch/textseal}{released source},
+  pinned to
+  \texttt{\seqsplit{0b76bc64013081c570b8633d3d3585e3ee9a495a}}. Key 42,
+  three-token window, rho 0.9 and hires PRF follow the requested
+  configuration. Repeated windows are skipped, matching the paper's
+  ordinary-generation setting. This runs target-only decoding, not the
+  paper's speculative decoding benchmark.
+\item
+  \textbf{DistSeal-inspired text adaptation}: a learned hidden-state
+  embedder/extractor, followed by dense forward-KL distillation into
+  Qwen LoRA rank 128 and merged student weights. Teacher training uses
+  7,500 steps, width 256, 128 response positions, strength 0.65 and KL
+  budget 0.15. Student training uses 8,000 steps with accumulation 8 and
+  up to 256 response tokens. Prompt positions are excluded from both
+  teacher-channel training and student loss. This remains an
+  experimental text adaptation, not an official DistSeal text
+  implementation.
+\end{itemize}
+
+The three removal methods are BIRA rewriting, direct top-10 probability
+resampling, and confidence smoothing with the independent
+Qwen/Qwen3.5-0.8B instruct reference. Ordinary paraphrasing is a fourth
+control. BIRA receives text only; probability methods receive simulated
+pre-watermark next-token probabilities. For TextSeal 2 these are the
+underlying model logits, not post-watermark sampling probabilities.
+Their success would establish a bypass only for providers exposing those
+underlying probabilities. It would not establish removal when the API
+exposes only the keyed sampling distribution. For the distilled student
+the oracle uses the merged student weights. Smoothing is an
+unknown-watermark adaptation of the released method.
+
+HC3 full questions, rather than prefixes of human answers, form user
+prompts. Normalized question hashes separate 1,000 training, 200
+removal, 256 validation and 256 test questions. Duplicate questions and
+duplicate 256-token response prefixes are excluded. Human answers supply
+response-only distillation contexts. Generation uses temperature 1,
+top-p 0.95 and a 200-token cap. Twenty clean and 20 TextSeal 2
+validation responses are retained for initial inspection. Diagnostics do
+not gate experiments on fluency or naturalness.
+
+TextSeal 2 uses the released private Gamma detector with v2
+deduplication and a fresh seen-window set for each document. Nominal
+p-value thresholds are 0.001 and 0.01. DistSeal thresholds use disjoint
+clean and human validation samples. The test reports detection,
+clean/human false positives, AUROC and eligible length. A 256-document
+null set cannot precisely validate 0.1\% false-positive rates; this does
+not reproduce the paper's large empirical calibration. BIRA quality
+includes bidirectional NLI, similarity, repetition, numeric changes and
+perplexity. Fresh probability continuations are evaluated as new answers
+rather than as meaning-preserving paraphrases. Raw evasion alone is not
+usable removal.
+
+Previous Base-model watermark runs and their metrics have been deleted.
+The cleanup receipt is
+\texttt{\seqsplit{results/research\_workflow/text\_instruct/base\_cleanup.json}}.
+Image artifacts and unrelated detector experiments were preserved.
+Shared resources and frozen source needed for image provenance remain
+available.
+
+From the project root, with the downloaded resources:
+
+\begin{Verbatim}
+PYTHONPATH=. uv run --no-sync python scripts/instruct_watermark_experiments.py prepare
+PYTHONPATH=. uv run --no-sync python scripts/instruct_watermark_experiments.py submit RUN/manifest.json
+\end{Verbatim}
+
+The immutable manifest pins inputs, models and source hashes. A GPU
+preflight checks the real models, TextSeal 2 generation/detection and
+response-channel backpropagation. Both experiment lanes depend on its
+success and can then run in parallel, one H100 each. Jobs use two-hour
+dev QoS and advance signals. Training saves optimizer/RNG state;
+generation and rewriting save batch/attempt progress. Requeue resumes
+these checkpoints, with bounded repeated work since the last save and
+startup overhead. Zero compute loss is not guaranteed.
+
+CPU checks are in
+\texttt{\seqsplit{ai\_content\_detector/tests/test\_instruct\_watermarking.py}},
+\texttt{\seqsplit{test\_latent\_watermarking.py}} and
+\texttt{\seqsplit{test\_bira\_replication.py}}. They cover numerical,
+input-boundary and restart contracts. Real-model GPU outcomes belong to
+the frozen experiment's receipts.
+
+\subsection{Completed execution and
+publication}\label{record-docs-instruct-watermarking-md-completed-execution-and-publication}
+
+The completed replacement run is
+\texttt{\seqsplit{20261103T231534057688Z}}: preflight
+\texttt{\seqsplit{1925830}}, TextSeal 2 \texttt{\seqsplit{1925831}} and
+DistSeal-inspired teacher/student/removal \texttt{\seqsplit{1925832}}.
+The earlier startup attempt failed before model computation because node
+temp storage filled while unpacking the paper runtime. The corrected
+launcher reuses one archive-verified runtime on project storage; cache
+directories are cleaned on normal exit. This infrastructure incident is
+not a scientific result.
+
+The self-contained \href{records/docs/watermarking/text.tex}{text result
+tables} provide both operating points, observed false positives, AUROC,
+Jina similarity, rewriting NLI, perplexity, truncation/length
+diagnostics and paired detector transitions. They also include
+eight-pair previews and full verbatim examples for every current attack.
+\href{../docs/watermarking/data/metrics.json}{Portable metric snapshots}
+retain the complete summaries, with historical controls in a separate
+appendix.
+
+The student teacher ran 7,500 steps, followed by 8,000 student steps.
+Best teacher validation bit recovery was 70.36\%; this is distinct from
+fresh-response watermark detection. Original test detection was 253/256
+for TextSeal 2 and 118/256 for the distilled student at their different
+primary thresholds. No visual or fluency gate filters the published
+examples.

@@ -51,3 +51,31 @@ def inject_lora(model, rank):
     from peft import LoraConfig, inject_adapter_in_model
     targets = [name for name, layer in model.named_modules() if isinstance(layer, torch.nn.Linear)]
     return inject_adapter_in_model(LoraConfig(r=rank, lora_alpha=32, target_modules=targets), model)
+
+
+def merged_lora_state_for_generator(model, architecture):
+    """Export ordinary linear weights without changing the live adapters."""
+    from peft.tuners.lora.layer import Linear
+
+    target = model.get_trainable_modules() if architecture == "uvit" else model
+    modules = dict(target.named_modules())
+    state = {}
+    for name, tensor in target.state_dict().items():
+        parts = name.split(".")
+        if any(part.startswith("lora_") for part in parts):
+            continue
+        if "base_layer" in parts:
+            index = parts.index("base_layer")
+            layer = modules[".".join(parts[:index])]
+            if not isinstance(layer, Linear) or layer.merged or layer.disable_adapters:
+                raise ValueError("Expected active, unmerged linear LoRA adapters")
+            if any(layer.use_dora.values()):
+                raise ValueError("DoRA export is not supported")
+            name = ".".join(parts[:index] + parts[index+1:])
+            if parts[-1] == "weight":
+                with torch.no_grad():
+                    tensor = tensor.detach().clone()
+                    for adapter in layer.active_adapters:
+                        tensor.add_(layer.get_delta_weight(adapter))
+        state[name] = tensor.detach().cpu().clone()
+    return state

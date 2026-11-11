@@ -1,0 +1,408 @@
+\section{TextSeal 2: Ordinary
+paraphrasing}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-textseal-2-ordinary-paraphrasing}
+
+The candidate is a rewrite of the original response. Both detection and
+preservation failures are retained.
+
+Eight pairs selected by fixed test positions before inspecting detection
+or quality outcomes. Undetected originals and unsuccessful attacks
+remain included.
+
+\begin{recordfigure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Sixteen-panel text preview}]{figures/text-textseal2-vanilla.png}}
+\caption{Sixteen-panel text preview}
+\end{recordfigure}
+
+The figure previews up to the first 360 original characters per
+response; full texts below are unabridged. Emoji use Unicode codepoints
+in the preview to avoid missing-glyph boxes. Owner scores and quality
+metrics use full responses.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Example
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Test position
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Before
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+After
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Jina
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & 0 & Detected \textbar{} p=3.72e-14 & Not detected \textbar{}
+p=4.39e-02 & 0.9466 \\
+2 & 32 & Detected \textbar{} p=3.09e-06 & Not detected \textbar{}
+p=4.31e-01 & 0.8967 \\
+3 & 64 & Detected \textbar{} p=2.30e-14 & Detected \textbar{} p=1.54e-04
+& 0.9759 \\
+4 & 96 & Detected \textbar{} p=2.55e-14 & Not detected \textbar{}
+p=2.56e-03 & 0.9545 \\
+5 & 128 & Detected \textbar{} p=1.10e-14 & Not detected \textbar{}
+p=8.33e-03 & 0.9468 \\
+6 & 160 & Detected \textbar{} p=2.52e-25 & Not detected \textbar{}
+p=2.17e-01 & 0.9122 \\
+7 & 192 & Detected \textbar{} p=6.82e-25 & Not detected \textbar{}
+p=4.83e-01 & 0.9732 \\
+8 & 224 & Detected \textbar{} p=2.26e-09 & Not detected \textbar{}
+p=3.76e-01 & 0.9058 \\
+\end{longtable}
+}
+
+\subsection{Example 1: test position
+0}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-1-test-position-0}
+
+Prompt ID:
+\texttt{\seqsplit{eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Why do people want programming taught in elementary / high schools ? I know absolutely nothing about programming . EDIT : I 'm marking this as answered . Thanks to everyone who replied ! Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Imagine you want to play video games. You probably use a controller to give the game buttons a specific job: "press A" means "move left," and "press B" means "jump."
+
+Some people don't just want to press the buttons; they want to **build their own video games**.
+
+To build a game, you need instructions that a computer can understand. Programming is just a special language that tells the computer what to do. It's like writing the "rulebook" for the computer to follow.
+
+People teach this to kids because:
+1.  **It's a superpower:** Just like learning to speak English helps you talk to friends, learning code helps you talk to computers.
+2.  **It builds good habits:** Programming teaches kids to be very patient (computers don't have feelings!) and to solve puzzles step-by-step, just like solving a math problem.
+3.  **It changes how the world works:** Soon, they
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+To engage in video gaming, one often utilizes a controller to assign specific functions to game buttons: "press A" translates to "move left," while "press B" corresponds to "jump."
+
+Individuals who desire more than simply pressing buttons may wish to **design their own video games**.
+
+In order to create a game, it is necessary to provide instructions that a computer can comprehend. Programming serves as a unique language that communicates with the computer, essentially outlining the "rulebook" for it to follow.
+
+This skill is taught to children because:
+1.  **It grants them a superpower:** Just as proficiency in English enables effective communication with friends, learning code allows individuals to interact with computers.
+2.  **It fosters good habits:** Programming educates kids to be extremely patient (computers lack emotions) and to solve puzzles step-by-step, much like solving a math problem.
+3.  **It transforms the world:** Ultimately, they will be able to influence the way things function.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 9.5\}}}.
+
+\subsection{Example 2: test position
+32}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-2-test-position-32}
+
+Prompt ID:
+\texttt{\seqsplit{55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Thermodynamics Could someone explain to me the first , and second laws of thermodynamics , and conservation of energy ? Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Imagine you and your little sister are playing with toys in a big room. That room is like the universe, and the toys are energy.
+
+### [U+1F6AB] The First Law: "We Can't Just Make or Lose Toys!"
+**The Rule:** Energy is like magic dust. You cannot create new magic dust out of nowhere, and you cannot make it disappear completely. It can only change shape.
+
+*   **How it works:** If you blow up a balloon, you used energy from your breath to make the rubber stretch. If that balloon pops, the energy doesn't vanish; it turns into a tiny *whoosh* of sound and a little bit of heat warming up the room.
+*   **The Secret:** The total amount of toys in the whole room stays exactly the same forever. Energy just changes clothes (from movement to heat, from heat to light), but the total number never goes up or down.
+
+### [U+1F504] The Second Law: "The Toys
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Envision a vast, expansive space, akin to a vast universe, where a multitude of playthings are in motion. These playthings represent the dynamic forces of energy, ever in flux.
+
+### The First Law: "Energy Cannot Be Created or Destroyed, Only Transformed"
+
+The fundamental principle governing this universe of play is that energy, much like magic dust, cannot be conjured from nothingness or eradicated entirely. Its essence remains constant; it merely alters its manifestation.
+
+Consider a scenario where one blows up a balloon, utilizing breath energy to stretch the rubber. Upon the balloon's deflation, the energy does not vanish into thin air; rather, it transforms into a subtle *whoosh* of sound and a gentle warmth permeating the surroundings.
+
+The underlying truth is that the total number of playthings within this expansive space remains unwavering and perpetual. Energy merely changes its attire, transitioning from kinetic movement to thermal energy, from thermal energy to luminous radiance, yet the aggregate count never fluctuates.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "neutral", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 7.625\}}}.
+
+\subsection{Example 3: test position
+64}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-3-test-position-64}
+
+Prompt ID:
+\texttt{\seqsplit{3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Do Affordable Care Act business requirements apply to “control groups?”
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+**No, the Affordable Care Act (ACA) business requirements generally do not apply to "control groups" in the context of healthcare research or clinical trials.**
+
+Here is the detailed reasoning behind this conclusion:
+
+### 1. Distinction Between "Business" and "Research"
+The ACA places obligations on employers (businesses) and health insurance marketplaces regarding health coverage mandates, minimum essential coverage (MEC), and marketplaces. These are statutory requirements designed to regulate the market and prevent bare minimum coverage scenarios.
+
+"Control groups," however, are a fundamental concept in **clinical research, epidemiology, and data science**. They are cohorts of individuals used in scientific studies to compare the effects of an intervention (treatment) against a baseline to establish causality. They are not inherently "business entities" (like an employer or insurance carrier) subject to ACA compliance rules regarding hiring, insurance purchasing, or marketplace enrollment.
+
+### 2. Specific Contexts Where ACA Might Interfere
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+The Affordable Care Act (ACA) business requirements generally do not apply to "control groups" in the context of healthcare research or clinical trials due to a fundamental distinction between "business" and "research" obligations.
+
+The ACA imposes obligations on employers and health insurance marketplaces related to health coverage mandates, minimum essential coverage, and marketplaces. These statutory requirements aim to regulate the market and prevent bare minimum coverage scenarios.
+
+However, "control groups" are a fundamental concept in clinical research, epidemiology, and data science. They represent cohorts of individuals used in scientific studies to compare the effects of an intervention against a baseline, thereby establishing causality. Unlike employers or insurance carriers, control groups are not inherently "business entities" subject to ACA compliance rules regarding hiring, insurance purchasing, or marketplace enrollment.
+
+In specific contexts where ACA might interfere, these typically involve situations where research entities or institutions take on characteristics of businesses, such as hiring employees or purchasing insurance. Even in these cases, the ACA requirements are generally inapplicable to the control groups themselves, which remain a core component of the research or clinical trial.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 0.0, "mistral\_perplexity": 8.75\}}}.
+
+\subsection{Example 4: test position
+96}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-4-test-position-96}
+
+Prompt ID:
+\texttt{\seqsplit{28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Should I sell a 2nd home, or rent it out?
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Deciding whether to sell or rent out a second home is one of the most significant financial choices you can make regarding real estate. There is no single "correct" answer; the optimal path depends entirely on your current liquidity needs, long-term goals, local rental market conditions, and personal preferences.
+
+Here is a structured framework to help you evaluate both options.
+
+### 1. The Case for SELLING
+Selling the property is generally the better choice if you are looking for **immediate cash flow**, wish to **minimize maintenance**, or plan to **convert existing equity into liquid assets**.
+
+*   **Liquidity and Equity:** You turn a "sick chicken" (non-performing asset) into immediate cash. This is ideal if you have high mortgage interest payments that drag down your overall portfolio's return.
+*   **Cost Efficiency:** Maintenance, taxes, insurance, and repairs can drain $500–$2,000+ annually for
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Determining whether to sell or rent out a second home is a critical financial decision in real estate, with no one-size-fits-all solution. The best approach depends on your current liquidity requirements, long-term objectives, the local rental market, and personal preferences.
+
+To facilitate a comprehensive evaluation of both options, consider the following structured framework.
+
+### 1. The Advantages of SELLING
+Selling your property is often the preferred choice when you require **instant cash flow**, want to **reduce maintenance burdens**, or aim to **convert existing equity into liquid assets**.
+
+*   **Unlocking Liquidity and Equity:** You can transform a non-performing asset into immediate cash, which is particularly beneficial if you have high mortgage interest payments that negatively impact your overall portfolio's return on investment.
+*   **Cost Savings:** Maintenance, taxes, insurance, and repairs can incur significant annual expenses, ranging from $500 to $2,000 or more,
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 7.0\}}}.
+
+\subsection{Example 5: test position
+128}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-5-test-position-128}
+
+Prompt ID:
+\texttt{\seqsplit{ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Can somebody explain what different grades of gasoline mean ( regular , plus , premium ) and why I should use anything but regular ? Edit : Thanks guys , despite getting up to 10 year old vocabulary , you 've answered my question very well Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Here is an explanation of gasoline grades using a concept a 10-year-old could easily understand:
+
+### What the Grades Mean (The Engine Analogy)
+
+Think of your car's engine like a team of tiny, powerful robots working together to keep the car moving. These robots need to spark (explode) at the exact right moment to push the car forward.
+
+*   **Regular Gas:** This is the standard "All-Stars" version. Most cars were designed to run on this. The robots in your engine are strong enough to do their job with the spark coming from the regular gas.
+*   **Midgrade (Plus):** This is like "All-Stars and a Backup." It has a little bit more power added to the mix, meaning the explosion happens slightly earlier and with a bit more force. Some older cars or slightly faster ones use this, but it's not strictly necessary for average drivers.
+*   **Premium Gas:** This is the "Pro Team
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+### What the Grades Mean (The Engine Analogy)
+
+Imagine your car's engine as a team of tiny, powerful robots working together to keep the car moving. These robots need to spark (explode) at the precise moment to propel the car forward.
+
+*   **Regular Gas:** This is the standard version most cars were designed to run on. The robots in your engine are robust enough to perform their job effectively with the spark provided by regular gas.
+*   **Midgrade (Plus):** This is similar to having a strong "All-Stars" team with an extra player. It adds a bit more power to the mix, causing the explosion to occur slightly earlier and with increased force. Some older cars or slightly faster ones require this, but it's not essential for average drivers.
+*   **Premium Gas:** This is the top-level "Pro Team" version, where the robots receive an enhanced spark, allowing them to work more efficiently and effectively. This is not necessary for most average drivers but can be beneficial for high-performance cars.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 0.0, "mistral\_perplexity": 8.5\}}}.
+
+\subsection{Example 6: test position
+160}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-6-test-position-160}
+
+Prompt ID:
+\texttt{\seqsplit{b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Howcome anxiety and depression are so common ? Is it something to do with society and lifestyles or how children are raised ? Or is it simply because it 's more acceptable to talk about it which means it 's more easily diagnosed ? Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Imagine you and your friends are playing a game.
+
+**First, let's talk about the "diagnosis" part (the loudest game in the world).**
+You asked if it's just because we talk about it more. **You are right!** A huge reason is this. People 50 years ago felt bad, had a stomach ache, or were sad, but they didn't have a fancy name for it. They just "were that way." Today, we know exactly what to look for! Doctors have a special list of words to describe these feelings. So, if someone feels a little sad now, they can easily say, "I have depression!" Because we use the word so much, we find these feelings in more people than we used to. It's like realizing that almost everyone has a crush on a favorite cartoon character[U+2014]you didn't know it existed as a super-power before!
+
+**Next, let's look at the "how we live" part (the
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+During a game with friends, a discussion arose regarding the apparent increase in certain issues. It was suggested that this could be due to increased discussion of these topics. This notion holds merit. A primary reason for this perceived rise is the fact that people in the past experienced similar issues, such as stomach aches or sadness, but lacked a specific label to describe their feelings. As a result, these emotions were not formally recognized. In contrast, today's medical professionals have developed a standardized list of terms to identify and classify these feelings. Consequently, individuals can now easily acknowledge and identify their emotions, often using specific diagnoses like depression. This increased awareness and utilization of diagnostic terminology contribute to the perception that these issues are more prevalent than they actually are. This phenomenon is analogous to discovering that numerous people have a crush on a favorite cartoon character, a concept that was previously unrecognized but now seems ubiquitous.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "neutral", "nli\_truncated": false, "numeric\_set\_f1": 0.0, "mistral\_perplexity": 9.0625\}}}.
+
+\subsection{Example 7: test position
+192}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-7-test-position-192}
+
+Prompt ID:
+\texttt{\seqsplit{413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+What is the difference between the Crips and the Bloods . Why are they rivals ? What do each do ? Saw the names in an askreddit post and now I am wondering the details Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Imagine you and your best friend have a team. The other team has a hat and a shirt that says the opposite name. You like your colors better, and your friend likes their colors better.
+
+Even though you have nothing to do with each other, people at school sometimes pretend you are enemies so they feel bold when they say mean things to you. That's kind of what happened with two groups of friends in a big city named **The Crips** and **The Bloods**.
+
+Here is the difference, what they do, and why they are rivals, explained simply:
+
+### 1. Why are they rivals?
+They aren't fighting because one team lost a video game or because one group of people stole candy. There was no "cheating" to stop them from being mean to each other.
+
+It started long ago when black and Latino teenagers in Los Angeles got into a small fight. Later, people in different parts of the city started forming their own groups based on
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Imagine a team with its own distinct identity, including a hat and a shirt that represents its name. However, another team in the same area has a name that is the exact opposite. While personal preferences for colors may vary, with some people favoring the colors of their own team and others preferring the opposing team's colors.
+
+In a similar manner, two groups, **The Crips** and **The Bloods**, in a large city, have been portrayed as enemies by some people. This perception is not based on any direct connection between the two groups but rather stems from the actions of others who wish to appear bold by saying mean things to members of these groups.
+
+### 1. Why are they rivals?
+
+The origins of their rivalry are rooted in a deeper history rather than a trivial cause. It did not begin over a lost video game or a stolen treat. There was no cheating or unfairness that fueled their animosity towards each other.
+
+It all started a long time ago in Los Angeles when a small fight broke out between black and Latino teenagers. As time passed, people from different parts of the city began to form their own groups based on
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "neutral", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 9.8125\}}}.
+
+\subsection{Example 8: test position
+224}\label{record-docs-watermarking-qualitative-text-textseal2-vanilla-md-example-8-test-position-224}
+
+Prompt ID:
+\texttt{\seqsplit{3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+I am moving to a new city. How do I plan and prepare - financially - for the move?
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Moving to a new city is an exciting step, but it comes with significant financial implications that need careful planning to avoid end-of-month stress. Here is a comprehensive guide to helping you prepare financially for your move:
+
+### 1. Create a Dedicated "Move Fund"
+Before selling anything or changing jobs, open a separate savings account dedicated solely to moving costs.
+*   **Set a timeline:** Aim to have 3–6 months of rent (in the new city) plus the full moving budget saved up before you pack.
+*   **Budget categories:** Break down your expected costs into:
+    *   **Housing Deposits:** Typically 1–2 months' rent upfront.
+    *   **Security Deposits:** Often $500–$2,000 depending on the city and damage guarantees.
+    *   **Moving Services/Packing:** Truck rental, professional movers, or self-move supplies.
+    *   **Utilities & First
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Embarking on a new city adventure brings a mix of emotions, but it's essential to consider the financial aspects that can lead to end-of-month anxiety if not properly managed. To ensure a smooth transition, follow this comprehensive guide to prepare your finances for the move:
+
+### 1. Establish a Separate "Move Fund" Account
+
+Prior to selling any assets or changing jobs, set up a dedicated savings account specifically for moving expenses. This fund will serve as a buffer against unexpected costs and provide a clear picture of your financial progress.
+
+**Setting a Realistic Timeline**
+
+To avoid last-minute financial stress, aim to accumulate 3–6 months' worth of rent in the new city, along with the full moving budget, in your dedicated account before you begin packing. This will give you a comfortable cushion to handle any unexpected expenses that may arise.
+
+**Breaking Down Moving Costs**
+
+To create a precise moving budget, categorize your expected expenses into the following categories:
+
+*   **Housing Deposits:** Typically require 1–2 months' rent upfront as a security deposit.
+*   **Security Deposits:** May range from $500 to $2,000, depending on the city and the type of property you're renting.
+*   **Moving Services/Packing:** Include costs for truck rental, professional movers, or self-move supplies.
+*   **Utilities & First Month's Expenses:** Factor in the costs of setting up utilities and other essential services in your new home.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 4.28125\}}}.
+
+\href{records/docs/watermarking/text.tex}{Text metrics} \textbar{}
+\href{../docs/watermarking/README.md}{Report overview}

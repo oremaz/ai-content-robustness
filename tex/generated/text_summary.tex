@@ -1,0 +1,17 @@
+\begin{table}[t]\centering\small
+\begin{tabular}{llrr}\toprule
+Scheme & Condition & Detected & Rate\\\midrule
+TextSeal 2 & Original marked & 253/256 & 98.8\% \\
+TextSeal 2 & Clean control & 1/256 & 0.4\% \\
+TextSeal 2 & Ordinary rewrite & 15/256 & 5.9\% \\
+TextSeal 2 & BIRA & 0/256 & 0.0\% \\
+TextSeal 2 & Top-10 resampling & 1/256 & 0.4\% \\
+TextSeal 2 & Smoothing & 0/256 & 0.0\% \\
+Text student & Original marked & 118/256 & 46.1\% \\
+Text student & Clean control & 2/256 & 0.8\% \\
+Text student & Ordinary rewrite & 9/256 & 3.5\% \\
+Text student & BIRA & 1/256 & 0.4\% \\
+Text student & Top-10 resampling & 102/256 & 39.8\% \\
+Text student & Smoothing & 18/256 & 7.0\% \\
+\bottomrule\end{tabular}
+\caption{Retained text detections at distinct primary operating points. Probability arms generate fresh responses; the student is a local adaptation.}\end{table}

@@ -183,7 +183,7 @@ Inputs require at least 15 words; Falcon truncates at 1,024 tokens and Gemma
 at 2,000 text tokens plus the completion prompt. Gemma requires authorized
 Hugging Face access. Detection details identify the combined variant, classifier
 hash, model identities and score orientation. This release is not the paper's
-standalone nine-feature experiment. See [integration notes](docs/diveye_classifier.md).
+standalone nine-feature experiment. See [integration notes](tex/records/docs/diveye_classifier.tex).
 
 ### Disrupt-and-Recover
 
@@ -329,7 +329,7 @@ model's input size and uses ImageNet normalization. The sigmoid output is
 weights load lazily. This detector is not used in the current experiment.
 
 Both return classifier probabilities, without claiming calibration or resistance
-to adaptive attacks. See the [paper review](docs/image_defenders.md),
+to adaptive attacks. See the [paper review](tex/records/docs/image_defenders.tex),
 [DDA code](https://github.com/roy-ch/Dual-Data-Alignment), and
 [Community Forensics code](https://github.com/JeongsooP/Community-Forensics).
 

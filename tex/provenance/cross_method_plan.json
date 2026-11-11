@@ -1,0 +1,104 @@
+{
+  "user_request": "After a useful defense is established, test at least three or four additional watermarks for text and the same for images, using the TextSeal2 and DistSeal ablations/comparisons to choose candidates.",
+  "status": "Source-grounded prospective plan updated from full published PDFs; four same-decoder teacher families prioritized. No added-family result or unverified fidelity claim.",
+  "primary_sources": [
+    {
+      "paper": "TextSeal2",
+      "url": "https://arxiv.org/pdf/2610.40613",
+      "full_pdf_read": true,
+      "locations": [
+        "Table1",
+        "Table6",
+        "AppendixG"
+      ]
+    },
+    {
+      "paper": "DistSeal publishedICML2026",
+      "url": "https://proceedings.mlr.press/v306/rebuffi26a.html",
+      "full_pdf_read": true,
+      "locations": [
+        "AppendixE Tables10and11",
+        "AppendixF Tables12and13",
+        "AppendixH Tables14and15"
+      ]
+    }
+  ],
+  "text_candidates": [
+    {
+      "method": "TextSeal",
+      "purpose": "Distinct coin-flip routing baseline; provided native implementation. Match diversity and detectorFPR."
+    },
+    {
+      "method": "SynthID-Text",
+      "purpose": "Strong tournament-based comparison used by TextSeal2. Verify official implementation/keys rather than silently substituting a local approximation."
+    },
+    {
+      "method": "textGrain",
+      "purpose": "Strong entropy-budget comparison. TextSeal2 supplies a reimplementation, not official released textGrain code; label that distinction prominently."
+    },
+    {
+      "method": "KGW",
+      "purpose": "Fourth distinct family/control if compatible with the final defense; must match quality andFPR, not imply it is a recent best method."
+    }
+  ],
+  "text_additional_control": {
+    "method": "AutoMark copula",
+    "purpose": "Useful implementation/control from TextSeal2; its single-key copula is distribution-equivalent to TextSeal2 virtual-key mixing in non-speculative decoding. Do not count this alone as independent-family generalization."
+  },
+  "image_candidates": [
+    {
+      "method": "WAM",
+      "paper_location": "DistSeal published Appendix E, Tables 10 and 11",
+      "compatibility_to_check": "Primary route for a decoder experiment: verify native post-hoc teacher, distill into the same DC-AE decoder, retain identical weight attack access and validate initial detection/quality before attacks. Code and weights not yet audited."
+    },
+    {
+      "method": "TrustMark",
+      "paper_location": "DistSeal published Appendix E, Tables 10 and 11",
+      "compatibility_to_check": "Primary route for a decoder experiment: verify native post-hoc teacher, distill into the same DC-AE decoder, retain identical weight attack access and validate initial detection/quality before attacks. Code and weights not yet audited."
+    },
+    {
+      "method": "CIN",
+      "paper_location": "DistSeal published Appendix E, Tables 10 and 11",
+      "compatibility_to_check": "Primary route for a decoder experiment: verify native post-hoc teacher, distill into the same DC-AE decoder, retain identical weight attack access and validate initial detection/quality before attacks. Code and weights not yet audited."
+    },
+    {
+      "method": "MBRS",
+      "paper_location": "DistSeal published Appendix E, Tables 10 and 11",
+      "compatibility_to_check": "Primary route for a decoder experiment: verify native post-hoc teacher, distill into the same DC-AE decoder, retain identical weight attack access and validate initial detection/quality before attacks. Code and weights not yet audited."
+    }
+  ],
+  "image_compatible_alternatives": [
+    "Stable Signature independently released model, if compatible",
+    "RoSteALS, if compatible"
+  ],
+  "image_extra_output_attack_control": {
+    "method": "TreeRing",
+    "paper_location": "DistSeal AppendixF.2/Table13",
+    "caveat": "Useful zero-bit comparison for output transformations. Its initial-noise watermark is not automatically comparable to an in-weight watermark under a weight-only attack; no silent threat-model conversion."
+  },
+  "required_fairness": [
+    "Same content identities/splits and preservation constraints within a comparison.",
+    "Calibrate total detectorFPR on a separate null set, use the same nominalFPR within modality, and report baselineTPR/payloadlength.",
+    "Same attacker access, clean-data budget, update budget and quality-only selection policy; reserve final seeds and prompts.",
+    "Freeze a defense/operatingpoint before additional-method test outcomes. Include methods for which the native implementation already addresses the surface; do not invent a weakness to claim improvement.",
+    "Use paired uncertainty and repeated seeds; record every failed candidate and distinguish a standalone watermark family from a local distillation adaptation.",
+    "Download/read full primarypapers for every method before describing/implementing them; official code/checkpoint/version/license compatibility still unverified for these planned baselines."
+  ],
+  "budget": "All extensions and confirmations remain within the shared60H100-hourcap, devQoS and atmost4newconcurrentH100s; allocate after pilot results instead of launching a wide unvalidated sweep.",
+  "image_additional_controls": [
+    {
+      "method": "Stable Signature",
+      "caveat": "DistSeal Table 12 compares a Stable Signature-style loss using the SAME latent watermarker. This loss control is not an independent original-codec baseline. A separate official released-model experiment requires its own verification."
+    },
+    {
+      "method": "RoSteALS",
+      "caveat": "DistSeal Table 13; latent/post-hoc setting must match actual attacker access."
+    }
+  ],
+  "ablations_from_sources": {
+    "TextSeal2 Table 6": "Native key-only versus entropy-weighted detection with independent null calibration.",
+    "TextSeal2 Tables 7 and 8": "Strength and context-length controls at matched diversity; multi-window ladders already exist and lose some edit robustness.",
+    "DistSeal Tables 9 and 12": "Teacher guidance and extractor-loss coefficients; excessive watermark loss can degrade transformed-image robustness.",
+    "current_image_candidate": "Cross retention type and coefficient to separate changes; compare fixed/adapted target with matched computation and task sequences."
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "status": "Teacher validation passed; matched image meta-distillation completed100outersteps for each variant. Fresh initial screen2081366pending/running; independentremovalattacksnotyetperformed. No establishednoveltyorrobustnessclaim.",
+  "motivation": "The completed blockwise survival-filter pilot destroys initial quality and watermarking. A function-space training objective is needed instead of post-hoc dense weight surgery.",
+  "candidate": "Adaptation-transport watermark distillation: require attack/adaptation A applied to an in-weight marked student to approximate watermark operator W applied AFTER the same adaptation to a clean reference. Compare against a fixed-reference teacher and conventional tamper-resistant meta training.",
+  "schematic": "A(G_marked) approximately W(A(G_clean)); this is a commuting-square/transport objective. Do not call generic MAML/TAR novel.",
+  "closest_verified_prior": [
+    "RoboSignature already uses attacked-model watermark/reconstruction loss plus retention for Stable Signature decoders.",
+    "PRO already learns a watermark policy with forgetting-perturbation regularization.",
+    "MAT already distills through parameter merges.",
+    "DistSeal already supports native generator/decoder distillation and tests clean LoRA forgetting.",
+    "FSW and CTV already use stable subspaces/parameters; the failed pilot is not a discovery of their principle."
+  ],
+  "possible_specific_distinction": "Mark the adapted clean reference rather than forcing the attacked student back to the original frozen generator. Both utility and watermark targets move consistently with task adaptation. The exact distinction remains to be checked, especially related teacher-adaptation and continual-learning work.",
+  "image_plan": "Pair clean-reference and marked-student clean updates using identical data/RNG. Apply the released latent embedder to adapted-reference generated latents. Use native generative distillation in the outer loop plus an initial-quality retention objective. Compare adapted-reference and fixed-reference targets at matched compute. Test new LoRA/full attacks on disjoint clean data, quality-gated checkpoint selection and fresh paired seeds.",
+  "text_plan": "Use the existing DistSeal-inspired hidden-state codec as W. For closed TextSeal2, any auxiliary in-weight channel must be explicitly called a hybrid and total detector FPR calibrated. Native probability smoothing and direct resampling remain required evaluation attacks. Need define adapted/mixed teacher targets exactly; do not pretend the same latent operator automatically applies to unrelated-model mixtures. On-policy prefixes may address exposure mismatch but require separate ablation.",
+  "mathematical_scope": "A small predictive divergence between A(student) and W(A(clean)) transfers bounded detector/utility expectations only under explicit distributional assumptions. Native diffusion denoising MSE with deterministic DPM-Solver does not automatically yield an output KL certificate.",
+  "discarded_or_unselected": [
+    "Simple semantic median partitioning overlaps PMark.",
+    "Simple dual-channel stacking overlaps ensemble watermarking and DistSeal composition.",
+    "Parameter rescaling/gauge tricks can merely slow a fixed optimizer and must not be counted as real adaptive robustness.",
+    "A naive Lie-bracket penalty can be constant in quadratic losses, so it is not justified as a defense just because its notation is new.",
+    "Inverse-mixture water-filling gives a possible smoothing-specific precompensation target, but confidence-dependent top-k smoothing is nonlinear and cannot be silently replaced with fixed-weight full-vocabulary mixing."
+  ],
+  "prerequisites": [
+    "Inspect released DistSeal checkpoint to validate availability and scaling of its latent embedder; a CPU torch-load inspection is pending in exec session2246. Zip metadata confirms222embedder-prefixed parameter entries.",
+    "Reproduce teacher-channel quality and message recovery before training.",
+    "Complete bounded prior-art check for the exact proposed adapted-reference objective; full primary papers, not abstract-only claims.",
+    "Freeze fresh partitions, preservation requirements, controls, compute reservation and rolling checkpoints before new GPU training."
+  ],
+  "budget": "Actual completed .7319444444H100hours; reservations3hours for2081047and2081366. Limit60;devonly.",
+  "optional_user_question": "May a supplementary verifier use prompt/class, while output-only remains primary? No reply yet. Do not rely on context access without an answer."
+}

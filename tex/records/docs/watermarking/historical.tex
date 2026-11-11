@@ -1,0 +1,431 @@
+\section{Historical and incomplete watermark
+experiments}\label{record-docs-watermarking-historical-md-historical-and-incomplete-watermark-experiments}
+
+These retained runs are separate protocols. They are not pooled with the
+current instruct-Qwen and generic clean-training comparisons. Retired
+TextSeal 1 and deleted Qwen-Base outputs are excluded entirely.
+
+\subsection{Earlier image merging and single-class clean
+fine-tuning}\label{record-docs-watermarking-historical-md-earlier-image-merging-and-single-class-clean-fine-tuning}
+
+The original image run used the released merge implementation and a
+clean LoRA pilot on 50 images of class zero. The later primary
+weight-removal run uses an explicitly separated 8,000-image, 800-class
+fitting protocol. Different recipes can give different results even for
+similarly named attacks.
+
+\subsubsection{RAR-XL: original generation
+controls}\label{record-docs-watermarking-historical-md-rar-xl-original-generation-controls}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Control
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Bit accuracy
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+watermarked & 512 & 100.0\% & 0.8\% & 1.0000 & 0.9492 \\
+base & 512 & 0.8\% & 0.8\% & 0.5000 & 0.5001 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Control
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+watermarked & 0.3030 \\
+base & 0.3034 \\
+\end{longtable}
+}
+
+\subsubsection{RAR-XL}\label{record-docs-watermarking-historical-md-rar-xl}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Historical merge: 75\% watermarked & 512 & 98.4\% & 0.8\% & 0.9969 &
+0.3041 \\
+Historical merge: 50\% watermarked & 512 & 48.2\% & 0.8\% & 0.8846 &
+0.3049 \\
+Historical merge: 25\% watermarked & 512 & 4.9\% & 0.8\% & 0.6510 &
+0.3054 \\
+Historical merge: 0\% watermarked & 512 & 0.8\% & 0.8\% & 0.5000 &
+0.3034 \\
+50-image clean LoRA 500 steps & 512 & 67.2\% & 0.8\% & 0.8825 &
+0.2858 \\
+50-image clean LoRA 2500 steps & 512 & 62.1\% & 0.8\% & 0.8555 &
+0.2847 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Paired LPIPS/SSIM/PSNR
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Historical merge: 75\% watermarked & not measured \\
+Historical merge: 50\% watermarked & not measured \\
+Historical merge: 25\% watermarked & not measured \\
+Historical merge: 0\% watermarked & not measured \\
+50-image clean LoRA 500 steps & not measured \\
+50-image clean LoRA 2500 steps & not measured \\
+\end{longtable}
+}
+
+\subsubsection{UViT-H/DC-AE: original generation
+controls}\label{record-docs-watermarking-historical-md-uvit-hdc-ae-original-generation-controls}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Control
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Bit accuracy
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+watermarked & 512 & 100.0\% & 0.0\% & 1.0000 & 0.9955 \\
+base & 512 & 0.0\% & 0.0\% & 0.5000 & 0.5073 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Control
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+watermarked & 0.2934 \\
+base & 0.2927 \\
+\end{longtable}
+}
+
+\subsubsection{UViT-H/DC-AE}\label{record-docs-watermarking-historical-md-uvit-hdc-ae}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Clean FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Class CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Historical merge: 75\% watermarked & 512 & 0.0\% & 0.0\% & 0.4634 &
+0.2141 \\
+Historical merge: 50\% watermarked & 512 & 0.2\% & 0.0\% & 0.4765 &
+0.2327 \\
+Historical merge: 25\% watermarked & 512 & 0.0\% & 0.0\% & 0.4612 &
+0.2200 \\
+Historical merge: 0\% watermarked & 512 & 0.0\% & 0.0\% & 0.5000 &
+0.2927 \\
+50-image clean LoRA 500 steps & 512 & 100.0\% & 0.0\% & 1.0000 &
+0.2184 \\
+50-image clean LoRA 2500 steps & 512 & 99.6\% & 0.0\% & 0.9997 &
+0.2189 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Paired LPIPS/SSIM/PSNR
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Historical merge: 75\% watermarked & not measured \\
+Historical merge: 50\% watermarked & not measured \\
+Historical merge: 25\% watermarked & not measured \\
+Historical merge: 0\% watermarked & not measured \\
+50-image clean LoRA 500 steps & not measured \\
+50-image clean LoRA 2500 steps & not measured \\
+\end{longtable}
+}
+
+\subsubsection{Historical image
+galleries}\label{record-docs-watermarking-historical-md-historical-image-galleries}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Historical method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Eight pairs
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RAR-XL & Historical merge: 75\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-75.tex}{View} \\
+RAR-XL & Historical merge: 50\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-5.tex}{View} \\
+RAR-XL & Historical merge: 25\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0-25.tex}{View} \\
+RAR-XL & Historical merge: 0\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-rar-base-watermarked-weight-0.tex}{View} \\
+RAR-XL & 50-image clean LoRA 500 steps &
+\href{records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-500.tex}{View} \\
+RAR-XL & 50-image clean LoRA 2500 steps &
+\href{records/docs/watermarking/qualitative/legacy-rar-clean-clean-step-2500.tex}{View} \\
+UViT-H/DC-AE & Historical merge: 75\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-75.tex}{View} \\
+UViT-H/DC-AE & Historical merge: 50\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-5.tex}{View} \\
+UViT-H/DC-AE & Historical merge: 25\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0-25.tex}{View} \\
+UViT-H/DC-AE & Historical merge: 0\% watermarked &
+\href{records/docs/watermarking/qualitative/legacy-dcae-base-watermarked-weight-0.tex}{View} \\
+UViT-H/DC-AE & 50-image clean LoRA 500 steps &
+\href{records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-500.tex}{View} \\
+UViT-H/DC-AE & 50-image clean LoRA 2500 steps &
+\href{records/docs/watermarking/qualitative/legacy-dcae-clean-clean-step-2500.tex}{View} \\
+\end{longtable}
+}
+
+\subsection{Independent OPT/Llama paper
+controls}\label{record-docs-watermarking-historical-md-independent-optllama-paper-controls}
+
+These use OPT-1.3B as the generator and Llama-3.1-8B-Instruct for
+rewriting. They are historical paper-scheme controls, not TextSeal
+2/Qwen results. Only the recorded KGW detection evaluation is complete;
+quality and the other schemes are incomplete or absent.
+
+\href{records/docs/watermarking/qualitative/paper-sir-vanilla.tex}{Eight
+SIR / Ordinary paraphrasing pairs}.
+
+\href{records/docs/watermarking/qualitative/paper-sir-bira.tex}{Eight
+SIR / BIRA pairs}.
+
+\subsubsection{KGW: recorded
+detection}\label{record-docs-watermarking-historical-md-kgw-recorded-detection}
+
+Frozen C4-validation threshold: \textgreater2.4810842175. Quality
+measurements below refer only to their stated partial coverage.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Human FPR
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Quality coverage
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+original & 500 & 96.6\% & 0.8\% & 0.9977 & 0/500 \\
+vanilla & 500 & 49.2\% & 0.8\% & 0.9189 & 80/500 \\
+bira & 500 & 7.2\% & 0.8\% & 0.7443 & 0/500 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Bidirectional NLI
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+original & not measured \\
+vanilla & 86.2\% \\
+bira & not measured \\
+\end{longtable}
+}
+
+\href{records/docs/watermarking/qualitative/paper-kgw-vanilla.tex}{Eight
+KGW / Ordinary paraphrasing pairs}.
+
+\href{records/docs/watermarking/qualitative/paper-kgw-bira.tex}{Eight
+KGW / BIRA pairs}.
+
+\subsubsection{Retained artifact
+coverage}\label{record-docs-watermarking-historical-md-retained-artifact-coverage}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Run
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Scheme
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Original outputs
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ordinary rewrites
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+BIRA rewrites
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Owner metrics
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\seqsplit{20261103T012950108624Z} & SIR & 60 & 0 & 0 & not measured \\
+\seqsplit{20261103T012950108624Z} & KGW & 163 & 0 & 0 & not measured \\
+\seqsplit{20261103T012950108624Z} & Unigram & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T012950108624Z} & UPV & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T012950108624Z} & EWD & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T012950108624Z} & DIP & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T012950108624Z} & EXP & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T014241041156Z} & SIR & 500 & 500 & 330 & not measured \\
+\seqsplit{20261103T014241041156Z} & KGW & 500 & 500 & 500 & recorded \\
+\seqsplit{20261103T014241041156Z} & Unigram & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T014241041156Z} & UPV & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T014241041156Z} & EWD & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T014241041156Z} & DIP & 0 & 0 & 0 & not measured \\
+\seqsplit{20261103T014241041156Z} & EXP & 0 & 0 & 0 & not measured \\
+\end{longtable}
+}
+
+Zero retained outputs means no completed measurements are available
+here. The earlier 60/163-output staging run is superseded by the later
+retained run, not an additional completed benchmark. Stale receipts do
+not turn partial outputs into complete quality evaluations.
+
+\href{../docs/watermarking/README.md}{Overview}

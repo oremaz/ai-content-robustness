@@ -1,0 +1,1052 @@
+{
+  "schema_version": 1,
+  "selection": "Eight evenly spaced positions without detection/quality filtering; partial paper controls use the common completed prefix.",
+  "builder_sha256": "4f509993fce4824bec2b42fa1c3ade6cc76ef720c8adedb69c1842035e593322",
+  "renderer_sha256": "7eceb2f898391e09a6b4566de65d0a4fedd12fa73b5d2fc161fada052370a5b5",
+  "renderer": {
+    "Pillow": "12.1.0",
+    "font": "DejaVuSans",
+    "font_sha256": "66b8a8ee0a4d1d46ff40f3352b05dbaffb63669c0577096f4a513772d21290f1",
+    "image_display_pixels": 256,
+    "encoding": "WebP lossless"
+  },
+  "galleries": [
+    {
+      "key": "text-textseal2-vanilla",
+      "kind": "text",
+      "page": "qualitative/text-textseal2-vanilla.md",
+      "asset": "assets/text-textseal2-vanilla.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-textseal2-bira",
+      "kind": "text",
+      "page": "qualitative/text-textseal2-bira.md",
+      "asset": "assets/text-textseal2-bira.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-textseal2-direct_topk",
+      "kind": "text",
+      "page": "qualitative/text-textseal2-direct_topk.md",
+      "asset": "assets/text-textseal2-direct_topk.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-textseal2-smoothing",
+      "kind": "text",
+      "page": "qualitative/text-textseal2-smoothing.md",
+      "asset": "assets/text-textseal2-smoothing.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-vanilla",
+      "kind": "text",
+      "page": "qualitative/text-latent-vanilla.md",
+      "asset": "assets/text-latent-vanilla.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-bira",
+      "kind": "text",
+      "page": "qualitative/text-latent-bira.md",
+      "asset": "assets/text-latent-bira.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-direct_topk",
+      "kind": "text",
+      "page": "qualitative/text-latent-direct_topk.md",
+      "asset": "assets/text-latent-direct_topk.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "text-latent-smoothing",
+      "kind": "text",
+      "page": "qualitative/text-latent-smoothing.md",
+      "asset": "assets/text-latent-smoothing.webp",
+      "sample_ids": [
+        "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343",
+        "3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1",
+        "28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3",
+        "ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351",
+        "b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9",
+        "413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257",
+        "3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-unmodified-supplied",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-unmodified-supplied.md",
+      "asset": "assets/image-rar-weight-unmodified-supplied.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0-75",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-merge-0-75.md",
+      "asset": "assets/image-rar-weight-merge-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0-5",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-merge-0-5.md",
+      "asset": "assets/image-rar-weight-merge-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0-25",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-merge-0-25.md",
+      "asset": "assets/image-rar-weight-merge-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-merge-0",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-merge-0.md",
+      "asset": "assets/image-rar-weight-merge-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-lora-500",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-clean-lora-500.md",
+      "asset": "assets/image-rar-weight-clean-lora-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-lora-2500",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-clean-lora-2500.md",
+      "asset": "assets/image-rar-weight-clean-lora-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-full-500",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-clean-full-500.md",
+      "asset": "assets/image-rar-weight-clean-full-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-weight-clean-full-2500",
+      "kind": "image",
+      "page": "qualitative/image-rar-weight-clean-full-2500.md",
+      "asset": "assets/image-rar-weight-clean-full-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-resize-only",
+      "kind": "image",
+      "page": "qualitative/image-rar-output-resize-only.md",
+      "asset": "assets/image-rar-output-resize-only.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-nfpa-0",
+      "kind": "image",
+      "page": "qualitative/image-rar-output-nfpa-0.md",
+      "asset": "assets/image-rar-output-nfpa-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-nfpa-20",
+      "kind": "image",
+      "page": "qualitative/image-rar-output-nfpa-20.md",
+      "asset": "assets/image-rar-output-nfpa-20.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-output-nfpa-40",
+      "kind": "image",
+      "page": "qualitative/image-rar-output-nfpa-40.md",
+      "asset": "assets/image-rar-output-nfpa-40.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-jpeg50",
+      "kind": "image",
+      "page": "qualitative/image-rar-jpeg50.md",
+      "asset": "assets/image-rar-jpeg50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-rar-center_crop_area50",
+      "kind": "image",
+      "page": "qualitative/image-rar-center_crop_area50.md",
+      "asset": "assets/image-rar-center_crop_area50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-unmodified-supplied",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-unmodified-supplied.md",
+      "asset": "assets/image-dcae-weight-unmodified-supplied.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0-75",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-merge-0-75.md",
+      "asset": "assets/image-dcae-weight-merge-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0-5",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-merge-0-5.md",
+      "asset": "assets/image-dcae-weight-merge-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0-25",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-merge-0-25.md",
+      "asset": "assets/image-dcae-weight-merge-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-merge-0",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-merge-0.md",
+      "asset": "assets/image-dcae-weight-merge-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-lora-500",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-clean-lora-500.md",
+      "asset": "assets/image-dcae-weight-clean-lora-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-lora-2500",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-clean-lora-2500.md",
+      "asset": "assets/image-dcae-weight-clean-lora-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-full-500",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-clean-full-500.md",
+      "asset": "assets/image-dcae-weight-clean-full-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-weight-clean-full-2500",
+      "kind": "image",
+      "page": "qualitative/image-dcae-weight-clean-full-2500.md",
+      "asset": "assets/image-dcae-weight-clean-full-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-resize-only",
+      "kind": "image",
+      "page": "qualitative/image-dcae-output-resize-only.md",
+      "asset": "assets/image-dcae-output-resize-only.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-nfpa-0",
+      "kind": "image",
+      "page": "qualitative/image-dcae-output-nfpa-0.md",
+      "asset": "assets/image-dcae-output-nfpa-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-nfpa-20",
+      "kind": "image",
+      "page": "qualitative/image-dcae-output-nfpa-20.md",
+      "asset": "assets/image-dcae-output-nfpa-20.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-output-nfpa-40",
+      "kind": "image",
+      "page": "qualitative/image-dcae-output-nfpa-40.md",
+      "asset": "assets/image-dcae-output-nfpa-40.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-jpeg50",
+      "kind": "image",
+      "page": "qualitative/image-dcae-jpeg50.md",
+      "asset": "assets/image-dcae-jpeg50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "image-dcae-center_crop_area50",
+      "kind": "image",
+      "page": "qualitative/image-dcae-center_crop_area50.md",
+      "asset": "assets/image-dcae-center_crop_area50.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0-75",
+      "kind": "image",
+      "page": "qualitative/legacy-rar-base-watermarked-weight-0-75.md",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0-5",
+      "kind": "image",
+      "page": "qualitative/legacy-rar-base-watermarked-weight-0-5.md",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0-25",
+      "kind": "image",
+      "page": "qualitative/legacy-rar-base-watermarked-weight-0-25.md",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-base-watermarked-weight-0",
+      "kind": "image",
+      "page": "qualitative/legacy-rar-base-watermarked-weight-0.md",
+      "asset": "assets/legacy-rar-base-watermarked-weight-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-clean-clean-step-500",
+      "kind": "image",
+      "page": "qualitative/legacy-rar-clean-clean-step-500.md",
+      "asset": "assets/legacy-rar-clean-clean-step-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-rar-clean-clean-step-2500",
+      "kind": "image",
+      "page": "qualitative/legacy-rar-clean-clean-step-2500.md",
+      "asset": "assets/legacy-rar-clean-clean-step-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0-75",
+      "kind": "image",
+      "page": "qualitative/legacy-dcae-base-watermarked-weight-0-75.md",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0-75.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0-5",
+      "kind": "image",
+      "page": "qualitative/legacy-dcae-base-watermarked-weight-0-5.md",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0-5.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0-25",
+      "kind": "image",
+      "page": "qualitative/legacy-dcae-base-watermarked-weight-0-25.md",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0-25.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-base-watermarked-weight-0",
+      "kind": "image",
+      "page": "qualitative/legacy-dcae-base-watermarked-weight-0.md",
+      "asset": "assets/legacy-dcae-base-watermarked-weight-0.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-clean-clean-step-500",
+      "kind": "image",
+      "page": "qualitative/legacy-dcae-clean-clean-step-500.md",
+      "asset": "assets/legacy-dcae-clean-clean-step-500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "legacy-dcae-clean-clean-step-2500",
+      "kind": "image",
+      "page": "qualitative/legacy-dcae-clean-clean-step-2500.md",
+      "asset": "assets/legacy-dcae-clean-clean-step-2500.webp",
+      "sample_ids": [
+        0,
+        64,
+        128,
+        192,
+        256,
+        320,
+        384,
+        448
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-sir-vanilla",
+      "kind": "text",
+      "page": "qualitative/paper-sir-vanilla.md",
+      "asset": "assets/paper-sir-vanilla.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "f349a8727c7c51a1c91fedf1fcafe0ae6851c5474bb2ce79fccc84c7544358e8",
+        "a8aa4f7effda3b9a9f5d3ee789d1d3c1dcb65a4df31ca926e955d1241abda5e1",
+        "adaf979fdfb964904e387f40af11efc473f86dfd03a188d448f24221cea6cf05",
+        "1b3ba6e9a2d857aa37a67122f763b84f6e273823246f7c6fcec9fced3d89d443",
+        "03347445733f407fb1ccdcdfee0ac8a6870be235b90c64510ee96dfa7af4dfcf",
+        "4cbf4e262824ea813199d26415d873e7a935d3d4f9e628144b1679a9ef93d63a",
+        "9cdf452ec7392837b8e59d71537c6bd8a5a860e4379361d145f1b68dc8ef065b"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-sir-bira",
+      "kind": "text",
+      "page": "qualitative/paper-sir-bira.md",
+      "asset": "assets/paper-sir-bira.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "f349a8727c7c51a1c91fedf1fcafe0ae6851c5474bb2ce79fccc84c7544358e8",
+        "a8aa4f7effda3b9a9f5d3ee789d1d3c1dcb65a4df31ca926e955d1241abda5e1",
+        "adaf979fdfb964904e387f40af11efc473f86dfd03a188d448f24221cea6cf05",
+        "1b3ba6e9a2d857aa37a67122f763b84f6e273823246f7c6fcec9fced3d89d443",
+        "03347445733f407fb1ccdcdfee0ac8a6870be235b90c64510ee96dfa7af4dfcf",
+        "4cbf4e262824ea813199d26415d873e7a935d3d4f9e628144b1679a9ef93d63a",
+        "9cdf452ec7392837b8e59d71537c6bd8a5a860e4379361d145f1b68dc8ef065b"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-kgw-vanilla",
+      "kind": "text",
+      "page": "qualitative/paper-kgw-vanilla.md",
+      "asset": "assets/paper-kgw-vanilla.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "b0c064862630e362062754f8f83a690bfe02f4e4b9c144ece28f5c7ca9e64ea0",
+        "fdc6d56377083be33893fcfd60d29bd6270f8e03e808c9f7b37cd3a08f8950cb",
+        "e188369d92ce518d76d24701bc4c37660804ecef2cff85053eb1a3cd3ed65b4e",
+        "d0a0bf543c370620eee59bb3506a28ba248d6793c3be6698eb4d84087d22588b",
+        "0a185b9c2378644f03cf5b0e8220ecd5867b6942f53bf49dc619cafba2b21996",
+        "94aa002ac94b2a21a5235aa31a9cb0248012ffaef3dd8afa669e7c617b990240",
+        "9d920d84388fd56a8cc14972c9c687f130e7db5d16add8a0f4ee6333ac5d7c70"
+      ],
+      "panels": 16
+    },
+    {
+      "key": "paper-kgw-bira",
+      "kind": "text",
+      "page": "qualitative/paper-kgw-bira.md",
+      "asset": "assets/paper-kgw-bira.webp",
+      "sample_ids": [
+        "e31e6f74ee79d4c901f4c7e2d71bc20b7d4ac16a960885a84dbed35ed994c04a",
+        "b0c064862630e362062754f8f83a690bfe02f4e4b9c144ece28f5c7ca9e64ea0",
+        "fdc6d56377083be33893fcfd60d29bd6270f8e03e808c9f7b37cd3a08f8950cb",
+        "e188369d92ce518d76d24701bc4c37660804ecef2cff85053eb1a3cd3ed65b4e",
+        "d0a0bf543c370620eee59bb3506a28ba248d6793c3be6698eb4d84087d22588b",
+        "0a185b9c2378644f03cf5b0e8220ecd5867b6942f53bf49dc619cafba2b21996",
+        "94aa002ac94b2a21a5235aa31a9cb0248012ffaef3dd8afa669e7c617b990240",
+        "9d920d84388fd56a8cc14972c9c687f130e7db5d16add8a0f4ee6333ac5d7c70"
+      ],
+      "panels": 16
+    }
+  ],
+  "files": {
+    "README.md": "725bb7a7ad05d5493ce261ebcd42ac5b6d7efb90e235a3bd87f73c5fe91ee865",
+    "assets/image-dcae-center_crop_area50.webp": "99d93a0a123740f6d5e489fd0f91f1448dd2a58e98425f41475187c1ccea41c3",
+    "assets/image-dcae-jpeg50.webp": "b5500d2ef52defb463db035278eec100d9b696e8938b2a79840d7098e4b61ffd",
+    "assets/image-dcae-output-nfpa-0.webp": "154eeb44f120b0a7579b3dcde88e80dc59376c460fd0fecc7d85f850a320a1af",
+    "assets/image-dcae-output-nfpa-20.webp": "7ec6b4552d8f9ce46ebebccd33cfa7a2abf9dae37c325547a42ee49f1dc66f01",
+    "assets/image-dcae-output-nfpa-40.webp": "e1ae654d8bfbd36cb8ad8591605474c3e5c4b6387a7fb36676cb41641ab7b306",
+    "assets/image-dcae-output-resize-only.webp": "4c85682c77a0be59e405bc191bbb3e61a4e2903c9d6be2fa340c4319b5606ed6",
+    "assets/image-dcae-weight-clean-full-2500.webp": "920c94452ac7aca4e2d95aa4a0f434c307e1662d7d9f7295ea2010e90ffb78b3",
+    "assets/image-dcae-weight-clean-full-500.webp": "70450e4fa41a6942d5fa2480a468f543ed21ed15807633571389eaa836bdb6eb",
+    "assets/image-dcae-weight-clean-lora-2500.webp": "0de653ffd1306196ed37283c26936aeb0e863e1a0349d5c9fd04d80bb51d56e9",
+    "assets/image-dcae-weight-clean-lora-500.webp": "8bc54c25c3e5a5c13807d9feb258f076576737d97e7da0ba3ad85b014217fcca",
+    "assets/image-dcae-weight-merge-0-25.webp": "1a1c390ec76f67275af8858b1f16a3f873be73f2de5bfbf6bed4334bb83f54b1",
+    "assets/image-dcae-weight-merge-0-5.webp": "cb2998c6d50d704c39d10c5526132968d1bcf4d72bc6e438548aefe33ef9e9d0",
+    "assets/image-dcae-weight-merge-0-75.webp": "e348e20ab8923bd5d8c9e50f8b2bc0ff77f1595b925e69a1eb54bf8a5a89e7dc",
+    "assets/image-dcae-weight-merge-0.webp": "ae432829c37464d0ba55f2a1dbd02e29248b16b98052a10ff34a58f7366c3ffb",
+    "assets/image-dcae-weight-unmodified-supplied.webp": "a08c3160a1ed82c6f4cf95debc37a9594a79e05061a9721488790ff0c25d727d",
+    "assets/image-rar-center_crop_area50.webp": "53b57e33c1a9740cd827205e40c66c410774cfad2976df7ee392fc0a5c76204f",
+    "assets/image-rar-jpeg50.webp": "2e21aab8696b605425b8674e098f9f6aca75edb2c850c584e120c4f57fcaa152",
+    "assets/image-rar-output-nfpa-0.webp": "e8bdc9e054963de38de2fb15ade04ecd51599233c0a8c6f7b05080b6a05790f4",
+    "assets/image-rar-output-nfpa-20.webp": "545ff93e9d31a52fc452bdf4fdb73e5d8a320dd5e6b17ea12f8f40dd5024030d",
+    "assets/image-rar-output-nfpa-40.webp": "1f363a00c93f0a022e01de1964d6074dad2ba1fe84d9c32e1b1bfbb947c6e727",
+    "assets/image-rar-output-resize-only.webp": "1f9951fb038faf47b2ab9e7c6ead112bc91bac8bd96b62e1343cb275db722fff",
+    "assets/image-rar-weight-clean-full-2500.webp": "2aa040e309221f86680900e3784fc494cf08551b7706bad79d947e9746a758a6",
+    "assets/image-rar-weight-clean-full-500.webp": "ea4f2414250ba5ea3947d3cd9961013f04a035cdb80d15bd7447015a0335525c",
+    "assets/image-rar-weight-clean-lora-2500.webp": "340cb22d309e95c11833dcae7b250408a246bd64833ebe6ff78d948c99e434c1",
+    "assets/image-rar-weight-clean-lora-500.webp": "0ad6311352b03a29b64be18affb5f5d5d2c572633c6e141ae6311ef02d450045",
+    "assets/image-rar-weight-merge-0-25.webp": "d13f3cb7e96f57a94ce2b0e6ed93bc03eebae1f3d1f25db9b0372b3d3a6e922f",
+    "assets/image-rar-weight-merge-0-5.webp": "619063481138f8e6859e0927208d33a70cb13db6d04fd9a939e02a27d3cab2c6",
+    "assets/image-rar-weight-merge-0-75.webp": "a9e0b95df80ca64ecc5079579d2550042c5031ed6b8b4a8f9ee8687da3ce1ebb",
+    "assets/image-rar-weight-merge-0.webp": "dfbd586b248dfaa02c6d7e962c3b0ac8e71748a3dd43f17105b2e2c9c33c095e",
+    "assets/image-rar-weight-unmodified-supplied.webp": "076175b74c73adf1132336f5f85aa4aa304cd9c1dbfedfa7bf47f18fc91f0c20",
+    "assets/legacy-dcae-base-watermarked-weight-0-25.webp": "422325d46afded2f095bd4d80fd3453f7394b904e44ee61ac1aee0c4107d20f0",
+    "assets/legacy-dcae-base-watermarked-weight-0-5.webp": "196779fb9425e3997834823a86fa0bafe64a9dbea93721e1c0f507199416caf4",
+    "assets/legacy-dcae-base-watermarked-weight-0-75.webp": "d3789d55ba6653fc2be7200eaa936e56cca364994b5ba3d336e8e1b7e7cf97a1",
+    "assets/legacy-dcae-base-watermarked-weight-0.webp": "42afddb09a62e9ab6a98db261edde2afccf572ec02d9b9a882bf66be635bc5ac",
+    "assets/legacy-dcae-clean-clean-step-2500.webp": "c0b7de89bb4b86f6f16fc6da9a295f767f61a4357c400298b9cd562a2bc6e2e2",
+    "assets/legacy-dcae-clean-clean-step-500.webp": "6afdbe90cb466d782a482eb3374f34fc1d337e1f1a25834b486b8b6635a46e81",
+    "assets/legacy-rar-base-watermarked-weight-0-25.webp": "9e5c51b48e70d4ba6bf7bea7dbc6a811095485bcc4c47069629d7def6c7427c2",
+    "assets/legacy-rar-base-watermarked-weight-0-5.webp": "45f096caa4382e0a5ccd2b0c686d9b36739b862ffb93993120ea125f81e8907f",
+    "assets/legacy-rar-base-watermarked-weight-0-75.webp": "4f8407b7c63baf8a5da41240a3a9581426bf818fabb3e86e56a6d8a26b6dd992",
+    "assets/legacy-rar-base-watermarked-weight-0.webp": "e1966bbe2361f71d5ef1be9dedc0cb847156633741470251730c31f2fc9ae68c",
+    "assets/legacy-rar-clean-clean-step-2500.webp": "c03b5c9dee0e88502d01fa8a736a187267b392bf236caa5c73ee4ff85652b4a6",
+    "assets/legacy-rar-clean-clean-step-500.webp": "f191818e374d4685b44cbf7a9cc971abc305943d076481404afebec730700d11",
+    "assets/paper-kgw-bira.webp": "254dc077cee502a89f8b8a76230d2be63271a134a6f99505bd511da5c9568e80",
+    "assets/paper-kgw-vanilla.webp": "13364412d850424000100d661e8c1d81517191059c6b9f42439bb49412f76836",
+    "assets/paper-sir-bira.webp": "89205fa231e4a56d299eb6242acf9fcc97028ab28c63bd0ea646da64359c20bd",
+    "assets/paper-sir-vanilla.webp": "05854ea5f7f6e48b2dc50849ec139ab7390871c92103e8547dee1a8fae57a9a6",
+    "assets/text-latent-bira.webp": "a8a967cb29ae925c60f5a24ca30afe895047bdacf62cbc05e2be96001a840dde",
+    "assets/text-latent-direct_topk.webp": "4bd9b45fefd6c45cc2ff4ac0f4c4c725cb07a5b627500c83a1973695b9fa064a",
+    "assets/text-latent-smoothing.webp": "e9187b068e4ba428c88abca13b63a8fd4e35f2c173b488c27755e432db98a42e",
+    "assets/text-latent-vanilla.webp": "718badf89009c0dfeb66e847302938b2b0e87dd99b381721f9907a2e30ff0008",
+    "assets/text-textseal2-bira.webp": "a6356d5b90a3e1295c5ca72258e0094a7cf300cbf57b85558fb854bf51de73e9",
+    "assets/text-textseal2-direct_topk.webp": "552dd927c9bf574ecefecddb2fd330c3514bc17053c807a380280571bb1fd537",
+    "assets/text-textseal2-smoothing.webp": "65a54cf19e1c94a749ad08867525a6973bc8acf5155a4ebfd99bb2d8dcd2d930",
+    "assets/text-textseal2-vanilla.webp": "c8af0ca8f0bda357fd909087061d2745ccca75590b09411aed345ac4e0ea5f8d",
+    "data/examples.json": "88abc795ca5164bd777d0d225c909cfd2a8b530bfb4545ce9e4d3a9b5b6212e5",
+    "data/metrics.json": "e7a01f4ddf8367ef9484e628c3eb713d1eac767b3672812dbaea50dc9a021904",
+    "data/sources.json": "c23447f50fe7a2234c03bf49e9c2f8ad8c32e364357f8bfff6743b83e6c8b5ed",
+    "historical.md": "1b736fb2d579e8dc217f4cfa8713428bc0a3e92b25b6652040e60422ff489037",
+    "images.md": "cf14d695125a6a3a0f7f92ebfa6e8e2b9369909b641bc4784fede05c26d8a6ee",
+    "metrics.md": "2ad5a02c4d0a486447de7f81ef80d4c97723ce5faa47a64e94acab8c14aeb007",
+    "qualitative/image-dcae-center_crop_area50.md": "334c0ad928ed53578d227834e1f4629a195ccd3baf3d019985f478866de91b8b",
+    "qualitative/image-dcae-jpeg50.md": "2bf78c567e5cb9db9968ec3709e122a735edd7fb888e263c5c9b15367f7af306",
+    "qualitative/image-dcae-output-nfpa-0.md": "e5a6fa63a47ac441e5ce1c552f5d4a80d024afbece39db429aadde3f4a009ddc",
+    "qualitative/image-dcae-output-nfpa-20.md": "6dc20f705b1b158d05ee4f0e2bb1b7ccea0e791db4c4cb0b6fd8c96c964d746b",
+    "qualitative/image-dcae-output-nfpa-40.md": "822b7bdf41bd5b5413b2d3ed5caba3e9b265b841803867a4d0e19e8476e6dac7",
+    "qualitative/image-dcae-output-resize-only.md": "ba8efc602ab419703c615742fb98485a8c735e8337aa07e002e1331ea51f8de9",
+    "qualitative/image-dcae-weight-clean-full-2500.md": "9eb4cd6159ef1da742a738afddfd88d4679172d782b3135e5e1b84950fd519c1",
+    "qualitative/image-dcae-weight-clean-full-500.md": "76a3ace1e2ae115dc57b1fa40ffb5ec304977dd7114035e114e501715bdf8e17",
+    "qualitative/image-dcae-weight-clean-lora-2500.md": "17de78a07f7052de2fe6b96b9d7c376deed4d2ccf69e5e4d61b9a6be8caf3c87",
+    "qualitative/image-dcae-weight-clean-lora-500.md": "d7fdbdd49a19a198c1e717a408aa8c1273703be16dcd596a93d4488420dfe608",
+    "qualitative/image-dcae-weight-merge-0-25.md": "252e77a35d1c86987bfa8a09ca3e30957c440587c0800b58dc4d049024c4eb43",
+    "qualitative/image-dcae-weight-merge-0-5.md": "4edbff56f1931f538b94261d50ae5ef0ec0923a79ce059769ebbccbc0ff2e178",
+    "qualitative/image-dcae-weight-merge-0-75.md": "4a1c386b1a466f79b2d009ca9ca9e3bf8eba92ced5b1ddeeff7ffe9d3631dd98",
+    "qualitative/image-dcae-weight-merge-0.md": "030769e5efca9ac767f17d907422c51f9ac81460524fd9a22412fa54718f6974",
+    "qualitative/image-dcae-weight-unmodified-supplied.md": "1436dc6e0fc07a71984d3c9c177d0e6f0718794f23cc12f43b8cf226c32f0928",
+    "qualitative/image-rar-center_crop_area50.md": "da6b7dea6bba27b084b540717730e8b0dada35f8d6b53c61a064db09faac1caf",
+    "qualitative/image-rar-jpeg50.md": "13d294c6942503b1e3d8f516b3796afb6429aeef9f612c5d75bbfe385d3d7c61",
+    "qualitative/image-rar-output-nfpa-0.md": "3a20a6233dc669db5c10f135e407838169d80b96577ae8a8e14d71bde42df6a9",
+    "qualitative/image-rar-output-nfpa-20.md": "cd56adedd65093dbe754ee97e88b00bde4c496d1b1be68a40fe55413d8eec3a7",
+    "qualitative/image-rar-output-nfpa-40.md": "fd5ddc8451f114fa2a353733befd629e78a6ce98a6a14b427af031545867af4a",
+    "qualitative/image-rar-output-resize-only.md": "c112ae1c1459ccfae7d920bbba7176caaaa061c8245ef74e166e8a8ea5433346",
+    "qualitative/image-rar-weight-clean-full-2500.md": "3e32111ea25844655355a5da8d35c036a28b456c81d5801c3c439dcc3072a548",
+    "qualitative/image-rar-weight-clean-full-500.md": "683018747a22ca4e0d96f33a973ca05923ece1a9098e1b64e51f02eacc8f7aea",
+    "qualitative/image-rar-weight-clean-lora-2500.md": "eeec511a2f1744018321f6eaf3f08e80554bb50682024f05476b1e04c5dd02db",
+    "qualitative/image-rar-weight-clean-lora-500.md": "9bf80ffc04c74ab11e613e4cece6033d6c1a4e33425664d0d60f774b8a430542",
+    "qualitative/image-rar-weight-merge-0-25.md": "0449d30c9991fc737d1dceaa55948b9ce46f69f3fc0f7224f1bd90f53b0a29a9",
+    "qualitative/image-rar-weight-merge-0-5.md": "2632ffe5eb3b381487b4cc1c5ae69b6371610341753846f33542254cadd74b05",
+    "qualitative/image-rar-weight-merge-0-75.md": "ed1c0c6bbe5c8c13e812b28f0d4a0f672996828908a101f9e9e4779cbdf334de",
+    "qualitative/image-rar-weight-merge-0.md": "76ab2585127a1c918b1df15109749a40d61d59368f346d84c742471373ad8375",
+    "qualitative/image-rar-weight-unmodified-supplied.md": "ecacc6a63f103097dde6a55b649115b1db48f3607a7b7fdb3eac5bb11799ab64",
+    "qualitative/legacy-dcae-base-watermarked-weight-0-25.md": "41b7585f14f1e548d14011cb7018535750614c09fcf6e56520e087c42089947f",
+    "qualitative/legacy-dcae-base-watermarked-weight-0-5.md": "4115ebb8236faa2dc26a3c5c9c5328da3b29bd63f416c78befbd72a5ee8fe7d3",
+    "qualitative/legacy-dcae-base-watermarked-weight-0-75.md": "7b6d05e9457860118ea3fdc97fdd93f674aaf58112fd307da82f405fa5c5039f",
+    "qualitative/legacy-dcae-base-watermarked-weight-0.md": "ae149f65510c22dd9c909eb0ab5d2b159ba7bbbbddaa464f7d5fe066766a72f7",
+    "qualitative/legacy-dcae-clean-clean-step-2500.md": "b59e63151cdef4b492ccb985141f7a05271e2102af57199aed67918211f3b7e2",
+    "qualitative/legacy-dcae-clean-clean-step-500.md": "137b0d9d75e833c496f16fc2d6e6dc5422bd1d377ffee8a7f6c219c88a30705d",
+    "qualitative/legacy-rar-base-watermarked-weight-0-25.md": "87c2a0735eac96a139e7aa72fe0a1db84be03666ffce3df31f2035fd46f64486",
+    "qualitative/legacy-rar-base-watermarked-weight-0-5.md": "a9a0dfc2c082e391c44f7f2629627df4a7636bae3d11e491861abef02e8ba8ee",
+    "qualitative/legacy-rar-base-watermarked-weight-0-75.md": "ad0a40aaf3063f9737421e7182038538f24b5878a154b922a616aafd809ddf26",
+    "qualitative/legacy-rar-base-watermarked-weight-0.md": "2e8444743d45eea9794234b6f64f7ee737b862f30570e07928391cad647c03a9",
+    "qualitative/legacy-rar-clean-clean-step-2500.md": "3d31067c6f2098ac354730559dd63d2fdddd88ad074020193835339068bdeef3",
+    "qualitative/legacy-rar-clean-clean-step-500.md": "5dc4ba4cd37910633cfbe6daf5e1ff56c81a51accbfdba4a19806f97e27ab07c",
+    "qualitative/paper-kgw-bira.md": "4d7268b184e7be0d12e0d2ffde8e4dbd6cc73768aa72a502c97d1b20e83dde33",
+    "qualitative/paper-kgw-vanilla.md": "823caf5027f064f8749f22962833b09f96bfbde19fd98e7f7152b439509e9e25",
+    "qualitative/paper-sir-bira.md": "fa89c38eef5c65772e84a7a1f0eaf0dd479f90e84d00ed4a7462279cac0ba086",
+    "qualitative/paper-sir-vanilla.md": "6bc71fa452cdaaa473b18100404d9ca5ff09cc830ec7a682014063dad408d334",
+    "qualitative/text-latent-bira.md": "b1181a53af80798fb0d3ea5e0e4009eadc10ae1fd2efa83ef3bad8c4d448d522",
+    "qualitative/text-latent-direct_topk.md": "8898a90e4cbca575fd55cad5cbbc80c31d60d4ff3fe0ada92afa71a0a24e101d",
+    "qualitative/text-latent-smoothing.md": "35bf4e372e8e323e088399fc71dfc4606ab011a75caec92b73501e65795d6203",
+    "qualitative/text-latent-vanilla.md": "a64a24528e6fcd9f9bd5437af14c60249d3da3d2ebe6071e702564932b468a27",
+    "qualitative/text-textseal2-bira.md": "9238d4c1ac75de685e102e9c5035db5d831823030faa03c2095cb1e022cf0786",
+    "qualitative/text-textseal2-direct_topk.md": "281abce7c129eeb3091b29316b89aa7da6ed17f05d800d7ddd443df18ce675a9",
+    "qualitative/text-textseal2-smoothing.md": "86eb341c7309769bb070f86d8b3f053b2677c930a6e43ccead10a728385a16d9",
+    "qualitative/text-textseal2-vanilla.md": "f93acab73aa84a43ccb5eb174f42e149a304cdbf21cf86d2d278eea2f298bafa",
+    "robustness.md": "aef5abfae152de9a6e9c24ad9ec1d0d9149061841b96a6a58d12cc2e82d7791b",
+    "text.md": "dc8ae544faad90eeb39a899c73f0374d21276479899e5c2da847964b31c0ead3"
+  }
+}

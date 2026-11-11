@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "seconds": 61.759109442005865,
+  "dependency_map_packages": 301,
+  "notes": "Diffusers module map built from installed distribution metadata without statting every installed file. Native scientific dependencies unchanged."
+}

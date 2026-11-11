@@ -1,0 +1,30 @@
+\section{Pruning advertised alternatives}
+\label{app:support_guard}
+A client can reweight the advertised tokens, including those carrying weak owner evidence. Support pruning removes some alternatives while retaining most of their estimated probability mass.
+
+\paragraph{The optimization at one prefix.}
+Let $\mathcal V$ be the vocabulary of size $V\in\mathbb N_{>0}$, $h\in\mathcal V^*$ a prefix, and $k\in\mathcal K$ an owner key in the scheme's key space $\mathcal K$. At that prefix, $\widetilde q=(\widetilde q_v)_{v\in\mathcal V}\in\Delta(\mathcal V)$ is the normalized estimate of the keyed sampler law. The ordinary advertised support is a nonempty set $C_0\subseteq\mathcal V$ of at most ten positive-probability tokens. The native owner evidence function is $e_k:\mathcal V^*\times\mathcal V\to[0,\infty)$. For token $v\in C_0$, it returns scalar $e_k(h,v)\in[0,\infty)$. Larger evidence favors detection. Given scalar mass-loss budget $\delta\in[0,1)$, choose a nonempty subset $S\subseteq C_0$ solving
+\[
+ \max_{\varnothing\ne S\subseteq C_0}\ \min_{v\in S}e_k(h,v)
+ \quad\text{subject to}\quad
+ \sum_{v\in S}\widetilde q_v\geq
+ (1-\delta)\sum_{v\in C_0}\widetilde q_v.
+\]
+The objective raises the weakest evidence a supported client can choose. Sort tokens by decreasing evidence and accumulate probability mass until the constraint holds, retaining ties at the cutoff. For probabilities $(.80,.15,.05)\in\Delta(\{1,2,3\})$ and evidence $(4,3,.1)\in\mathbb R^3$, dropping the last token raises the minimum evidence from $.1$ to $3$ while discarding only $5\%$ of mass.
+
+\paragraph{What the budget controls.}
+Let $b_0=\sum_{v\in C_0}\widetilde q_v\in(0,1]$ and $b_S=\sum_{v\in S}\widetilde q_v\in(0,b_0]$. Define the renormalized probability vectors $P_0,P_S\in\Delta(\mathcal V)$ by
+\[
+ P_0(v)=\frac{\widetilde q_v\mathbf1\{v\in C_0\}}{b_0},\qquad
+ P_S(v)=\frac{\widetilde q_v\mathbf1\{v\in S\}}{b_S}.
+\]
+Their scalar total variation distance is exactly
+$\operatorname{TV}(P_0,P_S)=1-b_S/b_0\leq\delta$.
+This bounds how much pruning changes the advertised distribution at this prefix. Sequential changes can accumulate, so answer preservation still needs direct evaluation.
+
+For an output $y=(y_1,\ldots,y_L)\in\mathcal V^L$ of length $L\in\mathbb N_{>0}$, let $\mathcal T\subseteq\{1,\ldots,L\}$ contain the positions scored by the native first-occurrence rule. At each such position, the prefix is $h_t\in\mathcal V^*$, the retained support is nonempty $S_t\subseteq\mathcal V$, and its evidence floor is $a_t=\min_{v\in S_t}e_k(h_t,v)\in[0,\infty)$. If every scored token $y_t$ belongs to $S_t$, then
+\[
+ S_{\rm path}=\sum_{t\in\mathcal T}e_k(h_t,y_t)
+ \ \geq\ \sum_{t\in\mathcal T}a_t,
+\]
+where $S_{\rm path}\in[0,\infty)$ is the summed native evidence. A bound for saved token IDs applies to decoded text only when the scored path is preserved by retokenization. Reference smoothing and independent rewriting may choose tokens outside the retained supports.

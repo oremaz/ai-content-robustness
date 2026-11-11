@@ -1,0 +1,38 @@
+{
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-screen-20261107T180723Z/manifest.json",
+  "manifest_sha256": "022f9f9d24a60d808420a3478ae4fccc478ca0a7ef4639c3be7ec183e9fdb931",
+  "result_sha256": "c48ac5ec8e4a1b15f6e45abc80e5ccbf32a7ec57181bf07f4a5b99734bc685a2",
+  "result": {
+    "threshold": 0.6875,
+    "conditions": {
+      "original": {
+        "n": 32,
+        "detected": 32,
+        "preserved": 32,
+        "mean_lpips": 0.0,
+        "mean_bit_accuracy": 0.99560546875,
+        "screen_passed": true
+      },
+      "fixed": {
+        "n": 32,
+        "detected": 32,
+        "preserved": 32,
+        "mean_lpips": 0.007711867332545808,
+        "mean_bit_accuracy": 0.9951171875,
+        "screen_passed": true
+      },
+      "adapted": {
+        "n": 32,
+        "detected": 32,
+        "preserved": 31,
+        "mean_lpips": 0.007504596494982252,
+        "mean_bit_accuracy": 0.99560546875,
+        "screen_passed": true
+      }
+    },
+    "status": "Initial generation screen only. No removal robustness claim."
+  },
+  "job_id": "2120429",
+  "elapsed_seconds": 307,
+  "validation": "All96nativePNGhashes,indices,labelsandqualitysumscrosschecked. All3checkpoints passinitialscreen. Removal robustness remains untested."
+}

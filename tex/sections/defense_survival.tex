@@ -1,0 +1,14 @@
+\section{Filtering the watermark update}
+\label{app:survival}
+A marked generator and its compatible clean generator have parameter vectors in $\mathbb R^{d_\theta}$, with $d_\theta\in\mathbb N_{>0}$. Let $\delta_0\in\mathbb R^{d_\theta}$ be marked minus clean parameters. To understand how clean training may erase this difference, consider the quadratic loss
+\[
+ L_c(\theta)=\tfrac12(\theta-\theta_\star)^\top H(\theta-\theta_\star)\in\mathbb R,
+ \qquad \theta,\theta_\star\in\mathbb R^{d_\theta},
+\]
+where $\theta_\star$ is a minimizer and the symmetric positive semidefinite Hessian is $H\in\mathbb R^{d_\theta\times d_\theta}$. If both generators take the same gradient steps with scalar learning rate $\eta\in(0,\infty)$, their difference after $K\in\mathbb N_0$ steps is
+\[
+ \delta_K=(I_{d_\theta}-\eta H)^K\delta_0\in\mathbb R^{d_\theta},
+\]
+with identity matrix $I_{d_\theta}\in\mathbb R^{d_\theta\times d_\theta}$.
+
+An eigenvector direction of $H$ with scalar eigenvalue $h\in[0,\infty)$ retains the factor $(1-\eta h)^K$. For $0\leq\eta h\leq1$, larger curvature means faster decay. This motivates placing watermark changes in less sensitive directions. The DC-AE pilot approximates sensitivity using clean-loss gradient energy per parameter block, then filters the marked-minus-clean update. That proxy and a nonlinear generator can depart substantially from the quadratic model. Initial detection and paired-content checks test whether the approximation produces a usable candidate.

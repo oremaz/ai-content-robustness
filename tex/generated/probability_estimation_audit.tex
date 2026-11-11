@@ -1,0 +1,8 @@
+\begin{table}[ht]\centering\small
+\begin{tabular}{rrrrr}\toprule
+Draws & Mean TV & Max TV & Median CUDA ms & Mean raw sum\\\midrule
+64 & 0.00216 & 0.04477 & 0.223 & 0.99809 \\
+256 & 0.00079 & 0.02363 & 0.209 & 0.99958 \\
+1024 & 0.00026 & 0.00675 & 0.208 & 1.00048 \\
+\bottomrule\end{tabular}
+\caption{Conditional-probability estimator audit on 16 fixed public calibration prefixes, with three repeats per draw budget. TV is measured against a noisy native-race reference with 65,536 draws per prefix. Supports contain only 1--29 tokens. Timings cover the estimator CUDA work and exclude model, filtering, PRF and API overhead.}\end{table}

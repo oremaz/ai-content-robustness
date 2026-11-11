@@ -1,0 +1,55 @@
+{
+  "status": "All filtered candidates failed both initial detection and paired-preservation screen; do not run removal attacks or claim a working defense.",
+  "sources": {
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/results.json": "547c6cf9029fdca8cde02cf660c623beba366a07b3656a4d17983de1f49d7390",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/original/samples.json": "3cda4774d907df9f790f9f8cc118ab0308fbfbf45dcf14af697372844e967a2c",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/original/quality.json": "0cec18a211aaac27b9f385656f8ddd884db5b0dff83f3b647f042d72c428c544",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/inverse/samples.json": "20706cf4c875411f8e088b37496318775ac6749ef77892d10e0c83314e1e74e6",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/inverse/quality.json": "1f46a911178d2c398a1fc56001986bc1b35d027400751ae8d82580db2122a9b1",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/survival1/samples.json": "4864bbf291ca6b0324405d8d71c87b97648a31ffe41b6b80e61261819296e405",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/survival1/quality.json": "e29bd576570568a7b51ebec0ea554d6c436cb15650e92bd2521788ac286757b0",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/survival4/samples.json": "0ed8ea1a167cee09492cf85c3a305956f8bab08023df263d5d4d3c9df1525bef",
+    "results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/survival4/quality.json": "02f7afc80513ffbfdbde68e3459f6c287b26141f2bffeba93d4a8b81f92f8e30"
+  },
+  "qualitative_positions": [
+    0,
+    8,
+    16,
+    24
+  ],
+  "position_selection": "Every eighth position after the run; no filtering by detection or quality and no preregistration claim.",
+  "conditions": {
+    "original": {
+      "mean_bit_accuracy": 0.99658203125,
+      "detected": 32,
+      "preservation_pass": 32,
+      "n": 32,
+      "mean_lpips": 0.0,
+      "mean_clip_image_cosine": 0.9999999720603228
+    },
+    "inverse": {
+      "mean_bit_accuracy": 0.51123046875,
+      "detected": 0,
+      "preservation_pass": 0,
+      "n": 32,
+      "mean_lpips": 0.9295419007539749,
+      "mean_clip_image_cosine": 0.6205592155456543
+    },
+    "survival1": {
+      "mean_bit_accuracy": 0.49951171875,
+      "detected": 0,
+      "preservation_pass": 0,
+      "n": 32,
+      "mean_lpips": 0.9657371882349253,
+      "mean_clip_image_cosine": 0.6156931817531586
+    },
+    "survival4": {
+      "mean_bit_accuracy": 0.509765625,
+      "detected": 0,
+      "preservation_pass": 0,
+      "n": 32,
+      "mean_lpips": 0.9646915569901466,
+      "mean_clip_image_cosine": 0.6175560727715492
+    }
+  }
+}

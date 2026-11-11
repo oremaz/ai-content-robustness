@@ -1,0 +1,22 @@
+\section{Diffusion as a sequence of actions}
+\label{app:diffusion}
+Diffusion training teaches a network to remove noise at different corruption levels. Work with one flattened latent $x_0\in\mathbb R^d$, where $d=C_zH_zW_z$ and $C_z,H_z,W_z\in\mathbb N_{>0}$ are its channel, height and width dimensions. The equivalent tensor has shape $C_z\times H_z\times W_z$. A decoder $\mathcal D:\mathbb R^d\to\mathbb R^{H\times W\times3}$ turns the final latent into an RGB image with $H,W\in\mathbb N_{>0}$. The derivation concerns one sample; a batch of $B_{\rm batch}\in\mathbb N_{>0}$ latents has shape $B_{\rm batch}\times C_z\times H_z\times W_z$.
+
+Let $T\in\mathbb N_{>0}$ be the number of training noise levels, $t\in\{1,\ldots,T\}$ a level, and $\bar\alpha_t\in(0,1)$ the scalar cumulative signal retention. With noise $\varepsilon\sim\mathcal N(0_d,I_d)$ in $\mathbb R^d$, where $0_d\in\mathbb R^d$ and $I_d\in\mathbb R^{d\times d}$ are the zero vector and identity matrix, a noisy training latent is
+\[
+ x_t=\sqrt{\bar\alpha_t}\,x_0+\sqrt{1-\bar\alpha_t}\,\varepsilon\in\mathbb R^d.
+\]
+For text conditioning, let $c\in\mathcal C=\mathbb R^{L_c\times d_c}$ be the prompt-embedding matrix, where $L_c,d_c\in\mathbb N_{>0}$ count encoded positions and embedding coordinates. With the sampling and guidance settings fixed, the denoiser $\varepsilon_\theta:\mathbb R^d\times\{1,\ldots,T\}\times\mathcal C\to\mathbb R^d$ predicts that noise. Its parameters are $\theta\in\mathbb R^{d_\theta}$ with $d_\theta\in\mathbb N_{>0}$. Mean squared noise error trains the network. During generation, a scheduler starts from noise and repeatedly uses the predictions to produce a less noisy latent.
+
+For the stochastic Denoising Diffusion Implicit Model (DDIM) sampler used in the evasion experiments, let $s\in\{0,\ldots,t-1\}$ be the next scheduled index. At fixed $(x_t,t,c)$, the next latent has Gaussian density
+\[
+ p_\theta(x_s\mid x_t,c)=
+ \mathcal N\big(x_s;\mu_\theta,\sigma_{t\to s}^2 I_d\big).
+\]
+The scheduler and denoiser determine the mean vector $\mu_\theta=\mu_\theta(x_t,t,c)\in\mathbb R^d$ and scalar standard deviation $\sigma_{t\to s}\in[0,\infty)$. For $\sigma_{t\to s}>0$, the scalar log density of a saved successor $x_s\in\mathbb R^d$ is
+\[
+ \ell_\theta=\log p_\theta(x_s\mid x_t,c)
+ =-\frac{\|x_s-\mu_\theta\|_2^2}{2\sigma_{t\to s}^2}
+   -\frac d2\log(2\pi\sigma_{t\to s}^2)\in\mathbb R.
+\]
+A density evaluates a continuous action and may exceed one; it is integrated over a region to obtain a probability. A log density sums the contributions of all $d$ latent coordinates. The index $s$ follows the inference schedule. A zero-variance step is deterministic and has no Gaussian density of this form.

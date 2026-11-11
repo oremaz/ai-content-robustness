@@ -1,0 +1,8 @@
+{
+  "training_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261106T183630Z/manifest.json",
+  "reason": "Both denoising-retention candidates failed their frozen initial preservation screen. Do not launch attacks on them.",
+  "retention": "Pure squared denoiser-prediction difference from original supplied marked model, coefficient32, replacing noisy-target denoising retention. It is zero at the unchanged reference; no output-KL or paired-preservation guarantee is claimed.",
+  "planned_initial_screen_seed": 2026110606,
+  "screen": "Same>=28/32initialdetect and>=28/32pairedpreservation, freshcoupledseeds andheldoutclasses. Do not lower thresholds after outcomes.",
+  "status": "New development iteration; confirmatory results and novelty not established."
+}

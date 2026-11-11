@@ -1,0 +1,60 @@
+\section{Jina v5 semantic similarity
+results}\label{record-docs-jina-similarity-results-md-jina-v5-semantic-similarity-results}
+
+Mean cosine similarity between each original watermarked response and
+the corresponding method output, paired by prompt ID. Each method has
+256 pairs.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+TextSeal 2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+DistSeal student
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & 0.934 & 0.934 \\
+BIRA & 0.911 & 0.912 \\
+Direct resampling & 0.863 & 0.848 \\
+Smoothing & 0.840 & 0.832 \\
+\end{longtable}
+}
+
+\textbf{Embedding model:}
+\texttt{\seqsplit{jinaai/jina-embeddings-v5-text-small-text-matching}}
+\textbf{Revision:}
+\texttt{\seqsplit{69890c317b81d4e1f412e66ebe68b6ebf9534d24}}
+\textbf{Configuration:} full 1024 dimensions, official
+\texttt{\seqsplit{Document:}} prefix, last-token pooling and L2
+normalization.
+
+Cosine scores measure embedding similarity, not factual accuracy or a
+preservation pass rate. Direct resampling and smoothing generate fresh
+answers to the same question.
+
+Completed run: \texttt{\seqsplit{20261104T081330240270Z}}.
+
+Detailed reports, including distributions and 95\% bootstrap intervals:
+
+\begin{itemize}
+\tightlist
+\item
+  \href{../docs/watermarking/data/metrics.json}{TextSeal 2}
+\item
+  \href{../docs/watermarking/data/metrics.json}{DistSeal student}
+\item
+  \href{records/docs/jina_similarity.tex}{Evaluation protocol}
+\end{itemize}
+
+The \href{../docs/watermarking/README.md}{self-contained publication
+report} provides all retained methods, fixed-sample galleries and
+portable metric snapshots.

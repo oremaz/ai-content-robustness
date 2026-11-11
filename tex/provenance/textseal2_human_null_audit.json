@@ -1,0 +1,17 @@
+{
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-null-audit-20261108T004924818299Z/manifest.json",
+  "manifest_sha256": "09ec550b7e750f17ae2500e9e53160d76342828df11bd7a9f31891e91a5cdfa2",
+  "scores_sha256": "2d6b9ffce287cc1a4c57dd6a58fbf0d647330174686a075a123fc57a63d31ef6",
+  "n": 4096,
+  "detected": 5,
+  "rate": 0.001220703125,
+  "exact_binomial_ci95": [
+    0.0003964740246220493,
+    0.0028463956393403956
+  ],
+  "no_scored_pairs": 0,
+  "scalar_vector_probes": 12,
+  "nominal_p_value_threshold": 0.001,
+  "scope": "Frozen before scoring. Hash buckets65..89, excluded all retained/development/confirmation/calibration question IDs and known human-prefix hashes; deduplicated questions and first100-word human prefixes. One existing key, unchanged native v2 detector and threshold. No calibration or threshold fitting.",
+  "compute": "CPU only; no new GPU allocation"
+}

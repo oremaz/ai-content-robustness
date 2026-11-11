@@ -1,0 +1,36 @@
+\section{From supervised learning to policy optimization}
+\label{app:rl}
+A language model defines a conditional distribution $\pi_\theta(y\mid c)$ over responses $y=(y_1,\ldots,y_L)$ to prompt $c$. Its log probability factorizes as
+\begin{equation}
+\log\pi_\theta(y\mid c)=\sum_{t=1}^{L}\log\pi_\theta(y_t\mid c,y_{<t}).
+\end{equation}
+The response mask excludes prompt and padding positions; EOS and truncation must follow the generation protocol. A sum and a length-normalized mean define different objectives. They must not be interchanged when constructing importance ratios.
+
+In reinforcement learning, the model samples actions and receives a scalar reward $R(c,y)$. We maximize $J(\theta)=\E_{c,y\sim\pi_\theta}[R(c,y)]$. Differentiating a discrete sample directly is unavailable. The score-function identity gives
+\begin{equation}
+\nabla J=\E[(R-b(c))\nabla\log\pi_\theta(y\mid c)],
+\end{equation}
+where the baseline $b(c)$ reduces variance without changing the expectation if it does not depend on the sampled action. A value network learns a baseline; group-relative methods estimate a comparison from several responses. A reward proxy is not the desired property itself. Rewarding detector evasion alone can favor irrelevant or degenerate outputs.
+
+\subsection{What changes relative to ordinary supervised training?}
+Supervised fine-tuning receives a target continuation $y^\star$ and minimizes $-\log\pi_\theta(y^\star\mid c)$. The data tell the model which next token to prefer. In RL, the model supplies its own continuation and a reward evaluates the whole result. A detector can return a scalar after decoding without providing a derivative through token selection. The score-function identity links that scalar to the differentiable log probability of the actions that were actually sampled; the reward itself is treated as fixed when taking this policy gradient.
+
+For example, two answers to the same question may receive evasion rewards .9 and .1. Raising the probability of the first answer improves this particular reward, even if the answer is false. This is why quality and preservation require independent measurements. A combined training reward such as
+\begin{equation}
+ R=w_eR_{\rm evasion}+w_sR_{\rm similarity}+w_qR_{\rm quality}
+\end{equation}
+expresses a trade-off. It does not enforce a minimum quality: a sufficiently large evasion gain can compensate for a quality loss. The joint-success accounting in Section~\ref{sec:preservation} therefore remains necessary even when all three terms occur during training.
+
+\subsection{The language-model decision process}
+The state at step $t$ is the prompt and current prefix, $s_t=(c,y_{<t})$; the action is token $a_t=y_t$. Appending a token gives the next state deterministically. An episode ends at EOS or the declared maximum length. In this project's terminal-reward formulation there is no need to discount later rewards: the terminal score is assigned to the sampled trajectory. A trajectory is the complete sequence of states and actions, not just its final decoded string.
+
+Two policies have different roles. The behavior policy $\pi_{\rm old}$ generated a rollout and supplies the denominator when that rollout is reused. A frozen reference $\pi_{\rm ref}$ anchors generation quality or distributional drift. Updating the behavior policy between rollout batches is normal; updating a supposed frozen reference changes the regularization target. Neither should be confused with the external detector that supplies part of the reward.
+
+\subsection{Why a baseline helps}
+The same terminal reward multiplies many token gradients. Much of its variation can come from prompt difficulty rather than the model's choices. Subtracting an action-independent baseline removes that component while preserving the expected gradient. The formal proof appears below. A value function estimates the expected return from a state; an advantage compares the observed return with that estimate. A group comparison uses multiple responses to the same prompt as a cheaper relative baseline. It provides a within-prompt ranking, not an absolute measure of usefulness.
+
+\subsection{Masks and the probability of the sampled event}
+For a batch with response mask $m_{it}\in\{0,1\}$, the sampled response log probability is $\sum_t m_{it}\log\pi_\theta(y_{it}\mid c_i,y_{i,<t})$. The mask excludes padding and prompt positions. Its causal alignment matters: logits produced at prefix position $t-1$ predict token $t$. When the model's own loss performs this shift internally, shifting the labels again is an error. Similarly, a length cap is not an EOS event; a truncated prefix and a complete answer are different observations.
+
+Importance sampling requires the ratio of probabilities of the same event. Exponentiating a sum of token log-probability differences yields a response-level ratio. Exponentiating their average yields a power of that ratio. Token-level PPO/GRPO surrogates instead use each token's conditional ratio on the saved prefix; they are not an exact sequence-level change of measure for an arbitrary new prefix distribution.
+

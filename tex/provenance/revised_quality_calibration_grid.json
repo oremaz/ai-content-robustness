@@ -1,0 +1,2703 @@
+{
+  "calibration_sha256": "e49b7e5922322a219d9600027241b092d2bb587f4637da319a96fa3a049bac5b",
+  "candidates": [
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 1.9999999999999973,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 2.9999999999999973,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 2.9999999999999982,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 2.9999999999999973,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 3.9999999999999982,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 3.999999999999997,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 3.999999999999997,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 3.9999999999999982,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 3.999999999999997,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 4.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 4.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 4.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 4.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 5.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 5.999999999999997,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 5.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 5.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 5.999999999999997,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 6.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 6.999999999999998,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 6.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 0,
+      "false_reject": 10,
+      "loss": 10,
+      "distance_from_old": 7.9999999999999964,
+      "passes": [
+        5,
+        6,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 5,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 0.9999999999999987,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 1.9999999999999984,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 1.9999999999999996,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 1.9999999999999984,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 2.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 2.9999999999999982,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 2.9999999999999982,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 2.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 3.9999999999999982,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 3.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 3.9999999999999982,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 2,
+      "false_reject": 4,
+      "loss": 10,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 0.9999999999999987,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 1.9999999999999984,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 1.9999999999999984,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 2.9999999999999982,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 2.9999999999999982,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 3.999999999999998,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 3.999999999999998,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.95,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 0,
+      "false_reject": 11,
+      "loss": 11,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        5,
+        9,
+        16,
+        29
+      ],
+      "true_accept": 4,
+      "true_reject": 14
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 2,
+      "false_reject": 6,
+      "loss": 12,
+      "distance_from_old": 0.0,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 2,
+      "false_reject": 6,
+      "loss": 12,
+      "distance_from_old": 0.9999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 2,
+      "false_reject": 6,
+      "loss": 12,
+      "distance_from_old": 0.9999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 2,
+      "false_reject": 6,
+      "loss": 12,
+      "distance_from_old": 1.9999999999999996,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 12
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 3,
+      "loss": 12,
+      "distance_from_old": 1.9999999999999996,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 3,
+      "loss": 12,
+      "distance_from_old": 2.9999999999999996,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 3,
+      "loss": 12,
+      "distance_from_old": 2.9999999999999996,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 3,
+      "loss": 12,
+      "distance_from_old": 3.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 2.9999999999999982,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 3.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 3.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 3.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 5.999999999999997,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 5.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 5.999999999999997,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 3,
+      "false_reject": 4,
+      "loss": 13,
+      "distance_from_old": 6.999999999999997,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        26,
+        29
+      ],
+      "true_accept": 11,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 5,
+      "loss": 14,
+      "distance_from_old": 1.0000000000000009,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 5,
+      "loss": 14,
+      "distance_from_old": 2.000000000000001,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 5,
+      "loss": 14,
+      "distance_from_old": 2.000000000000001,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 5,
+      "loss": 14,
+      "distance_from_old": 3.0000000000000004,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 6,
+      "loss": 15,
+      "distance_from_old": 1.9999999999999996,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 6,
+      "loss": 15,
+      "distance_from_old": 2.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 6,
+      "loss": 15,
+      "distance_from_old": 2.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.9,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 3,
+      "false_reject": 6,
+      "loss": 15,
+      "distance_from_old": 3.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        19,
+        24,
+        29
+      ],
+      "true_accept": 9,
+      "true_reject": 11
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 3.0000000000000004,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 4.0,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 3.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 4.0,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.2,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 4.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 5.0,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 4.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.25,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 4,
+      "false_reject": 3,
+      "loss": 15,
+      "distance_from_old": 5.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 10
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 5,
+      "false_reject": 3,
+      "loss": 18,
+      "distance_from_old": 3.999999999999999,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 5,
+      "false_reject": 3,
+      "loss": 18,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 5,
+      "false_reject": 3,
+      "loss": 18,
+      "distance_from_old": 4.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.9
+      },
+      "false_accept": 5,
+      "false_reject": 3,
+      "loss": 18,
+      "distance_from_old": 5.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 5,
+      "false_reject": 5,
+      "loss": 20,
+      "distance_from_old": 3.0000000000000004,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 5,
+      "false_reject": 5,
+      "loss": 20,
+      "distance_from_old": 4.0,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 5,
+      "false_reject": 5,
+      "loss": 20,
+      "distance_from_old": 4.0,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.95
+      },
+      "false_accept": 5,
+      "false_reject": 5,
+      "loss": 20,
+      "distance_from_old": 5.0,
+      "passes": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        24,
+        28,
+        29
+      ],
+      "true_accept": 10,
+      "true_reject": 9
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 6,
+      "false_reject": 3,
+      "loss": 21,
+      "distance_from_old": 5.0,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 8
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 6,
+      "false_reject": 3,
+      "loss": 21,
+      "distance_from_old": 6.0,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 8
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 6,
+      "false_reject": 3,
+      "loss": 21,
+      "distance_from_old": 5.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 8
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 6,
+      "false_reject": 3,
+      "loss": 21,
+      "distance_from_old": 6.0,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 8
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.85
+      },
+      "false_accept": 6,
+      "false_reject": 3,
+      "loss": 21,
+      "distance_from_old": 7.0,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 8
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.6,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 6,
+      "false_reject": 3,
+      "loss": 21,
+      "distance_from_old": 6.999999999999998,
+      "passes": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 8
+    },
+    {
+      "thresholds": {
+        "lpips": 0.3,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 7,
+      "false_reject": 3,
+      "loss": 24,
+      "distance_from_old": 6.999999999999998,
+      "passes": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 7
+    },
+    {
+      "thresholds": {
+        "lpips": 0.35,
+        "ssim": 0.5,
+        "clip_image_cosine": 0.85,
+        "class_alignment_retention": 0.8
+      },
+      "false_accept": 7,
+      "false_reject": 3,
+      "loss": 24,
+      "distance_from_old": 7.999999999999998,
+      "passes": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        26,
+        28,
+        29
+      ],
+      "true_accept": 12,
+      "true_reject": 7
+    }
+  ]
+}

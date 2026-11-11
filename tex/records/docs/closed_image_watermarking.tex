@@ -1,0 +1,151 @@
+\section{Closed-source image watermark
+removal}\label{record-docs-closed-image-watermarking-md-closed-source-image-watermark-removal}
+
+This experiment assumes that the attacker receives only generated RGB
+images. It does not receive target-generator weights, decoder weights,
+latent states, gradients, prompts, class labels, watermark keys,
+payloads, detector weights or detector responses. It simulates this
+access using the preserved PNG outputs of DistSeal RAR-XL and
+UViT-H/DC-AE. It does not query a commercial API.
+
+The selected method is \textbf{NFPA}, from \emph{The Future Unmarked:
+Watermark Removal in AI-Generated Images via Next-Frame Prediction},
+\href{https://proceedings.neurips.cc/paper_files/paper/2025/hash/b48405307576689bea14d221ccba73ae-Abstract-Conference.html}{NeurIPS
+2025 main conference}. The full 26-page conference PDF, including
+appendices, was downloaded and read. The
+\href{https://github.com/1249748036/NFPA}{official implementation} is
+pinned to \texttt{\seqsplit{7f449f305506f95876fbfde0690395bea720269c}}
+and its pipeline is imported directly. The newer CVPR 2026 RAVEN
+repository currently states that code/configurations are unreleased, so
+it was not used as an approximate reproduction.
+
+NFPA uses an independent public Stable Diffusion model to DDIM-invert an
+input image. It searches bounded camera-motion flows that maximize the
+difference of the public model's latent representation, then generates a
+second frame using the authors' frame-attention mechanism. Neither the
+search objective nor its stopping criterion queries a watermark
+detector. This is output purification; it does not change the closed
+provider's generator or its future outputs.
+
+The released settings are retained: 10 inversion/denoising steps, empty
+prompts, guidance 7.5, fp16 and xy motion. Delta 40 is the predeclared
+primary setting; delta 20 provides a weaker setting and delta 0 provides
+a regeneration control. Delta 0 still executes the released VAE/DDIM and
+zero-flow grid resampling; it is not an unchanged-image control. A
+separate resize-only arm measures the effect of Lanczos resizing to 512
+and restoring the native output resolution. This restoration is needed
+for the 256-pixel RAR outputs. DC-AE outputs are already 512 pixels. The
+native-resolution image is always supplied to the owner.
+
+The original \texttt{\seqsplit{stabilityai/stable-diffusion-2-1-base}}
+endpoint returned HTTP 404 during setup. The independent attack model
+therefore uses the public mirror
+\texttt{\seqsplit{Manojb/stable-diffusion-2-1-base}}, revision
+\texttt{\seqsplit{0094d483a120f3f33dafbd187ea4aa60d10de75c}}. Its local
+fp16 weights are hashed in the task. This model-hosting difference is
+disclosed; the experiment does not claim an independently verified
+byte-for-byte match to the unavailable original host.
+
+\subsection{Data and owner
+evaluation}\label{record-docs-closed-image-watermarking-md-data-and-owner-evaluation}
+
+For each target, the full experiment uses 512 marked images, 512
+independent clean-generator controls and 256 independent clean
+calibration images from the preserved image run. A preregistered early
+pilot contains all 256 calibration images and 32 evenly spaced images
+from each test cohort. Both zero-class and other-class images are
+represented. The full run reuses the completed pilot images rather than
+regenerating them.
+
+Workers receive opaque image IDs and a public-model task. Separate
+processes receive the private owner configuration. This is an enforced
+input/argument contract, not an operating-system sandbox against a
+malicious process sharing the filesystem account. Owner scoring occurs
+after the complete pilot or full strength sweep has been sealed. Pilot
+artifact indexes remain immutable when the full indexes grow. All
+strengths are reported; owner scores never choose a strength, optical
+flow, seed or retained output.
+
+The owner strictly reloads the original detectors and first verifies
+that saved unattacked images reproduce their existing bit scores.
+Reports include bit accuracy, AUROC, detection and empirical false
+positives with confidence intervals at both the original frozen
+threshold and a threshold calibrated on the independently attacked
+calibration images. Paired quality includes LPIPS, CLIP image-embedding
+cosine, SSIM and PSNR. Pixel metrics are alignment-sensitive and can
+penalize legitimate viewpoint changes, so they are diagnostics alongside
+the perceptual metrics. None certifies that every object or fact was
+preserved. The pilot's 32 clean test images and even the full 256
+calibration images cannot precisely establish extremely low
+false-positive rates. No large-sample FID reproduction is claimed.
+
+\subsection{Execution}\label{record-docs-closed-image-watermarking-md-execution}
+
+Prepared resources are stored under
+\texttt{\seqsplit{results/research\_workflow/watermarking/resources/}}.
+Experiments retain immutable source hashes and separate per-case image
+tasks.
+
+\begin{Verbatim}
+PYTHONPATH=. uv run --no-sync python scripts/closed_image_watermark_experiments.py prepare
+PYTHONPATH=. uv run --no-sync python scripts/closed_image_watermark_experiments.py submit RUN/manifest.json preflight
+# After checking real-model timing and sample outputs:
+PYTHONPATH=. uv run --no-sync python scripts/closed_image_watermark_experiments.py submit RUN/manifest.json
+\end{Verbatim}
+
+GPU preflight attacks one clean and one marked image per model, checks
+native output dimensions, measures time per image and verifies owner
+reloads. The two case lanes can run in parallel after preflight. Each
+lane runs the pilot attack, pilot owner scoring, remaining full attack
+and full owner scoring in separate processes. Jobs use one H100 and
+two-hour dev QoS with advance signals and automatic requeue. Each
+completed image and score batch is saved atomically. An interruption can
+repeat the unfinished image/batch and startup work; zero compute loss is
+not guaranteed. Runtime caches use project storage and are removed on
+normal job exit. No environment is unpacked onto node temporary disk.
+
+Focused validation:
+
+\begin{Verbatim}
+PYTHONPATH=. uv run --no-sync python -m pytest ai_content_detector/tests/test_closed_image_watermarking.py -q
+\end{Verbatim}
+
+The contract, integrity, geometry, pilot/full resumption and
+worker-argument checks passed on CPU. The released NFPA module imports
+in the existing main environment. GPU measurements belong to each run's
+preflight and result files; preparation and submission are not completed
+attack results.
+
+\subsection{Validated startup and submitted
+evaluation}\label{record-docs-closed-image-watermarking-md-validated-startup-and-submitted-evaluation}
+
+Frozen run: \texttt{\seqsplit{20261104T082631753968Z}}. GPU preflight
+\texttt{\seqsplit{1939394}} completed on an H100 80GB in 3m23s. Both
+owner detectors exactly reproduced preserved clean and marked image
+scores. The released attack generated the expected native output sizes.
+Warm attack times were 0.70s/image for RAR and 0.74s/image for DC-AE;
+RAR's first cold image took 5.63s. Peak allocated GPU memory was 3.81
+GiB. This four-image timing check is a startup measurement, not a broad
+benchmark.
+
+The predeclared clean/marked visual pairs are saved in
+\texttt{\seqsplit{preflight\_pairs.png}}. They preserve the broad scene
+but show changes to faces, hands, fish details and framing. These
+visible changes are a quality limitation to quantify alongside removal;
+they must not be described as exact semantic or identity preservation.
+The weaker strength and resize/regeneration controls remain in the full
+report. No watermark removal success rate has yet been measured by this
+preflight.
+
+Evaluation lanes: RAR \texttt{\seqsplit{1939549}}, DC-AE
+\texttt{\seqsplit{1939550}}, both dependent on successful preflight
+\texttt{\seqsplit{1939394}}. Each lane retains its 32-image test pilot
+and then extends to 512 test images per cohort without regenerating
+completed outputs. Results are written to
+\texttt{\seqsplit{model01/results\_pilot.json}} and
+\texttt{\seqsplit{model02/results\_pilot.json}}, then the corresponding
+\texttt{\seqsplit{results.json}} files. Pending jobs are not results.
+
+Both full evaluation jobs completed successfully. See the
+\href{records/docs/closed_image_results.tex}{completed results} for
+detection, false positives and paired quality at all fixed strengths.

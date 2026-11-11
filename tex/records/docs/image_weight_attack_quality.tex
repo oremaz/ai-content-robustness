@@ -1,0 +1,82 @@
+\section{Quality recorded for earlier model-weight
+attacks}\label{record-docs-image-weight-attack-quality-md-quality-recorded-for-earlier-model-weight-attacks}
+
+These are the preserved 512-image evaluations from
+\texttt{\seqsplit{watermark\_removal/20261026T110140724565Z}}. Quality
+was measured with image-to-class-text CLIP alignment: each image was
+compared with
+\texttt{\seqsplit{a photo of a <requested ImageNet class>}}. Higher is
+better. This is neither paired image similarity nor a comprehensive
+measure of perceptual quality.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+RAR CLIP alignment
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+RAR still detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+DC-AE CLIP alignment
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+DC-AE still detected
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unmodified watermarked model & 0.3030 & 100.0\% & 0.2934 & 100.0\% \\
+Merge: 75\% watermarked weights & 0.3045 & 96.9\% & 0.2141 & 0.0\% \\
+Merge: 50\% watermarked weights & 0.3045 & 48.8\% & 0.2327 & 0.0\% \\
+Merge: 25\% watermarked weights & 0.3046 & 2.7\% & 0.2200 & 0.0\% \\
+Replace with original clean model & 0.3034 & 0.8\% & 0.2927 & 0.0\% \\
+Clean LoRA, 500 steps & 0.3028 & 13.5\% & 0.2869 & 1.6\% \\
+Clean LoRA, 2,500 steps & 0.3044 & 4.9\% & 0.2840 & 0.2\% \\
+Clean full training, 500 steps & 0.3031 & 36.3\% & 0.2813 & 4.9\% \\
+Clean full training, 2,500 steps & 0.3032 & 7.2\% & 0.2816 & 0.4\% \\
+\end{longtable}
+}
+
+For RAR, every measured attack changes mean class alignment by less than
+0.6\% relative to the watermarked baseline. For DC-AE, clean LoRA at
+2,500 steps lowers it by 3.18\%, and full training at 2,500 steps by
+4.00\%. Partial merging lowers it by 20.7--27.0\%. These percentages
+describe the relative change of this CLIP score, not a percentage of
+visual quality lost.
+
+The earlier run did not measure LPIPS, SSIM or paired image-image CLIP
+cosine. Its class-alignment values cannot be compared numerically with
+the image-image CLIP values in the NFPA run. Matched perceptual
+measurements would be required for a direct quality-cost comparison.
+
+\begin{itemize}
+\tightlist
+\item
+  \href{../docs/watermarking/data/metrics.json}{RAR source metrics}
+\item
+  \href{../docs/watermarking/data/metrics.json}{DC-AE source metrics}
+\item
+  \href{records/docs/closed_image_results.tex}{NFPA results and quality
+  metrics}
+\end{itemize}
+
+The \href{records/docs/matched_image_quality.tex}{matched quality
+extension} now adds the missing paired metrics and recomputes both CLIP
+measures for every condition. New measurements are recorded separately
+from these original class-alignment tables.
+
+The extension has completed:
+\href{records/docs/matched_image_quality_results.tex}{full matched
+quality tables} now include LPIPS, SSIM, PSNR, image-image CLIP and
+class-text CLIP for all weight attacks and all NFPA settings.
+
+The \href{../docs/watermarking/README.md}{self-contained publication
+report} provides all retained methods, fixed-sample galleries and
+portable metric snapshots.

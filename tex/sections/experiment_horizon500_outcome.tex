@@ -1,0 +1,13 @@
+\section{Matching the image adaptation horizon does not recover robustness}
+\label{sec:horizon500_outcome}
+The final prespecified revision increases both clean-teacher adaptation and the student's simulated adaptation from 100 to 500 inner updates. The fixed-reference and adapted-reference models retain the same 100 outer updates and prediction-retention coefficient 32. All three supplied models pass the fresh initial screen, with 32/32 detections and preservation passes. This allows a matched attack comparison; it does not itself establish robustness.
+
+The blind attacker uses clean data outside the defense support, with checkpoints at 25, 100 and 500 updates and prediction-anchor weights 0, 1, 4 and 16. Quality-only selection on 32 validation images chooses the 500-update, zero-anchor checkpoint for each supplied model. Independent owner evaluation then uses 64 final generation seeds and fitting-holdout classes, with the previously frozen detector and preservation thresholds. Validation and final class sets are disjoint; their identities were used in earlier development studies, so this is not new-class confirmation. No owner scores enter checkpoint selection.
+
+\input{generated/preserving_fallback_horizon500_results}
+
+The quality-fallback client achieves 20/64 joint removals for the released model, 21/64 for the fixed-reference model and 20/64 for the adapted-reference model. All 64 returned images pass preservation in each case. However, this client retains the supplied generator and returns its source image whenever the raw attack fails the gates. Before fallback, raw preservation passes are only 21/64, 23/64 and 21/64, and raw removals are 58/64, 56/64 and 57/64. Consequently, its preservation rate is a property of the two-path client, not evidence that the adapted checkpoint alone preserves every source image. The clean null has 0/64 detections, which remains too small for precise low-FPR validation.
+
+Neither training variant reduces quality-preserving removal relative to the released model. The longer adaptation horizon therefore does not rescue this meta-distillation hypothesis. Following the rejection criterion frozen before training completion, this direction stops here and is not expanded to additional watermark families. A different image defense would require a distinct mechanism, a source-grounded novelty assessment and a new experiment. These negative results do not support a generally robust image watermark.
+
+The counts above retain the original frozen quality rule. Section~\ref{sec:quality_recalibration} reports the later qualitative audit and revised post-hoc counts without overwriting this original result.

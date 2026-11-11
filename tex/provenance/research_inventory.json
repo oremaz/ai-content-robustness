@@ -1,0 +1,246 @@
+{
+  "status": "Audit in progress; main experimental branches mapped. This inventory is not a claim of exhaustive code review.",
+  "date": "2026-11-06",
+  "purpose": "Index completed experiments and their evidence.",
+  "areas": [
+    {
+      "area": "Supervised text detection and cross-domain evaluation",
+      "status": "retained notebook execution",
+      "evidence": [
+        {
+          "path": "ai_content_detector/notebooks/bench-aitextdetect.ipynb",
+          "sha256": "ff9a5c05b137aa91fe0427d27fed29773e98e894b3adc7883178a4ea92d2f53a"
+        }
+      ],
+      "findings": [
+        "Ten models: four TF-IDF classifiers and six QLoRA classifiers.",
+        "MAGE: Qwen macro F1 0.9236. Pile: Qwen macro F1 0.8310. Peer reviews: Gemma macro F1 0.9499.",
+        "MAGE-specific OOD splits were not present in the executed dataset. Peer-review shifts domain and generator simultaneously."
+      ]
+    },
+    {
+      "area": "Supervised image detection and shortcut intervention",
+      "status": "retained notebook execution with negative intervention",
+      "evidence": [
+        {
+          "path": "ai_content_detector/notebooks/bench-imai-artifact.ipynb",
+          "sha256": "d7c15c37c0a94347d60ca62f71272e5832f9cf3911f12ef8f6f99adb9fbc6d5f"
+        }
+      ],
+      "findings": [
+        "Five supervised models evaluated on ArtiFact, CIFAKE and Shoes.",
+        "EfficientNet ArtiFact macro F1 0.9346, CIFAKE 0.3333; CLIP Shoes macro F1 0.6732.",
+        "ConvNeXt intervention failed its exploratory macro-F1 gate. Historical 99.9% ArtiFact accuracy is explicitly from an earlier execution, not the current notebook result."
+      ]
+    },
+    {
+      "area": "GRPO text evasion and fixed-attacker defender recovery",
+      "status": "completed retained experiments",
+      "evidence": [
+        {
+          "path": "docs/research_results.md",
+          "sha256": "80167b4dc189eccfa10c368089abdc1a36f6d8ab955547d3c2286e26a7b8c4a5"
+        },
+        {
+          "path": "docs/defender_comparison.md",
+          "sha256": "ab22a071607555e266c93b3514523cdd31b2faa764b2eb70f11c58f57018efd2"
+        },
+        {
+          "path": "results/research_workflow/defender_comparison/plan.json",
+          "sha256": "411401d9e0da2691b8ff7ef191fa2034fb0aff3b271a6c127d8a01ac268e1ff3"
+        },
+        {
+          "path": "results/research_workflow/defender_comparison/input_overlap_audit.json",
+          "sha256": "8bd4f63bfebee911f5882ce89a98ee3e5f8d0702649199537e7c9a0c3f7235cc"
+        }
+      ],
+      "findings": [
+        "Qwen3.5-9B-Base LoRA against Gemma at 1213, ModernBERT at 1487 and ensemble at 502 updates.",
+        "Evasion 77.2/96.8/94.8%, after one defender update 0.2/1.0/0.4%, same 500 saved attack texts.",
+        "ModernBERT base-generator detection drops from 99.0 to 90.2%; ensemble TF-IDF member from 88.6 to 28.2%.",
+        "RoBERTa diagnostic peaks at 98% at step 500, then 36% at 600.",
+        "Unequal budgets; single seed; diagnostic reuse; detector selection used MAGE test; no repeated adaptive attacker result established."
+      ]
+    },
+    {
+      "area": "Official DDA evaluation and short SD1.5 DDPO loop",
+      "status": "completed retained experiment",
+      "evidence": [
+        {
+          "path": "results/research_workflow/image_dda/20261025T005139162737Z/report.md",
+          "sha256": "a39b14da805d7640773e6ff1b73387bf562a0d2c1ee9204bef6dca717c8b6e2e"
+        },
+        {
+          "path": "results/research_workflow/image_dda/20261025T005139162737Z/results.json",
+          "sha256": "e8c40ea8ea18c9e6b3203dd6040dc63e2f5ed89574ac3761bceb23616a0652ba"
+        }
+      ],
+      "findings": [
+        "Official DDA AUROC: ArtiFact 0.8221, CIFAKE 0.3642, Shoes 0.7716.",
+        "Short attack: warmed DDA evasion 1.0% on base, 0.8% on attacked, 0.2% after defender update.",
+        "Reference reward calibrated with training-only probe; matched saved outputs before and after defense."
+      ]
+    },
+    {
+      "area": "Long DDPO run and post-hoc final checkpoint",
+      "status": "completed attacker and evaluations; follow-up defense unresolved",
+      "evidence": [
+        {
+          "path": "results/research_workflow/image_dda/20261025T084419997575Z/test_results.json",
+          "sha256": "86e6c96633e1767cf88c8f706980bcf0065bd67b7c24c71128c69beca872c391"
+        },
+        {
+          "path": "results/research_workflow/image_dda/20261025T084419997575Z/long/selected.json",
+          "sha256": "e3f2c8bb297c5bf3f62324fa9117c448e0e87376bcf26a89932bb67311bc7344"
+        },
+        {
+          "path": "results/research_workflow/image_dda/20261025T213338529186Z/results.json",
+          "sha256": "6a361967b3b7c4f842c7fd2a01070b0061f23c92da5d84003806a8193c1e1f1a"
+        },
+        {
+          "path": "results/research_workflow/image_dda/20261025T155524898195Z/slurm-1545349-defend.log",
+          "sha256": "087c0632347db931abb36ba1a95441e674fbff41639cf4012abf70e57accd974"
+        },
+        {
+          "path": "results/research_workflow/image_dda/20261025T212702336915Z/manifest.json",
+          "sha256": "58ab1cb8df0434539b652c5b2c88264afb4a183afecf137a68ca4f6edd12b825"
+        }
+      ],
+      "findings": [
+        "Validation-selected checkpoint at 5600 images: test evasion 8.2% vs initial 1.2%, CLIP 0.3256 vs 0.3285.",
+        "Post-hoc 12800 checkpoint: test evasion 99.4% at 0.5, CLIP retention 63.3%, AUROC still 0.9661.",
+        "At frozen warmed-validation threshold 0.0140636284: evasion 38.4%, human FPR 2.8%.",
+        "Follow-up defender job 1545349 failed at startup (receipt_path UnboundLocalError); separate recovery directory exists without a recorded defender job in its manifest. Do not label its report pending as a current queue fact."
+      ]
+    },
+    {
+      "area": "Text watermark creation and attacks",
+      "status": "completed current instruct run; older Base results deleted",
+      "evidence": [
+        {
+          "path": "docs/instruct_watermarking.md",
+          "sha256": "85f81dbf39a63c970946d729e377635c1df56abc52eb4ae73d262737c766be9c"
+        },
+        {
+          "path": "docs/watermarking/text.md",
+          "sha256": "dc8ae544faad90eeb39a899c73f0374d21276479899e5c2da847964b31c0ead3"
+        },
+        {
+          "path": "docs/watermarking/data/metrics.json",
+          "sha256": "e7a01f4ddf8367ef9484e628c3eb713d1eac767b3672812dbaea50dc9a021904"
+        },
+        {
+          "path": "results/research_workflow/text_instruct/20261103T231534057688Z/manifest.json",
+          "sha256": "380ef3944ab9455726ba0f1bba8cffeba1bd5d18fb57ef523dae78bfeb26371b"
+        }
+      ],
+      "findings": [
+        "TextSeal 2 and DistSeal-inspired hidden-state student on Qwen3.5-4B instruct, 256 test questions each.",
+        "TextSeal 2 detections: original 253, rewrite 15, BIRA 0, direct top-k 1, smoothing 0.",
+        "Student detections: original 118, rewrite 9, BIRA 1, direct top-k 102, smoothing 18.",
+        "TextSeal probability oracle exposes pre-watermark logits. Student is not official DistSeal text implementation.",
+        "TextSeal originals 254/256 hit 200-token cap; NLI truncation and small null calibration limit interpretation."
+      ]
+    },
+    {
+      "area": "Image model-weight watermark attacks",
+      "status": "completed current broad-fitting run and separate historical pilot",
+      "evidence": [
+        {
+          "path": "docs/watermarking.md",
+          "sha256": "9482d5566c5317fd1c94c21850858574689113804378e709ffc1b61f81810b10"
+        },
+        {
+          "path": "docs/watermarking/images.md",
+          "sha256": "cf14d695125a6a3a0f7f92ebfa6e8e2b9369909b641bc4784fede05c26d8a6ee"
+        },
+        {
+          "path": "docs/watermarking/historical.md",
+          "sha256": "1b736fb2d579e8dc217f4cfa8713428bc0a3e92b25b6652040e60422ff489037"
+        }
+      ],
+      "findings": [
+        "Released RAR-XL and UViT-H/DC-AE; 512 marked outputs, 512 clean controls, 256 calibration images.",
+        "Current training: 8000 images from 800 classes, separate validation, 200 classes excluded from fitting.",
+        "Clean LoRA at 2500 steps: detection RAR 4.9%, DC-AE 0.2%; full training 7.2%, 0.4%.",
+        "Historical 50-image single-class pilot differs substantially and must not be pooled.",
+        "DC-AE partial merges suppress detection with marked quality loss."
+      ]
+    },
+    {
+      "area": "Output-only NFPA image attack and matched quality",
+      "status": "completed; matched quality evaluates saved outputs only",
+      "evidence": [
+        {
+          "path": "docs/closed_image_results.md",
+          "sha256": "fe21353295b9c75eda5cb1207db5edbe0d1243d1330ea0cd0f5498729202d9b7"
+        },
+        {
+          "path": "docs/matched_image_quality_results.md",
+          "sha256": "767aa44db905c5c7ae0a3acd390992e0f50bb07b9df073bb87e161f1d2dccb8f"
+        },
+        {
+          "path": "docs/closed_image_watermarking.md",
+          "sha256": "b9973c0d47a42a016747971f10f3b0c0c882d17cee72050ab4b50fc500e41ae2"
+        }
+      ],
+      "findings": [
+        "At delta 40: detection RAR 21.5%, DC-AE 33.6%.",
+        "Resize-only and delta-zero regeneration are distinct controls.",
+        "13312 matched pairs across two models and 13 conditions, maximum reproduced metric discrepancy 2.3842e-7.",
+        "Qualitative changes include substantial scene/detail changes; similarity is not a certified utility pass rate."
+      ]
+    },
+    {
+      "area": "Independent historical BIRA paper controls",
+      "status": "partially complete",
+      "evidence": [
+        {
+          "path": "docs/watermarking/historical.md",
+          "sha256": "1b736fb2d579e8dc217f4cfa8713428bc0a3e92b25b6652040e60422ff489037"
+        }
+      ],
+      "findings": [
+        "OPT-1.3B KGW: 500 outputs, original detection 96.6%, rewrite 49.2%, BIRA 7.2%; quality incomplete.",
+        "SIR has 500 originals, 500 ordinary rewrites, 330 BIRA rewrites; no retained aggregate owner metrics.",
+        "Other listed watermark schemes have no retained outputs in these manifests."
+      ]
+    },
+    {
+      "area": "SPIN, MAML, detector catalogue and broader benchmark tooling",
+      "status": "implemented capabilities; completed scientific results not established by this audit",
+      "evidence": [
+        {
+          "path": "ai_content_detector/rl_evasion/README.md",
+          "sha256": "4cb5a36c35ca3fdfb06ca2e1740ed94de0505879cab06f1625632192cfca42d5"
+        },
+        {
+          "path": "docs/research_guide.md",
+          "sha256": "198cf08f2feba44d120c486d29715b43cd3753b2b9d2d6ae0d0dfade26e2c735"
+        },
+        {
+          "path": "DETECTORS.md",
+          "sha256": "35c9e02d18f4748c1d50eae434248da056740396d64cee843a6a62a9b35ff69b"
+        }
+      ],
+      "findings": [
+        "Do not promote implementation or CPU test availability into completed experimental evidence.",
+        "Community Forensics integrated but explicitly unused in current DDA experiments.",
+        "Public and local detector variants differ, notably released 83-feature DivEye/BiScope vs standalone paper extractor."
+      ]
+    }
+  ],
+  "integrity_checks": {
+    "portable_source_files": 143,
+    "source_hash_mismatches": 0,
+    "portable_publication_files": 117,
+    "publication_hash_mismatches": 0
+  },
+  "outstanding": [
+    "Verify remaining code-to-frozen-source distinctions and complete qualitative review.",
+    "Resolve follow-up long-DDPO defender outcome from retained evidence without treating missing local artifacts as proof of nonexistence.",
+    "Read complete primary PDFs before finalizing method exposition.",
+    "Validate LaTeX conversion before any Markdown removal.",
+    "Complete prior-art review and a testable novelty proposal before new experiments."
+  ]
+}

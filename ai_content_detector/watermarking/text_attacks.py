@@ -44,6 +44,59 @@ def smooth(target, reference, lower, upper, alpha=1., generator=None):
     return ids.gather(-1, torch.multinomial(probabilities, 1, generator=generator)).squeeze(-1), weight
 
 
+def source_ngram_completions(tokens, order=4):
+    if order < 2:
+        raise ValueError("Source blocking requires an n-gram order of at least two")
+    result = {}
+    for start in range(len(tokens) - order + 1):
+        context = tuple(tokens[start:start + order - 1])
+        result.setdefault(context, set()).add(tokens[start + order - 1])
+    return result
+
+
+def constrained_api_choice(target, forbidden, reference=None, lower=None, upper=None, alpha=1., generator=None):
+    """Block source completions after mixing; confidence uses the unmodified API."""
+    probabilities = target.probabilities / target.probabilities.sum(-1, keepdim=True)
+    ids = target.ids
+    weight = None
+    if reference is not None:
+        if target.vocabulary_size != reference.vocabulary_size:
+            raise ValueError("Constrained smoothing requires identical vocabularies")
+        weight = target_weight(target, lower, upper, alpha)
+        q = reference.probabilities / reference.probabilities.sum(-1, keepdim=True)
+        probabilities = torch.cat((weight[:, None] * probabilities, (1-weight[:, None]) * q), -1)
+        ids = torch.cat((ids, reference.ids), -1)
+    blocked = torch.tensor(sorted(forbidden), device=ids.device, dtype=ids.dtype)
+    allowed = ~(ids[..., None] == blocked).any(-1)
+    constrained = probabilities * allowed
+    fallback = constrained.sum(-1) <= 0
+    probabilities = torch.where(fallback[:, None], probabilities, constrained)
+    choice = ids.gather(-1, torch.multinomial(probabilities, 1, generator=generator)).squeeze(-1)
+    return choice, weight, fallback
+
+
+def ratio_api_choice(target, reference_probabilities, forbidden=(), exponent=2., generator=None):
+    """Tilt the exposed support by a surrogate-to-API probability ratio."""
+    if not exponent >= 1 or not torch.isfinite(torch.tensor(exponent)):
+        raise ValueError("A finite ratio exponent of at least one is required")
+    q, p = target.probabilities.double(), reference_probabilities.double()
+    if q.shape != p.shape or q.shape != target.ids.shape or q.ndim != 2:
+        raise ValueError("Surrogate probabilities must match the exposed token IDs")
+    if not torch.isfinite(q).all() or not torch.isfinite(p).all() or (q < 0).any() or (p < 0).any():
+        raise ValueError("Invalid ratio probabilities")
+    supported = (q > 0) & (p > 0)
+    if not supported.any(-1).all():
+        raise ValueError("Ratio attack has no common positive support")
+    blocked = torch.tensor(sorted(forbidden), device=target.ids.device, dtype=target.ids.dtype)
+    allowed = supported & ~(target.ids[..., None] == blocked).any(-1)
+    fallback = ~allowed.any(-1)
+    allowed = torch.where(fallback[:, None], supported, allowed)
+    logits = (1-exponent)*q.clamp_min(1.e-12).log() + exponent*p.clamp_min(1.e-12).log()
+    probabilities = logits.masked_fill(~allowed, -torch.inf).softmax(-1)
+    choice = target.ids.gather(-1, torch.multinomial(probabilities, 1, generator=generator)).squeeze(-1)
+    return choice, fallback
+
+
 def suppression_from_logits(logits, ids, percentile=.5):
     if not 0 <= percentile < 1 or ids.ndim != 2 or ids.shape[0] != 1:
         raise ValueError("Expected one document and a percentile in [0, 1)")

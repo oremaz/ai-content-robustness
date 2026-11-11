@@ -1,0 +1,8 @@
+\section{Joint removal and preservation on retained image pairs}
+The following diagnostic reuses the complete paired quality measurements and frozen owner decisions. No image generation or attack training is repeated. Every score is joined by its original sample index; output-only cases are additionally matched through the original PNG hash and the sealed NFPA input identifier. The reconstructed owner decisions must reproduce the recorded detection counts before they enter this table.
+
+\input{generated/quality_qualified_images}
+
+The strict rule exposes a distinction hidden by raw detection rates. RAR clean-LoRA candidates frequently remain aligned with the requested class but change the individual scene, so none passes this paired-content rule. DC-AE clean LoRA preserves many original images while removing the signal: at 2,500 steps, 283 of 512 attempted inputs are joint successes, compared with 511 raw removals. At NFPA strength 40, neither model has a joint success under this rule. Lower NFPA strength retains some candidates; regeneration is therefore neither uniformly unsuccessful nor uniformly content preserving.
+
+These thresholds are a post-hoc diagnostic on already inspected results. They do not provide an untouched benchmark, a human-quality guarantee, or evidence that RAR is robust to every quality-preserving attack. The receipt retains alternative LPIPS limits and per-metric failure counts. Subsequent confirmatory experiments must specify their primary rule on independent validation data and retain continuous metrics and qualitative failures alongside these counts.

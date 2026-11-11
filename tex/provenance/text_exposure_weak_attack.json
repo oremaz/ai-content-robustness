@@ -1,0 +1,676 @@
+{
+  "quality_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T180709Z/manifest.json",
+  "owner_results_sha256": "7f3e2a6d765c2d67bcf8a867b12659b445f8f4604d0fe2b6da53f8d9b19b00bf",
+  "conditions": {
+    "pre_direct": {
+      "normalized_word_copies": 30,
+      "n": 32,
+      "mean_four_pair_overlap": 0.9926791028911565,
+      "rows": [
+        {
+          "id": "19feea0b88fce346401be6e7337a7c65d0bfcb8994c5b4e92202f61c7f51207a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 0.9583333333333334
+        },
+        {
+          "id": "1ff36520f57a019a1468b28f55d4fc8b1a00ceed087c1287bc9410fff83a88bd",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "955b17fa650d172c66486b7f1fa9fa164390af09eb79f3facb48344dfa4799cd",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "44228658122a7fc76005dff86fff1754d47eff3d24cf0441de02d11a312a0a40",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.8482142857142857
+        },
+        {
+          "id": "3928ed3d98de99491218323ca96a82f71ca75f650ac08446c5e091bd086e3c46",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "219417abfc2749c80d57dec3f1476ec06a9e43a46298b2500cf62727ff1af005",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.9591836734693877
+        },
+        {
+          "id": "505d96bd38f360cec29369a080d429c5cffcdb664739f2633c995dff38e83718",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ca0fcb0d42bdb67e6b1486be0c7faf1adf9d4e80fc47b29a3c9808a20e02ff78",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "2c0357da8743ce0b49f00ed36c9abe17474373f98159f62590f189139d4bbfec",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "330dc03a934bae71a0fb7bee7a1b31bd23051c0c2168b87a5e0aa47afeba5055",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "187689b0815e2e88784ce19ed5048ffccea5f8b7dd58e506a74272f8e1944236",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "adea2c439965d2348b2129a9fa74a5bc327e35f260b99fb8917bd97ddf070d25",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "8c0bce37c29afabdff5f1b4a8142ba9d71ab8a9fa415ad2f72b626366cd4a37a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a71e9e5c392e19008cd44f61d3c1c7d387274cf56a89d2a1740f9f2ba368f16",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "cc4ef3e754c26c2072172b8c4aaa821760626d372e6f7c3bcc2e57a47c42c839",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "4cbde6740523731925fa829e80fde79815c9e90f1847997a275d0090fea3ca35",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d35cafb9eb68ceb8f91ebc3aab79b17f389c2c4aba9984b181837dadad2e2c84",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d498d4b00745e31096fbabd99138e76efb9e78db256fc50be43eec720266499d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "95dbae3c0838b18e67d7b7e8e8ea310bd10dafae88ae8c41f02ffb02cb9e284e",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "777815820b62eedaebd62caefc3b83d0c59f626addaf68ac627dc3d1ccf612d1",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d5426e66522de3eb168830f5f57d4a885d3883e7c1062f4345ecda90ce4bbe4b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ea4b56e155aefb1b6a983d318f5aa66b6769330259af619fe0d650519cb5fd7d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "982d33f542ba0739dab6e14e8a8cd9cd844cf7836a6eb9c83a26dd998ebc8d75",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ce13cc0d9e278181b90295ae9b790d5351239b8ca92787feb284900ce0b05f6d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "70c2da0918078a56db9112ec0fc91bad40f7cc05dcdaeaf3f48829bbf5dfb35b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "e4d647b88a8a56c3626e57c988e9f0657363dcca9dbe3e2f5472c2910769f2bb",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "7ba7047ee5599626627a528deda7cadabeb63340210c510e46407f774d16ca86",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a154217a532f4d6bc71e45c650d51ae15dbf680a01e6cedde6c8e09a19a155f",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "99bee6b4e5f03ba18183661ebd60131215bacb2d8add6a8d65c7d95c6d41084c",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "c996ad543ca33e957dd0cc119bbf473c395cfea32e70bfb406666a4e2654cdc7",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "97e65d2fbe0fce8a084ee2e074a1c90a940f3841e36fda87aab8fe56ae12f818",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "9fab2afad1da5c5a401a1611ea506caafc8f74166622bd87b64ddf3e643399ff",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        }
+      ]
+    },
+    "pre_smooth": {
+      "normalized_word_copies": 25,
+      "n": 32,
+      "mean_four_pair_overlap": 0.9221105709456849,
+      "rows": [
+        {
+          "id": "19feea0b88fce346401be6e7337a7c65d0bfcb8994c5b4e92202f61c7f51207a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "1ff36520f57a019a1468b28f55d4fc8b1a00ceed087c1287bc9410fff83a88bd",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "955b17fa650d172c66486b7f1fa9fa164390af09eb79f3facb48344dfa4799cd",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "44228658122a7fc76005dff86fff1754d47eff3d24cf0441de02d11a312a0a40",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3928ed3d98de99491218323ca96a82f71ca75f650ac08446c5e091bd086e3c46",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.7156862745098039
+        },
+        {
+          "id": "219417abfc2749c80d57dec3f1476ec06a9e43a46298b2500cf62727ff1af005",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.9591836734693877
+        },
+        {
+          "id": "505d96bd38f360cec29369a080d429c5cffcdb664739f2633c995dff38e83718",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.9173553719008265
+        },
+        {
+          "id": "ca0fcb0d42bdb67e6b1486be0c7faf1adf9d4e80fc47b29a3c9808a20e02ff78",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "2c0357da8743ce0b49f00ed36c9abe17474373f98159f62590f189139d4bbfec",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "330dc03a934bae71a0fb7bee7a1b31bd23051c0c2168b87a5e0aa47afeba5055",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.2169811320754717
+        },
+        {
+          "id": "187689b0815e2e88784ce19ed5048ffccea5f8b7dd58e506a74272f8e1944236",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.1079136690647482
+        },
+        {
+          "id": "adea2c439965d2348b2129a9fa74a5bc327e35f260b99fb8917bd97ddf070d25",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "8c0bce37c29afabdff5f1b4a8142ba9d71ab8a9fa415ad2f72b626366cd4a37a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a71e9e5c392e19008cd44f61d3c1c7d387274cf56a89d2a1740f9f2ba368f16",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "cc4ef3e754c26c2072172b8c4aaa821760626d372e6f7c3bcc2e57a47c42c839",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "4cbde6740523731925fa829e80fde79815c9e90f1847997a275d0090fea3ca35",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d35cafb9eb68ceb8f91ebc3aab79b17f389c2c4aba9984b181837dadad2e2c84",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.7477477477477478
+        },
+        {
+          "id": "d498d4b00745e31096fbabd99138e76efb9e78db256fc50be43eec720266499d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "95dbae3c0838b18e67d7b7e8e8ea310bd10dafae88ae8c41f02ffb02cb9e284e",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "777815820b62eedaebd62caefc3b83d0c59f626addaf68ac627dc3d1ccf612d1",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d5426e66522de3eb168830f5f57d4a885d3883e7c1062f4345ecda90ce4bbe4b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ea4b56e155aefb1b6a983d318f5aa66b6769330259af619fe0d650519cb5fd7d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "982d33f542ba0739dab6e14e8a8cd9cd844cf7836a6eb9c83a26dd998ebc8d75",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ce13cc0d9e278181b90295ae9b790d5351239b8ca92787feb284900ce0b05f6d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "70c2da0918078a56db9112ec0fc91bad40f7cc05dcdaeaf3f48829bbf5dfb35b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "e4d647b88a8a56c3626e57c988e9f0657363dcca9dbe3e2f5472c2910769f2bb",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "7ba7047ee5599626627a528deda7cadabeb63340210c510e46407f774d16ca86",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a154217a532f4d6bc71e45c650d51ae15dbf680a01e6cedde6c8e09a19a155f",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "99bee6b4e5f03ba18183661ebd60131215bacb2d8add6a8d65c7d95c6d41084c",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 0.9603174603174603
+        },
+        {
+          "id": "c996ad543ca33e957dd0cc119bbf473c395cfea32e70bfb406666a4e2654cdc7",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "97e65d2fbe0fce8a084ee2e074a1c90a940f3841e36fda87aab8fe56ae12f818",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "9fab2afad1da5c5a401a1611ea506caafc8f74166622bd87b64ddf3e643399ff",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.8823529411764706
+        }
+      ]
+    },
+    "conditional_direct": {
+      "normalized_word_copies": 26,
+      "n": 32,
+      "mean_four_pair_overlap": 0.9636472659659447,
+      "rows": [
+        {
+          "id": "19feea0b88fce346401be6e7337a7c65d0bfcb8994c5b4e92202f61c7f51207a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "1ff36520f57a019a1468b28f55d4fc8b1a00ceed087c1287bc9410fff83a88bd",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.8504672897196262
+        },
+        {
+          "id": "955b17fa650d172c66486b7f1fa9fa164390af09eb79f3facb48344dfa4799cd",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "44228658122a7fc76005dff86fff1754d47eff3d24cf0441de02d11a312a0a40",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3928ed3d98de99491218323ca96a82f71ca75f650ac08446c5e091bd086e3c46",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "219417abfc2749c80d57dec3f1476ec06a9e43a46298b2500cf62727ff1af005",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.7373737373737373
+        },
+        {
+          "id": "505d96bd38f360cec29369a080d429c5cffcdb664739f2633c995dff38e83718",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ca0fcb0d42bdb67e6b1486be0c7faf1adf9d4e80fc47b29a3c9808a20e02ff78",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "2c0357da8743ce0b49f00ed36c9abe17474373f98159f62590f189139d4bbfec",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.8791208791208791
+        },
+        {
+          "id": "330dc03a934bae71a0fb7bee7a1b31bd23051c0c2168b87a5e0aa47afeba5055",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "187689b0815e2e88784ce19ed5048ffccea5f8b7dd58e506a74272f8e1944236",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "adea2c439965d2348b2129a9fa74a5bc327e35f260b99fb8917bd97ddf070d25",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "8c0bce37c29afabdff5f1b4a8142ba9d71ab8a9fa415ad2f72b626366cd4a37a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a71e9e5c392e19008cd44f61d3c1c7d387274cf56a89d2a1740f9f2ba368f16",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "cc4ef3e754c26c2072172b8c4aaa821760626d372e6f7c3bcc2e57a47c42c839",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "4cbde6740523731925fa829e80fde79815c9e90f1847997a275d0090fea3ca35",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d35cafb9eb68ceb8f91ebc3aab79b17f389c2c4aba9984b181837dadad2e2c84",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d498d4b00745e31096fbabd99138e76efb9e78db256fc50be43eec720266499d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "95dbae3c0838b18e67d7b7e8e8ea310bd10dafae88ae8c41f02ffb02cb9e284e",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "777815820b62eedaebd62caefc3b83d0c59f626addaf68ac627dc3d1ccf612d1",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d5426e66522de3eb168830f5f57d4a885d3883e7c1062f4345ecda90ce4bbe4b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ea4b56e155aefb1b6a983d318f5aa66b6769330259af619fe0d650519cb5fd7d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "982d33f542ba0739dab6e14e8a8cd9cd844cf7836a6eb9c83a26dd998ebc8d75",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.8962264150943396
+        },
+        {
+          "id": "ce13cc0d9e278181b90295ae9b790d5351239b8ca92787feb284900ce0b05f6d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "70c2da0918078a56db9112ec0fc91bad40f7cc05dcdaeaf3f48829bbf5dfb35b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 0.8598130841121495
+        },
+        {
+          "id": "e4d647b88a8a56c3626e57c988e9f0657363dcca9dbe3e2f5472c2910769f2bb",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "7ba7047ee5599626627a528deda7cadabeb63340210c510e46407f774d16ca86",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a154217a532f4d6bc71e45c650d51ae15dbf680a01e6cedde6c8e09a19a155f",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.8898305084745762
+        },
+        {
+          "id": "99bee6b4e5f03ba18183661ebd60131215bacb2d8add6a8d65c7d95c6d41084c",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "c996ad543ca33e957dd0cc119bbf473c395cfea32e70bfb406666a4e2654cdc7",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.7238805970149254
+        },
+        {
+          "id": "97e65d2fbe0fce8a084ee2e074a1c90a940f3841e36fda87aab8fe56ae12f818",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "9fab2afad1da5c5a401a1611ea506caafc8f74166622bd87b64ddf3e643399ff",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        }
+      ]
+    },
+    "conditional_smooth": {
+      "normalized_word_copies": 29,
+      "n": 32,
+      "mean_four_pair_overlap": 0.9929712456758859,
+      "rows": [
+        {
+          "id": "19feea0b88fce346401be6e7337a7c65d0bfcb8994c5b4e92202f61c7f51207a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "1ff36520f57a019a1468b28f55d4fc8b1a00ceed087c1287bc9410fff83a88bd",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "955b17fa650d172c66486b7f1fa9fa164390af09eb79f3facb48344dfa4799cd",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "44228658122a7fc76005dff86fff1754d47eff3d24cf0441de02d11a312a0a40",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3928ed3d98de99491218323ca96a82f71ca75f650ac08446c5e091bd086e3c46",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "219417abfc2749c80d57dec3f1476ec06a9e43a46298b2500cf62727ff1af005",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.9591836734693877
+        },
+        {
+          "id": "505d96bd38f360cec29369a080d429c5cffcdb664739f2633c995dff38e83718",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ca0fcb0d42bdb67e6b1486be0c7faf1adf9d4e80fc47b29a3c9808a20e02ff78",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "2c0357da8743ce0b49f00ed36c9abe17474373f98159f62590f189139d4bbfec",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "330dc03a934bae71a0fb7bee7a1b31bd23051c0c2168b87a5e0aa47afeba5055",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "187689b0815e2e88784ce19ed5048ffccea5f8b7dd58e506a74272f8e1944236",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "adea2c439965d2348b2129a9fa74a5bc327e35f260b99fb8917bd97ddf070d25",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.8888888888888888
+        },
+        {
+          "id": "8c0bce37c29afabdff5f1b4a8142ba9d71ab8a9fa415ad2f72b626366cd4a37a",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a71e9e5c392e19008cd44f61d3c1c7d387274cf56a89d2a1740f9f2ba368f16",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "cc4ef3e754c26c2072172b8c4aaa821760626d372e6f7c3bcc2e57a47c42c839",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "4cbde6740523731925fa829e80fde79815c9e90f1847997a275d0090fea3ca35",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d35cafb9eb68ceb8f91ebc3aab79b17f389c2c4aba9984b181837dadad2e2c84",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d498d4b00745e31096fbabd99138e76efb9e78db256fc50be43eec720266499d",
+          "normalized_word_copy": false,
+          "distinct_generated_four_pair_overlap": 0.927007299270073
+        },
+        {
+          "id": "95dbae3c0838b18e67d7b7e8e8ea310bd10dafae88ae8c41f02ffb02cb9e284e",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "777815820b62eedaebd62caefc3b83d0c59f626addaf68ac627dc3d1ccf612d1",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "d5426e66522de3eb168830f5f57d4a885d3883e7c1062f4345ecda90ce4bbe4b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ea4b56e155aefb1b6a983d318f5aa66b6769330259af619fe0d650519cb5fd7d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "982d33f542ba0739dab6e14e8a8cd9cd844cf7836a6eb9c83a26dd998ebc8d75",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "ce13cc0d9e278181b90295ae9b790d5351239b8ca92787feb284900ce0b05f6d",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "70c2da0918078a56db9112ec0fc91bad40f7cc05dcdaeaf3f48829bbf5dfb35b",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "e4d647b88a8a56c3626e57c988e9f0657363dcca9dbe3e2f5472c2910769f2bb",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "7ba7047ee5599626627a528deda7cadabeb63340210c510e46407f774d16ca86",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "3a154217a532f4d6bc71e45c650d51ae15dbf680a01e6cedde6c8e09a19a155f",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "99bee6b4e5f03ba18183661ebd60131215bacb2d8add6a8d65c7d95c6d41084c",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "c996ad543ca33e957dd0cc119bbf473c395cfea32e70bfb406666a4e2654cdc7",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "97e65d2fbe0fce8a084ee2e074a1c90a940f3841e36fda87aab8fe56ae12f818",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        },
+        {
+          "id": "9fab2afad1da5c5a401a1611ea506caafc8f74166622bd87b64ddf3e643399ff",
+          "normalized_word_copy": true,
+          "distinct_generated_four_pair_overlap": 1.0
+        }
+      ]
+    }
+  },
+  "conclusion": "The unblocked rewriting pilot is a weak-attack control. High preservation and detection do not establish a robust new defense when much keyed source text is copied. Only2/32pre_smoothingremovalsversus0/32conditional_smoothing; no meaningful robustness gain established. Nextpilotusesblindsource-four-tokenblockingwithsamequalitygates.",
+  "tokenization_scope": "Overlap is computed from saved generation token IDs and is a descriptive audit, not a calibrated hypothesis test or an exact retokenized-text overlap claim."
+}

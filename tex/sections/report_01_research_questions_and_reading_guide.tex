@@ -1,0 +1,19 @@
+\section{Research questions and reading guide}
+This project asks how AI-content detectors generalize, what happens when generators adapt to them, and how long deliberate watermark signals survive. Detector scores measure statistical evidence. A watermark differs from a content classifier because a provider deliberately inserts the signal that its detector seeks.
+
+Part I covers supervised text and image detection. Part II introduces GRPO and diffusion policy optimization alongside the evasion experiments. Part III explains watermark testing and compares text and image attacks. Part IV follows the newer experiments on image meta-distillation and the probabilities exposed by a text API. Each part introduces the mathematics needed for its results.
+
+Read each result alongside the attacker's access, the held-out cohort, baseline detection, and the preservation rule. For example, fewer successful rewrites can mean either that the watermark survived or that the new answers failed the content checks. The tables report those outcomes separately.
+
+\paragraph{Notation used in the report.}
+Each mathematical section states its own objects and dimensions. The sets $\mathbb R$, $\mathbb N_{>0}$ and $\mathbb N_0$ contain real numbers, positive integers and nonnegative integers. For $d,m,n\in\mathbb N_{>0}$, a scalar has one value, $a\in\mathbb R^d$ is a vector with $d$ coordinates, and $A\in\mathbb R^{m\times n}$ is an $m$-row, $n$-column matrix. For a finite set $\mathcal V$ of size $V\in\mathbb N_{>0}$, its probability simplex is
+\[
+ \Delta(\mathcal V)=
+ \left\{p=(p_v)_{v\in\mathcal V}\in[0,1]^V:
+             \sum_{v\in\mathcal V}p_v=1\right\}.
+\]
+The set $\mathcal V^*$ contains all finite token sequences, including the empty sequence. The notation $\mathbf1\{E\}\in\{0,1\}$ indicates whether statement $E$ holds. A superscript $\top$ denotes transpose, $\|\cdot\|_2$ is the Euclidean norm, and $\mathbb E$ denotes expectation under the stated distribution. For parameters $\theta\in\mathbb R^{d_\theta}$ with $d_\theta\in\mathbb N_{>0}$, the gradient of a differentiable scalar function $f:\mathbb R^{d_\theta}\to\mathbb R$ has dimension $\nabla_\theta f\in\mathbb R^{d_\theta}$, with one entry per parameter. Logarithms are natural. For discrete distributions $p,q\in\Delta(\mathcal V)$, their scalar Kullback--Leibler divergence is
+\[
+ \KL(p\Vert q)=\sum_{v:p_v>0}p_v\log(p_v/q_v)\in[0,\infty],
+\]
+with infinite divergence if $q_v=0<p_v$. The continuous analogue integrates the density-weighted log ratio. Numerical parameters in displayed examples illustrate a mechanism; experiment tables give the measured outcomes.

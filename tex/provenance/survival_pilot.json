@@ -1,0 +1,38 @@
+{
+  "job_id": "2076996",
+  "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/manifest.json",
+  "elapsed_seconds": 205,
+  "actual_h100_hours": 0.05694444444444444,
+  "results": {
+    "status": "Development pilot only; no confirmatory inference or established novelty claim.",
+    "threshold": 0.6875,
+    "conditions": {
+      "original": {
+        "mean_bit_accuracy": 0.99658203125,
+        "detected": 32,
+        "preservation_pass": 32,
+        "n": 32
+      },
+      "inverse": {
+        "mean_bit_accuracy": 0.51123046875,
+        "detected": 0,
+        "preservation_pass": 0,
+        "n": 32
+      },
+      "survival1": {
+        "mean_bit_accuracy": 0.49951171875,
+        "detected": 0,
+        "preservation_pass": 0,
+        "n": 32
+      },
+      "survival4": {
+        "mean_bit_accuracy": 0.509765625,
+        "detected": 0,
+        "preservation_pass": 0,
+        "n": 32
+      }
+    }
+  },
+  "result_sha256": "547c6cf9029fdca8cde02cf660c623beba366a07b3656a4d17983de1f49d7390",
+  "conclusion": "All filtered candidates failed both initial detection and paired-preservation screen; do not run removal attacks or claim a working defense."
+}

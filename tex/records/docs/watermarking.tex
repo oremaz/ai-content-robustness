@@ -1,0 +1,99 @@
+\section{Watermarking and removal
+experiments}\label{record-docs-watermarking-md-watermarking-and-removal-experiments}
+
+The current text protocol is
+\href{records/docs/instruct_watermarking.tex}{TextSeal 2 and
+DistSeal-inspired instruct Qwen}. Earlier TextSeal 1 and Base-model text
+outputs and metrics have been deleted. The following describes preserved
+DistSeal image experiments.
+
+The new \href{records/docs/closed_image_watermarking.tex}{closed-source
+image protocol} instead tests the released NeurIPS 2025 NFPA attack
+using only image outputs, with an independent public regeneration model
+and separately held owner detectors.
+
+\subsection{Image model
+removal}\label{record-docs-watermarking-md-image-model-removal}
+
+Released RAR-XL and UViT-H/DC-AE generators are evaluated with their
+original unmodified decoders and extractors. Clean-checkpoint
+interpolation at fractions 0.75, 0.5, 0.25 and full replacement provides
+reference-weight controls. Clean LoRA and full-parameter training at 500
+and 2,500 steps test removal without clean reference weights. Owner keys
+and scores do not enter training. Task schemas, separate processes and
+artifact hashes enforce input contracts; they are not an
+operating-system sandbox against malicious workers.
+
+Image training uses 8,000 clean ImageNet training images from 800
+classes and 800 separate images for validation. Classes 800 through 999
+are excluded from attack fitting; owner evaluation reports these
+separately. Labels follow the original fixed synset order. The ordinary
+generator backbone is the predefined training target; the decoder is
+unchanged without consulting watermark location.
+
+\subsection{Relationship to
+DistSeal}\label{record-docs-watermarking-md-relationship-to-distseal}
+
+\href{https://proceedings.mlr.press/v306/rebuffi26a.html}{DistSeal}
+trains a latent embedder/extractor and then trains a generator on its
+watermarked latents, or trains a decoder to reconstruct watermarked
+images. Appendix G of the ICML 2026 version demonstrates forgetting
+during clean LoRA fine-tuning, using 50 images of one ImageNet class.
+The earlier single-class pilot uses that setting, with 2,500 LoRA
+removal steps at learning rate 1e-4. The later primary protocol instead
+fits on 8,000 images from 800 classes and uses LoRA learning rate 1e-4
+or full-update learning rate 1e-5. Both retain 500-step and 2,500-step
+outputs. Evaluation separates fitting and unseen classes.
+
+\subsection{Removal literature and
+interpretation}\label{record-docs-watermarking-md-removal-literature-and-interpretation}
+
+\href{https://arxiv.org/abs/2502.10525}{Towards Watermarking of
+Open-Source LLMs} systematically evaluates merging, clean fine-tuning,
+pruning and quantization. Its results motivate testing weight changes
+while measuring model utility, and evaluating the domain targeted by
+fine-tuning. Our bounded experiments use linear interpolation, rather
+than reproducing that paper's SLERP implementation.
+
+Meta's \href{https://arxiv.org/abs/2303.15435}{Stable Signature} embeds
+watermarks in the latent decoder and studies reconstruction-based
+purification and collusion.
+\href{https://arxiv.org/abs/2405.07145}{Stable Signature is Unstable}
+further studies decoder removal with and without encoder access,
+combining reconstruction, perceptual and adversarial losses. Those
+decoder attacks are relevant context; the jobs here target DistSeal's
+watermarked generators using their native clean training objectives.
+They do not implement that decoder attack as if it were a DistSeal
+reproduction.
+
+Replacing a model with its exact original trivially removes changes
+introduced by watermark training. Intermediate interpolation points
+measure whether removal also succeeds while retaining some modified
+weights. Withholding an original copy does not establish security: clean
+fine-tuning may still erase a watermark. Published image checkpoint
+messages are public, so these runs test removal rather than secret-key
+security.
+
+\subsection{Image
+measurements}\label{record-docs-watermarking-md-image-measurements}
+
+The historical pilot uses 50 ImageNet training images from class zero;
+the primary removal run uses the 8,000-image fitting protocol above.
+Each generated evaluation uses 512 images, including 128 from class
+zero; calibration uses 256 different base-model noise seeds. Metrics
+include bit accuracy, detection, false positives, confidence intervals,
+AUROC and CLIP class alignment. JPEG 50 and a center crop retaining half
+the area are evaluated with thresholds frozen from correspondingly
+transformed calibration images. These sample counts cannot validate
+extremely small false-positive rates or reproduce the paper's
+50,000-image FID results.
+
+Preserved mixed-run manifests and source snapshots retain their original
+hashes for image provenance. Removed text branches must not be
+interpreted as current results. Use the new text driver for new text
+experiments.
+
+For the complete public tables, method coverage and eight-pair examples,
+use the \href{../docs/watermarking/README.md}{portable watermark
+report}. It distinguishes these protocols and includes all recorded
+JPEG/crop cross-conditions.

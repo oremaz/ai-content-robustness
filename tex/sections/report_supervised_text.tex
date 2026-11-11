@@ -1,0 +1,30 @@
+\section{Text detection: what generalizes across datasets?}
+\label{sec:text_bench}
+\paragraph{Question.} Before adapting a generator, the project first asks which supervised detectors transfer beyond their fitting distribution. This part requires only the supervised-learning distinction between training, validation and test sets. Its results are independent of the subsequent reinforcement-learning and watermark experiments.
+
+\paragraph{Models and evidence.} The retained MAGE notebook compares four TF-IDF classifiers (logistic regression, random forest, XGBoost and LightGBM) with six QLoRA classifiers: ModernBERT-base, ModernBERT-large, Qwen3.5-4B-Base, Gemma-4-E4B, Nanbeige4.2-3B and LFM2.5-2.6B. Text labels in this notebook are machine $=0$ and human $=1$. The benchmark reports accuracy, macro F1, ROC-AUC and PR-AUC. Macro F1 gives equal weight to the two class-specific F1 values; it is not automatically the F1 of the AI class alone.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{lrrr}\toprule
+Model & MAGE F1 & Pile F1 & Peer-review F1\\\midrule
+TF-IDF logistic regression & .6588 & .6670 & .6236\\
+TF-IDF random forest & .6687 & .6321 & .6105\\
+TF-IDF XGBoost & .6836 & .6109 & .6259\\
+TF-IDF LightGBM & .6994 & .6228 & .6757\\
+ModernBERT-base & .7908 & .7282 & .6249\\
+ModernBERT-large & .8153 & .7473 & .7700\\
+Qwen3.5-4B-Base & .9236 & .8310 & .8093\\
+Gemma-4-E4B & .9075 & .8006 & .9499\\
+Nanbeige4.2-3B & .7004 & .7272 & .6223\\
+LFM2.5-2.6B & .9061 & .7633 & .9154\\\bottomrule
+\end{tabular}
+\caption{Macro F1 from the retained text notebook, job 1145971. Each column is a different evaluation distribution, not an independent retraining of every model.}
+\end{table}
+
+\paragraph{Reading the result.} Qwen has the highest observed MAGE and Pile macro F1, while Gemma has the highest peer-review macro F1. A model ranking on one dataset therefore does not define a universal detector ranking. An encoder can be cheaper to use than a decoder classifier, but this experiment does not provide a matched-compute efficiency frontier.
+
+The peer-review evaluation contains 2,000 items: 1,000 human reviews and 200 generated reviews from each of GPT-4o, Gemini-1.5-Pro, Claude-Sonnet-3.5, Llama-3.1-70B and Qwen-2.5-72B. Its text extraction omits metadata fields such as review ratings and identifiers. This reduces an obvious metadata shortcut, but the evaluation changes both domain and generator. It cannot identify a purely temporal generalization effect. The executed MAGE dataset did not expose the additional MAGE-specific OOD splits named in the notebook introduction; those absent split evaluations must not be reported as completed.
+
+\paragraph{Why this matters later.} The defender-comparison workflow selects the strongest retained non-Qwen decoder and the strongest encoder from the MAGE comparison, then warms them against Qwen-generated continuations. Because selection uses the MAGE test ranking, that ranking is a selection statistic for the later study, not a second untouched confirmation. The CNN/DailyMail prompt evaluation remains a distinct experiment with its own split and overlap audit.
+
+\paragraph{Limits.} These are single-run observations without uncertainty intervals. High classifier scores are not calibrated authorship probabilities. Token limits, class order and dataset-specific style can alter apparent performance. Neither these scores nor later evasion results certify the truth of a document's content.

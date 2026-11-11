@@ -1,0 +1,65 @@
+\section{Detailed Gaussian calculations for forward diffusion}
+This section proves standard identities used in the diffusion explanation. It supplies no new research claim. Coordinates are Euclidean latent coordinates; all covariance matrices below are scalar multiples of the identity.
+
+\begin{proposition}[Forward marginal and conditional posterior]
+Let $0<\beta_t<1$, $\alpha_t=1-\beta_t$, $\bar\alpha_t=\prod_{j=1}^t\alpha_j$ and
+\begin{equation}
+ X_t=\sqrt{\alpha_t}X_{t-1}+\sqrt{\beta_t}Z_t,\qquad Z_t\overset{\rm iid}{\sim}\mathcal N(0,I).
+\end{equation}
+Conditionally on $X_0=x_0$, the marginal law is
+\begin{equation}
+ X_t\mid x_0\sim\mathcal N(\sqrt{\bar\alpha_t}x_0,(1-\bar\alpha_t)I).
+\end{equation}
+For $t>1$, the conditional law of $X_{t-1}$ given $(x_t,x_0)$ has covariance $\widetilde\beta_tI$ and mean $\widetilde\mu_t$, where
+\begin{align}
+ \widetilde\beta_t&=\frac{\beta_t(1-\bar\alpha_{t-1})}{1-\bar\alpha_t},\\
+ \widetilde\mu_t&=
+ \frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t}x_0+
+ \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}x_t.
+\end{align}
+\end{proposition}
+\begin{proof}
+The first-step conditional mean is $\sqrt{\alpha_1}x_0$ and its conditional covariance is $\beta_1I$. Suppose the marginal formula holds at $t-1$. Independence of $Z_t$ from the past gives
+\begin{align}
+ \E[X_t\mid x_0]
+ &=\sqrt{\alpha_t}\sqrt{\bar\alpha_{t-1}}x_0
+ =\sqrt{\bar\alpha_t}x_0,\\
+ \operatorname{Cov}(X_t\mid x_0)
+ &=\alpha_t(1-\bar\alpha_{t-1})I+\beta_tI\\
+ &=[\alpha_t+\beta_t-\alpha_t\bar\alpha_{t-1}]I
+ =(1-\bar\alpha_t)I.
+\end{align}
+A linear combination of independent Gaussians is Gaussian, so induction proves the marginal law.
+
+For the posterior, Bayes' rule gives, up to a normalizing constant independent of $u=X_{t-1}$,
+\begin{align}
+ \log q(u\mid x_t,x_0)
+ &= -\frac{\|x_t-\sqrt{\alpha_t}u\|^2}{2\beta_t}
+    -\frac{\|u-\sqrt{\bar\alpha_{t-1}}x_0\|^2}{2(1-\bar\alpha_{t-1})}
+    +\mathrm{const}\\
+ &= -\tfrac12\left[a\,u^\top u-2u^\top b\right]+\mathrm{const},
+\end{align}
+where
+\begin{align}
+ a&=\frac{\alpha_t}{\beta_t}+\frac{1}{1-\bar\alpha_{t-1}}
+ =\frac{\alpha_t(1-\bar\alpha_{t-1})+\beta_t}{\beta_t(1-\bar\alpha_{t-1})}\\
+ &=\frac{1-\bar\alpha_t}{\beta_t(1-\bar\alpha_{t-1})},\\
+ b&=\frac{\sqrt{\alpha_t}}{\beta_t}x_t+
+      \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}x_0.
+\end{align}
+Since $a>0$, completing the square yields
+\begin{equation}
+ a\,u^\top u-2u^\top b
+ =a\|u-a^{-1}b\|^2-a^{-1}\|b\|^2.
+\end{equation}
+Thus the covariance is $a^{-1}I=\widetilde\beta_tI$, and the mean is
+\begin{align}
+ a^{-1}b
+ &=\frac{\beta_t(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}
+ \left[\frac{\sqrt{\alpha_t}}{\beta_t}x_t+
+       \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}x_0\right]\\
+ &=\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}x_t+
+   \frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t}x_0.
+\end{align}
+This is the stated posterior mean. At $t=1$, conditioning on $X_0=x_0$ fixes the previous state exactly; the nondegenerate Gaussian posterior derivation is replaced by a point mass.
+\end{proof}

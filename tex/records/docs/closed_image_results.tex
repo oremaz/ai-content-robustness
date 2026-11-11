@@ -1,0 +1,173 @@
+\section{Closed-source image attack results:
+NFPA}\label{record-docs-closed-image-results-md-closed-source-image-attack-results-nfpa}
+
+Completed run: \texttt{\seqsplit{20261104T082631753968Z}}. Both jobs
+completed successfully: RAR \texttt{\seqsplit{1939549}}, DC-AE
+\texttt{\seqsplit{1939550}}.
+
+Each target has 512 marked images, 512 independent clean test images and
+256 independent clean calibration images. The attacker receives only
+output PNGs and an independent public SD2.1 model. No target weights,
+internal states or watermark-detector feedback enter the attack.
+
+\subsection{Detection at the original frozen owner
+thresholds}\label{record-docs-closed-image-results-md-detection-at-the-original-frozen-owner-thresholds}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+RAR-XL detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+UViT-H/DC-AE detected
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Resize-only control & 100.0\% (512/512) & 100.0\% (512/512) \\
+NFPA delta 0: regeneration control & 95.7\% (490/512) & 85.2\%
+(436/512) \\
+NFPA delta 20 & 69.3\% (355/512) & 68.4\% (350/512) \\
+NFPA delta 40: primary & 21.5\% (110/512) & 33.6\% (172/512) \\
+\end{longtable}
+}
+
+Delta 0 still performs VAE/DDIM regeneration and zero-flow resampling;
+it is not an unchanged image. RAR images are resized to 512 pixels for
+NFPA and then restored to 256; DC-AE images remain at 512.
+
+\subsection{Primary setting: delta
+40}\label{record-docs-closed-image-results-md-primary-setting-delta-40}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Raw evasion
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Detection 95\% CI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Clean false positives
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Mean bit accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+AUROC
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RAR-XL & 78.5\% & {[}18.0\%, 25.3\%{]} & 1/512 (0.20\%) & 0.5459 &
+0.5717 \\
+UViT-H/DC-AE & 66.4\% & {[}29.5\%, 37.9\%{]} & 0/512 (0.00\%) & 0.6215 &
+0.7648 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+LPIPS (lower better)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+SSIM (higher better)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+CLIP image cosine (higher better)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RAR-XL & 0.4221 & 0.2772 & 0.8046 \\
+UViT-H/DC-AE & 0.5082 & 0.3103 & 0.8338 \\
+\end{longtable}
+}
+
+Using separately attacked calibration images to recalibrate thresholds
+gives delta-40 detection of 21.5\% for RAR-XL, 35.5\% for UViT-H/DC-AE.
+All attack strengths were fixed before owner scoring.
+
+NFPA substantially weakens the measured watermarks, but does not remove
+every detectable output. The low SSIM and increased LPIPS, alongside
+inspected changes to faces, hands, fish details and framing, show
+substantial image alteration. CLIP cosine measures broad visual
+similarity and cannot certify exact identity or detail preservation.
+These are raw detector-evasion rates, not quality-qualified removal
+success rates.
+
+The public SD2.1 mirror differs in hosting from the unavailable original
+endpoint; its revision and weight hashes are recorded. The experiment
+simulates closed access using preserved DistSeal PNGs, rather than
+querying a live commercial API.
+
+Details and all source/model pins:
+\href{records/docs/closed_image_watermarking.tex}{protocol}.
+
+\begin{itemize}
+\tightlist
+\item
+  \href{../docs/watermarking/data/metrics.json}{RAR full metrics}
+\item
+  \href{../docs/watermarking/data/metrics.json}{DC-AE full metrics}
+\end{itemize}
+
+The \href{records/docs/image_weight_attack_quality.tex}{earlier
+weight-attack quality table} records CLIP class alignment for merging
+and clean fine-tuning. It uses a different quality metric from NFPA
+image-image CLIP and should not be compared numerically.
+
+\subsection{Added class-text CLIP
+alignment}\label{record-docs-closed-image-results-md-added-class-text-clip-alignment}
+
+The \href{records/docs/matched_image_quality_results.tex}{completed
+matched evaluation} adds the earlier ImageNet class-alignment metric to
+NFPA and the missing paired metrics to weight attacks. All 512 marked
+images per condition are included.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+NFPA condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+RAR class-text CLIP
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+DC-AE class-text CLIP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+resize\_\allowbreak{}only & 0.3021 & 0.2934 \\
+nfpa\_\allowbreak{}0 & 0.2658 & 0.2684 \\
+nfpa\_\allowbreak{}20 & 0.2646 & 0.2677 \\
+nfpa\_\allowbreak{}40 & 0.2630 & 0.2664 \\
+\end{longtable}
+}
+
+The \href{../docs/watermarking/README.md}{self-contained publication
+report} provides all retained methods, fixed-sample galleries and
+portable metric snapshots.

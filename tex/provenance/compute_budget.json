@@ -1,0 +1,872 @@
+{
+  "maximum_h100_hours": 60,
+  "actual_h100_hours": 17.38861111111111,
+  "reserved_h100_hours": 0,
+  "jobs": [
+    {
+      "name": "DC-AE watermark survival development pilot",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/survival-pilot-20261106T170840Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; all filtered candidates failed initial detection and preservation screen; no removal attacks authorized by the screen",
+      "job_id": "2076996",
+      "elapsed_seconds": 205,
+      "actual_h100_hours": 0.05694444444444444
+    },
+    {
+      "name": "DC-AE adapted-reference teacher validation",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-teacher-20261106T175209Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; fixed and adapted teachers both passed quality and owner-detection screen",
+      "job_id": "2080317",
+      "elapsed_seconds": 622,
+      "actual_h100_hours": 0.17277777777777778
+    },
+    {
+      "name": "DC-AE fixed-reference meta-distillation pilot",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261106T180427Z/manifest.json",
+      "variant": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4.0,
+      "status": "completed;100outersteps with100cleaninnerupdates each; freshinitialscreen and independentattacks pending",
+      "job_id": "2080748",
+      "elapsed_seconds": 825,
+      "actual_h100_hours": 0.22916666666666666
+    },
+    {
+      "name": "DC-AE adapted-reference meta-distillation pilot",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261106T180427Z/manifest.json",
+      "variant": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4.0,
+      "status": "completed;100outersteps with100cleaninnerupdates each; freshinitialscreen and independentattacks pending",
+      "job_id": "2080749",
+      "elapsed_seconds": 703,
+      "actual_h100_hours": 0.19527777777777777
+    },
+    {
+      "name": "TextSeal2 conditional-probability exposure generation pilot",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-20261106T181710Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 4,
+      "maximum_h100_hours": 2.0,
+      "status": "completed; scientific evaluation pending",
+      "job_id": "2081047",
+      "elapsed_seconds": 2544,
+      "allocation_elapsed_seconds": [
+        1704,
+        840
+      ],
+      "actual_h100_hours": 0.7066666666666667
+    },
+    {
+      "name": "DC-AE meta-distilled checkpoint initial preservation screen",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-screen-20261106T182359Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed;fixed and adapted models both failed preservation gate,32/32detect but24/32and20/32preserved; noattacklaunched",
+      "job_id": "2081366",
+      "elapsed_seconds": 296,
+      "actual_h100_hours": 0.08222222222222222
+    },
+    {
+      "name": "DC-AE fixed-reference prediction-anchored meta-distillation",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261106T183630Z/manifest.json",
+      "variant": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4.0,
+      "status": "completed; scientific evaluation pending",
+      "job_id": "2081612",
+      "elapsed_seconds": 797,
+      "allocation_elapsed_seconds": [
+        797
+      ],
+      "actual_h100_hours": 0.22138888888888889
+    },
+    {
+      "name": "DC-AE adapted-reference prediction-anchored meta-distillation",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261106T183630Z/manifest.json",
+      "variant": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4.0,
+      "status": "completed; scientific evaluation pending",
+      "job_id": "2081613",
+      "elapsed_seconds": 733,
+      "allocation_elapsed_seconds": [
+        733
+      ],
+      "actual_h100_hours": 0.2036111111111111
+    },
+    {
+      "name": "DC-AE prediction-anchored checkpoint initial screen",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-screen-20261107T180723Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; evaluation artifacts retained",
+      "job_id": "2120429",
+      "elapsed_seconds": 307,
+      "actual_h100_hours": 0.08527777777777777
+    },
+    {
+      "name": "TextSeal2 exposure blind preservation selection",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T180709Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; evaluation artifacts retained",
+      "job_id": "2120431",
+      "elapsed_seconds": 274,
+      "actual_h100_hours": 0.07611111111111112
+    },
+    {
+      "name": "Blind quality-anchored image removal: original",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261107T182040Z/original-task.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; blind quality-anchored removal exports frozen; owner evaluation pending",
+      "job_id": "2120674",
+      "elapsed_seconds": 602,
+      "allocation_elapsed_seconds": [
+        602
+      ],
+      "actual_h100_hours": 0.16722222222222222
+    },
+    {
+      "name": "Blind quality-anchored image removal: fixed",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261107T182040Z/fixed-task.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; blind quality-anchored removal exports frozen; owner evaluation pending",
+      "job_id": "2120675",
+      "elapsed_seconds": 602,
+      "allocation_elapsed_seconds": [
+        602
+      ],
+      "actual_h100_hours": 0.16722222222222222
+    },
+    {
+      "name": "Blind quality-anchored image removal: adapted",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261107T182040Z/adapted-task.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; blind quality-anchored removal exports frozen; owner evaluation pending",
+      "job_id": "2120676",
+      "elapsed_seconds": 602,
+      "allocation_elapsed_seconds": [
+        602
+      ],
+      "actual_h100_hours": 0.16722222222222222
+    },
+    {
+      "name": "TextSeal2 source-four-token-blocked API rewriting generation",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-blocked-20261107T183333Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 4,
+      "maximum_h100_hours": 2.0,
+      "status": "completed; outputs frozen, downstream owner scoring pending",
+      "job_id": "2121402",
+      "elapsed_seconds": 2885,
+      "allocation_elapsed_seconds": [
+        1695,
+        1190
+      ],
+      "actual_h100_hours": 0.8013888888888889
+    },
+    {
+      "name": "Blind image attack quality-only validation: original",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261107T184525Z/manifest.json",
+      "case": "original",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; outputs frozen, downstream owner scoring pending",
+      "job_id": "2121760",
+      "elapsed_seconds": 600,
+      "allocation_elapsed_seconds": [
+        600
+      ],
+      "actual_h100_hours": 0.16666666666666666
+    },
+    {
+      "name": "Blind image attack quality-only validation: fixed",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261107T184525Z/manifest.json",
+      "case": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; outputs frozen, downstream owner scoring pending",
+      "job_id": "2121772",
+      "elapsed_seconds": 554,
+      "allocation_elapsed_seconds": [
+        554
+      ],
+      "actual_h100_hours": 0.15388888888888888
+    },
+    {
+      "name": "Blind image attack quality-only validation: adapted",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261107T184525Z/manifest.json",
+      "case": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; outputs frozen, downstream owner scoring pending",
+      "job_id": "2121773",
+      "elapsed_seconds": 557,
+      "allocation_elapsed_seconds": [
+        557
+      ],
+      "actual_h100_hours": 0.15472222222222223
+    },
+    {
+      "name": "Image preservation-qualified final owner evaluation",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261107T184525Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; zero removals for original/fixed/adapted, no defense gain",
+      "job_id": "2122600",
+      "elapsed_seconds": 519,
+      "allocation_elapsed_seconds": [
+        519
+      ],
+      "actual_h100_hours": 0.14416666666666667
+    },
+    {
+      "name": "Source-four-token-blocked text blind quality selection",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T194821Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; strict quality selections frozen, owner scoring pending",
+      "job_id": "2122630",
+      "elapsed_seconds": 317,
+      "allocation_elapsed_seconds": [
+        317
+      ],
+      "actual_h100_hours": 0.08805555555555555
+    },
+    {
+      "name": "TextSeal2 adaptive exposed-top10 probability-ratio generation",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-ratio-20261107T195520Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 4,
+      "maximum_h100_hours": 2.0,
+      "status": "completed; frozen outputs verified",
+      "job_id": "2122687",
+      "elapsed_seconds": 1675,
+      "allocation_elapsed_seconds": [
+        1675
+      ],
+      "actual_h100_hours": 0.4652777777777778
+    },
+    {
+      "name": "Image quality-fallback validation: original",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261107T200701Z/manifest.json",
+      "case": "original",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; all gated validation outputs preserve quality, owner detection pending",
+      "job_id": "2122804",
+      "elapsed_seconds": 486,
+      "allocation_elapsed_seconds": [
+        486
+      ],
+      "actual_h100_hours": 0.135
+    },
+    {
+      "name": "Image quality-fallback validation: fixed",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261107T200701Z/manifest.json",
+      "case": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; all gated validation outputs preserve quality, owner detection pending",
+      "job_id": "2122805",
+      "elapsed_seconds": 446,
+      "allocation_elapsed_seconds": [
+        446
+      ],
+      "actual_h100_hours": 0.1238888888888889
+    },
+    {
+      "name": "Image quality-fallback validation: adapted",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261107T200701Z/manifest.json",
+      "case": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; all gated validation outputs preserve quality, owner detection pending",
+      "job_id": "2122807",
+      "elapsed_seconds": 442,
+      "allocation_elapsed_seconds": [
+        442
+      ],
+      "actual_h100_hours": 0.12277777777777778
+    },
+    {
+      "name": "Conditional probability estimator accuracy, native-clipping and latency audit",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-audit-20261107T201658Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; frozen outputs verified",
+      "job_id": "2122891",
+      "elapsed_seconds": 598,
+      "allocation_elapsed_seconds": [
+        598
+      ],
+      "actual_h100_hours": 0.1661111111111111
+    },
+    {
+      "name": "Image quality-fallback final owner evaluation",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261107T200701Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; original20/64joint removals versus22/64both trained variants, no defense gain",
+      "job_id": "2123182",
+      "elapsed_seconds": 483,
+      "allocation_elapsed_seconds": [
+        483
+      ],
+      "actual_h100_hours": 0.13416666666666666
+    },
+    {
+      "name": "TextSeal2 fresh128-prompt confirmation, shard0",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-confirm-0-20261107T201445Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4.0,
+      "status": "completed; all six arms and three attempts saved; quality and owner evaluation pending",
+      "job_id": "2123193",
+      "elapsed_seconds": 9801,
+      "allocation_elapsed_seconds": [
+        1704,
+        1719,
+        1715,
+        1715,
+        1709,
+        1239
+      ],
+      "actual_h100_hours": 2.7225
+    },
+    {
+      "name": "TextSeal2 fresh128-prompt confirmation, shard1",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-confirm-1-20261107T201445Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4.0,
+      "status": "completed; all six arms and three attempts saved; quality and owner evaluation pending",
+      "job_id": "2123194",
+      "elapsed_seconds": 9012,
+      "allocation_elapsed_seconds": [
+        1687,
+        1689,
+        1706,
+        1702,
+        1680,
+        548
+      ],
+      "actual_h100_hours": 2.5033333333333334
+    },
+    {
+      "name": "TextSeal2 adaptive ratio attack strict quality selection",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T203752Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; scientific results retained",
+      "job_id": "2123204",
+      "elapsed_seconds": 279,
+      "allocation_elapsed_seconds": [
+        279
+      ],
+      "actual_h100_hours": 0.0775
+    },
+    {
+      "name": "Conditional probability audit on diverse saved attack prefixes",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-audit-20261107T204557Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; scientific results retained",
+      "job_id": "2123519",
+      "elapsed_seconds": 299,
+      "allocation_elapsed_seconds": [
+        299
+      ],
+      "actual_h100_hours": 0.08305555555555555
+    },
+    {
+      "name": "Horizon500 adapted-reference teacher quality check",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-teacher-20261107T205343Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1.0,
+      "status": "completed; scientific results retained",
+      "job_id": "2123617",
+      "dependency": "afterany:2123204",
+      "elapsed_seconds": 507,
+      "allocation_elapsed_seconds": [
+        507
+      ],
+      "actual_h100_hours": 0.14083333333333334
+    },
+    {
+      "name": "Text confirmation shard0 strict quality selection",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T235544Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; quality and CPU owner evaluation finished; combined128-source tables and paired uncertainty published",
+      "job_id": "2127574",
+      "elapsed_seconds": 484,
+      "allocation_elapsed_seconds": [
+        484
+      ],
+      "actual_h100_hours": 0.13444444444444445
+    },
+    {
+      "name": "Text support-pruning guard development",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-guard-20261107T211957Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4,
+      "status": "completed; all672attempts frozen; quality selection and owner scoring pending",
+      "job_id": "2127747",
+      "allocation_elapsed_seconds": [
+        1693,
+        1667,
+        1253
+      ],
+      "elapsed_seconds": 4613,
+      "actual_h100_hours": 1.281388888888889
+    },
+    {
+      "name": "Horizon500 fixed-reference training",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261107T211643Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4,
+      "status": "scientific artifact complete and hash-verified at100outerupdates; Slurm FAILED138 after finalreceipt due lateUSR1 during shutdown, no rerun needed",
+      "case": "fixed",
+      "job_id": "2127624",
+      "elapsed_seconds": 3362,
+      "allocation_elapsed_seconds": [
+        1701,
+        1661
+      ],
+      "actual_h100_hours": 0.9338888888888889
+    },
+    {
+      "name": "Horizon500 adapted-reference training",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-train-20261107T211643Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 8,
+      "maximum_h100_hours": 4,
+      "status": "completed;100outerupdates and checkpoint receipt; fresh generation screen pending",
+      "case": "adapted",
+      "job_id": "2127625",
+      "initial_dependency": "afterany:2127624",
+      "scheduling_note": "Dependency released after both confirmation quality jobs completed; at most three of these new GPU jobs can now run concurrently.",
+      "elapsed_seconds": 3631,
+      "allocation_elapsed_seconds": [
+        1694,
+        1702,
+        235
+      ],
+      "actual_h100_hours": 1.0086111111111111
+    },
+    {
+      "name": "Text confirmation shard1 strict quality selection",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T235629181359Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; quality and CPU owner evaluation finished; combined128-source tables and paired uncertainty published",
+      "job_id": "2127623",
+      "elapsed_seconds": 265,
+      "allocation_elapsed_seconds": [
+        265
+      ],
+      "actual_h100_hours": 0.07361111111111111
+    },
+    {
+      "name": "Horizon500 fresh initial image quality and detection screen",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/transport-screen-20261108T012332Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; original/fixed/adapted all32of32detected and preserved; eligible for blind removal comparison",
+      "job_id": "2129221",
+      "allocation_elapsed_seconds": [
+        206
+      ],
+      "elapsed_seconds": 206,
+      "actual_h100_hours": 0.05722222222222222
+    },
+    {
+      "name": "Text support-pruning strict quality selection",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261108T013500980495Z/manifest.json",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; quality-based selection frozen; separate CPU owner scoring running",
+      "job_id": "2129391",
+      "elapsed_seconds": 186,
+      "allocation_elapsed_seconds": [
+        186
+      ],
+      "actual_h100_hours": 0.051666666666666666
+    },
+    {
+      "name": "Horizon500 blind preserving attack original",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261108T013522Z/original-task.json",
+      "comparison_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261108T013522Z/manifest.json",
+      "case": "original",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; blind attack exports frozen; quality selection and independent owner tests pending",
+      "job_id": "2129464",
+      "allocation_elapsed_seconds": [
+        433
+      ],
+      "elapsed_seconds": 433,
+      "actual_h100_hours": 0.12027777777777778
+    },
+    {
+      "name": "Horizon500 blind preserving attack fixed",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261108T013522Z/fixed-task.json",
+      "comparison_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261108T013522Z/manifest.json",
+      "case": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; blind attack exports frozen; quality selection and independent owner tests pending",
+      "job_id": "2129465",
+      "allocation_elapsed_seconds": [
+        405
+      ],
+      "elapsed_seconds": 405,
+      "actual_h100_hours": 0.1125
+    },
+    {
+      "name": "Horizon500 blind preserving attack adapted",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261108T013522Z/adapted-task.json",
+      "comparison_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-20261108T013522Z/manifest.json",
+      "case": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; blind attack exports frozen; quality selection and independent owner tests pending",
+      "job_id": "2129466",
+      "allocation_elapsed_seconds": [
+        410
+      ],
+      "elapsed_seconds": 410,
+      "actual_h100_hours": 0.11388888888888889
+    },
+    {
+      "name": "Horizon500 validate original",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+      "stage": "validate",
+      "case": "original",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; quality selections frozen before owner tests; horizon500 comparison shows no robustness gain",
+      "job_id": "2138200",
+      "elapsed_seconds": 698,
+      "allocation_elapsed_seconds": [
+        698
+      ],
+      "actual_h100_hours": 0.1938888888888889
+    },
+    {
+      "name": "Horizon500 validate fixed",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+      "stage": "validate",
+      "case": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; quality selections frozen before owner tests; horizon500 comparison shows no robustness gain",
+      "job_id": "2138201",
+      "elapsed_seconds": 704,
+      "allocation_elapsed_seconds": [
+        704
+      ],
+      "actual_h100_hours": 0.19555555555555557
+    },
+    {
+      "name": "Horizon500 validate adapted",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+      "stage": "validate",
+      "case": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; quality selections frozen before owner tests; horizon500 comparison shows no robustness gain",
+      "job_id": "2138202",
+      "elapsed_seconds": 614,
+      "allocation_elapsed_seconds": [
+        614
+      ],
+      "actual_h100_hours": 0.17055555555555554
+    },
+    {
+      "name": "Horizon500 owner all",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-fallback-20261108T092001Z/manifest.json",
+      "stage": "owner",
+      "case": null,
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; quality selections frozen before owner tests; horizon500 comparison shows no robustness gain",
+      "job_id": "2138203",
+      "dependency": "afterok:2138200:2138201:2138202",
+      "elapsed_seconds": 449,
+      "allocation_elapsed_seconds": [
+        449
+      ],
+      "actual_h100_hours": 0.12472222222222222
+    },
+    {
+      "name": "Single-checkpoint LoRA attacker retraining original",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-lora-20261108T103901Z/original-task.json",
+      "comparison_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-lora-20261108T103901Z/manifest.json",
+      "case": "original",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 4,
+      "maximum_h100_hours": 2,
+      "status": "completed; all four LoRA arms reached2500updates and native checkpoints exported; raw quality selection and owner test pending",
+      "job_id": "2139355",
+      "elapsed_seconds": 1554,
+      "allocation_elapsed_seconds": [
+        1554
+      ],
+      "actual_h100_hours": 0.43166666666666664,
+      "artifact_status": "Deleted at user request after qualitative recalibration; minimal receipt:tex/provenance/discarded_lora_run.json"
+    },
+    {
+      "name": "Single-checkpoint LoRA attacker retraining fixed",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-lora-20261108T103901Z/fixed-task.json",
+      "comparison_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-lora-20261108T103901Z/manifest.json",
+      "case": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 4,
+      "maximum_h100_hours": 2,
+      "status": "completed; all four LoRA arms reached2500updates and native checkpoints exported; raw quality selection and owner test pending",
+      "job_id": "2139356",
+      "elapsed_seconds": 1554,
+      "allocation_elapsed_seconds": [
+        1554
+      ],
+      "actual_h100_hours": 0.43166666666666664,
+      "artifact_status": "Deleted at user request after qualitative recalibration; minimal receipt:tex/provenance/discarded_lora_run.json"
+    },
+    {
+      "name": "Single-checkpoint LoRA attacker retraining adapted",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-lora-20261108T103901Z/adapted-task.json",
+      "comparison_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-lora-20261108T103901Z/manifest.json",
+      "case": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 4,
+      "maximum_h100_hours": 2,
+      "status": "completed; all four LoRA arms reached2500updates and native checkpoints exported; raw quality selection and owner test pending",
+      "job_id": "2139357",
+      "elapsed_seconds": 1554,
+      "allocation_elapsed_seconds": [
+        1554
+      ],
+      "actual_h100_hours": 0.43166666666666664,
+      "artifact_status": "Deleted at user request after qualitative recalibration; minimal receipt:tex/provenance/discarded_lora_run.json"
+    },
+    {
+      "name": "Single-checkpoint LoRA validate original",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261108T112328Z/manifest.json",
+      "stage": "validate",
+      "case": "original",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; no-fallback final test: all selected attackers have0of64removals, including original; no defense gain can be inferred",
+      "job_id": "2140658",
+      "elapsed_seconds": 571,
+      "allocation_elapsed_seconds": [
+        571
+      ],
+      "actual_h100_hours": 0.15861111111111112,
+      "artifact_status": "Deleted at user request after qualitative recalibration; minimal receipt:tex/provenance/discarded_lora_run.json"
+    },
+    {
+      "name": "Single-checkpoint LoRA validate fixed",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261108T112328Z/manifest.json",
+      "stage": "validate",
+      "case": "fixed",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; no-fallback final test: all selected attackers have0of64removals, including original; no defense gain can be inferred",
+      "job_id": "2140659",
+      "elapsed_seconds": 508,
+      "allocation_elapsed_seconds": [
+        508
+      ],
+      "actual_h100_hours": 0.1411111111111111,
+      "artifact_status": "Deleted at user request after qualitative recalibration; minimal receipt:tex/provenance/discarded_lora_run.json"
+    },
+    {
+      "name": "Single-checkpoint LoRA validate adapted",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261108T112328Z/manifest.json",
+      "stage": "validate",
+      "case": "adapted",
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; no-fallback final test: all selected attackers have0of64removals, including original; no defense gain can be inferred",
+      "job_id": "2140660",
+      "elapsed_seconds": 498,
+      "allocation_elapsed_seconds": [
+        498
+      ],
+      "actual_h100_hours": 0.13833333333333334,
+      "artifact_status": "Deleted at user request after qualitative recalibration; minimal receipt:tex/provenance/discarded_lora_run.json"
+    },
+    {
+      "name": "Single-checkpoint LoRA owner all",
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261108T112328Z/manifest.json",
+      "stage": "owner",
+      "case": null,
+      "qos": "qos_gpu_h100-dev",
+      "gpus": 1,
+      "minutes_per_allocation": 30,
+      "maximum_allocations": 2,
+      "maximum_h100_hours": 1,
+      "status": "completed; no-fallback final test: all selected attackers have0of64removals, including original; no defense gain can be inferred",
+      "job_id": "2140661",
+      "dependency": "afterok:2140658:2140659:2140660",
+      "elapsed_seconds": 483,
+      "allocation_elapsed_seconds": [
+        483
+      ],
+      "actual_h100_hours": 0.13416666666666666,
+      "artifact_status": "Deleted at user request after qualitative recalibration; minimal receipt:tex/provenance/discarded_lora_run.json"
+    }
+  ],
+  "other_historical_h100_hours": 0.23472222222222222
+}

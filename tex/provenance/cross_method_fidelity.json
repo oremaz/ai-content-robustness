@@ -1,0 +1,49 @@
+{
+  "status": "Read-only implementation audit before any added-family GPU run. No family result or novelty claim.",
+  "textgrain": {
+    "full_report_read": true,
+    "report_pages": 20,
+    "reference_implementation": "TextSeal2 released textseal/watermarking/textgrain.py, separate reimplementation rather than original OpenAI release",
+    "verified_structure": [
+      "corrected block transport marginals",
+      "achieved/capped entropy-loss and convergence-status outputs",
+      "selected-column conditional token probabilities"
+    ],
+    "differences_requiring_control": [
+      "13-bit keyed PRF streams rather than an ideal independent continuous construction",
+      "released score_positions deduplicates context-token pairs; the original report deduplicates context windows, so use v1 context-only scoring for a faithful null comparison",
+      "record requested, capped and achieved entropy budgets; beta alone is not a numerical guarantee"
+    ],
+    "next_checks": [
+      "CPU marginal correction/conditional-law/entropy identity checks",
+      "calibration on independent unique human texts with declared context masking",
+      "native versus float64 solver ablation if using Triton"
+    ]
+  },
+  "synthid": {
+    "full_primary_pdf_read": true,
+    "primary_pages": 14,
+    "supplementary_full_read": false,
+    "status": "No added-family GPU run. Official current frequentist detector is a declared variant from original paper Bayesian-default experiments.",
+    "original_defaults": {
+      "context_tokens": 4,
+      "tournament_layers": 30,
+      "competitors": 2,
+      "g_values": "Bernoulli(0.5)",
+      "context_masking": "one sequence"
+    },
+    "required_controls": [
+      "exact conditional tournament probabilities after temperature/top-p",
+      "same history and repeated-context masking during provider sampling/exposure",
+      "official native g-value computation and a declared detector",
+      "original Bayesian versus current frequentist detector distinction",
+      "separate empirical calibration at common nominal operating points"
+    ]
+  },
+  "textseal": {
+    "status": "Full primary paper previously read; use released routing law and detector, compare baseline diversity explicitly."
+  },
+  "kgw": {
+    "status": "Optional fourth control; original full primary PDF still needs reading before implementation."
+  }
+}

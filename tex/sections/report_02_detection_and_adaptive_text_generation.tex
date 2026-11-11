@@ -1,0 +1,20 @@
+\section{Detection and adaptive text generation}
+All detectors expose an AI-oriented score: higher indicates stronger generated-content evidence. An ensemble averages seven component scores. Averaging does not calibrate them into posterior probabilities. Learned classifiers, likelihood statistics and handcrafted heuristics can respond differently to a distribution shift.
+
+The retained Qwen3.5-9B-Base LoRA attackers optimize a mixture of detector evasion, semantic similarity and quality rewards. Three final checkpoints target Gemma, ModernBERT-large and the ensemble. Their training budgets differ, so final evasion rates are not a matched-budget comparison of defender architectures.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{lrrr}\toprule
+Target & Updates & Evasion before defense & After defense\\\midrule
+Gemma & 1,213 & 77.2\% & 0.2\%\\
+ModernBERT-large & 1,487 & 96.8\% & 1.0\%\\
+Seven-detector ensemble & 502 & 94.8\% & 0.4\%\\\bottomrule
+\end{tabular}
+\caption{One defender update, evaluated on identical saved attack texts: 500 generated and 500 human passages per branch, threshold 0.5.}
+\end{table}
+
+Each defender update uses fresh fitting outputs while evaluation reuses the original saved texts. This isolates changes to the defender. It establishes recovery against a fixed attacker. It does not establish resistance to a second adaptive RL round. Single-seed results, unequal training budgets and diagnostic reuse limit generalization claims.
+
+The RoBERTa diagnostic illustrates checkpoint instability: evasion on 100 prompts reaches 98\% at step 500 and falls to 36\% at step 600. Selecting a favorable checkpoint after viewing diagnostic results can overstate robustness or attack reliability. Confirmatory testing must use untouched prompts and a prespecified selection rule.
+

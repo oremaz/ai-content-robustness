@@ -1,0 +1,27 @@
+\section{TextSeal and TextSeal 2 keyed sampling}
+\label{app:textseal}
+TextSeal \citep{textseal} and TextSeal 2 \citep{textseal2} alter sampling randomness to leave evidence that an owner can recompute from the resulting text. A pseudorandom function maps a secret key and token context to reproducible values. To a party without the key, those values are modeled as random.
+
+\paragraph{A race that samples the model distribution.}
+Let $\mathcal V$ be the vocabulary with $V=|\mathcal V|\in\mathbb N_{>0}$, and $h\in\mathcal V^*$ the current token prefix. At this fixed prefix, $p=(p_v)_{v\in\mathcal V}\in\Delta(\mathcal V)$ is the next-token distribution after temperature and truncation. Each $p_v\in[0,1]$ is a scalar. Ideal independent keyed values $U=(U_v)_{v\in\mathcal V}\in(0,1)^V$ have coordinates $U_v\sim\operatorname{Uniform}(0,1)$. The selected token is
+\[
+ Y=\arg\min_{v\in\mathcal V:p_v>0}\frac{-\log U_v}{p_v}\in\mathcal V.
+\]
+Think of one clock per eligible token. Its random ringing time $-\log U_v/p_v\in(0,\infty)$ has an exponential distribution with rate $p_v$. The first clock wins, and $\Pr(Y=v)=p_v$. Tokens with zero probability never win. More probable tokens have faster clocks, while the key controls their reproducible randomness.
+
+Averaging over ideal keyed randomness preserves the token marginal. Holding the key fixed creates the dependence the detector uses. At a fixed prefix with positive probabilities, a selected token with large $U_v$ has a short clock and typically supplies stronger keyed evidence. When the null token $Y$ is independent of the keyed vector $U$, the scalar evidence $s=-\log(1-U_Y)\in(0,\infty)$ has an exponential distribution with mean one. The sum of $n\in\mathbb N_{>0}$ independent such scores has Gamma distribution with shape $n$ and scale one. Repeated keyed contexts require deduplication or another dependence correction. TextSeal routes steps between two keys to restore diversity; its detector combines their evidence. Entropy weighting and searching for marked spans introduce additional calibration requirements.
+
+\paragraph{Mixing keys with fresh noise.}
+TextSeal 2 uses $M\in\mathbb N_{>0}$ key streams. For $j\in\{1,\ldots,M\}$ and $v\in\mathcal V$, let $U_v^{(j)}\in(0,1)$ be their ideal independent uniforms. The standard-normal cumulative distribution function is $\Phi:\mathbb R\to(0,1)$, with inverse $\Phi^{-1}:(0,1)\to\mathbb R$. Transform and merge the scalar values as
+\[
+ Z_v^{(j)}=\Phi^{-1}(U_v^{(j)})\in\mathbb R,\qquad
+ Z_v^\star=\frac1{\sqrt M}\sum_{j=1}^M Z_v^{(j)}\in\mathbb R.
+\]
+The arrays $(U_v^{(j)})$ and $(Z_v^{(j)})$ have shape $M\times V$, and $Z^\star=(Z_v^\star)_{v\in\mathcal V}\in\mathbb R^V$. Independently draw fresh $\eta=(\eta_v)_{v\in\mathcal V}\sim\mathcal N(0_V,I_V)$ in $\mathbb R^V$, with zero vector $0_V\in\mathbb R^V$ and identity matrix $I_V\in\mathbb R^{V\times V}$. Use mixing strength $\rho\in[0,1]$ to form
+\[
+ \widetilde U_v=
+ \Phi\!\left(\rho Z_v^\star+\sqrt{1-\rho^2}\eta_v\right)\in(0,1).
+\]
+Use $\widetilde U_v$ in the token race. Under the ideal independence assumptions, each mixed Gaussian has unit variance, so the transformed value is uniform when averaging over keys and noise. For a fixed key, $\rho$ controls how much keyed information survives. At $\rho=0$, the fresh noise supplies all randomness. At $\rho=1$, the merged key supplies it all. Intermediate values mix reproducibility with fresh variation. An owner knowing the merged key can recompute its evidence; a detector given fewer component keys has a different signal strength.
+
+TextSeal 2 also handles speculative decoding, where a smaller draft model proposes tokens that a target model accepts or replaces. Its replacement procedure uses the memoryless property of exponential clocks. The local experiments use target-only decoding, so their results concern the sampling and detection setting described here.

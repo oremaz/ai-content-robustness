@@ -1,0 +1,70 @@
+\section{Gaussian transition KL and what a trajectory bound means}
+\label{app:gaussian_proofs}
+Fix a state $x_t$, prompt $c$, stochastic scheduler step and dimension $d$. Write $P=\mathcal N(\mu,\sigma^2I_d)$ and $Q=\mathcal N(\nu,\sigma^2I_d)$, where $\sigma>0$ is the same for both policies. These are conditional transition distributions, not distributions of decoded images.
+
+\begin{proposition}[Equal-variance Gaussian KL]
+\begin{equation}
+\KL(P\Vert Q)=\frac{\|\mu-\nu\|_2^2}{2\sigma^2}.
+\end{equation}
+\end{proposition}
+\begin{proof}
+The normalization constants of the two densities are identical. Their log ratio is
+\begin{align}
+\log\frac{p(z)}{q(z)}
+&=\left[-\frac d2\log(2\pi\sigma^2)-\frac{\|z-\mu\|^2}{2\sigma^2}\right]
+ -\left[-\frac d2\log(2\pi\sigma^2)-\frac{\|z-\nu\|^2}{2\sigma^2}\right]\\
+&=\frac{\|z-\nu\|^2-\|z-\mu\|^2}{2\sigma^2}.
+\end{align}
+Under $P$, write $Z=\mu+\sigma\varepsilon$ with $\varepsilon\sim\mathcal N(0,I_d)$. Then
+\begin{align}
+\|Z-\nu\|^2-\|Z-\mu\|^2
+&=\|\mu-\nu+\sigma\varepsilon\|^2-\|\sigma\varepsilon\|^2\\
+&=\|\mu-\nu\|^2+2\sigma\langle\mu-\nu,\varepsilon\rangle.
+\end{align}
+Since $\E\varepsilon=0$, taking expectation yields
+\begin{align}
+\KL(P\Vert Q)
+&=\E_P\log\frac{p(Z)}{q(Z)}\\
+&=\frac{\|\mu-\nu\|^2+2\sigma\langle\mu-\nu,\E\varepsilon\rangle}{2\sigma^2}
+ =\frac{\|\mu-\nu\|^2}{2\sigma^2}.
+\end{align}
+Dividing by $d$ produces KL per coordinate. It does not produce the full KL of the transition.
+\end{proof}
+
+\begin{proposition}[Chain rule and terminal data processing]
+Let $P_\theta$ and $P_0$ be reverse-trajectory laws with the same initial-noise law and $T$ stochastic transitions, each having a density and common support. If $K_t(X_t,c)$ is the conditional transition KL, then
+\begin{align}
+\KL(P_\theta\Vert P_0)&=\sum_{t=1}^T\E_{P_\theta}K_t(X_t,c),\\
+\KL(P_\theta^{\rm image}\Vert P_0^{\rm image})&\leq\KL(P_\theta\Vert P_0)
+\end{align}
+when both terminal outputs use the same deterministic decoder.
+\end{proposition}
+\begin{proof}
+Denote the initial density by $r$ and a reverse trajectory by $\xi=(x_T,\ldots,x_0)$. Factorization gives
+\begin{align}
+\log\frac{p_\theta(\xi\mid c)}{p_0(\xi\mid c)}
+&=\log\frac{r(x_T)\prod_t p_{\theta,t}(x_{t-1}\mid x_t,c)}
+ {r(x_T)\prod_t p_{0,t}(x_{t-1}\mid x_t,c)}\\
+&=\sum_t\log\frac{p_{\theta,t}(x_{t-1}\mid x_t,c)}
+ {p_{0,t}(x_{t-1}\mid x_t,c)}.
+\end{align}
+Take expectation under $P_\theta$ and condition each term on its current state:
+\begin{align}
+\KL(P_\theta\Vert P_0)
+&=\sum_t\E_{X_t\sim P_\theta}
+ \E_{X_{t-1}\sim p_{\theta,t}(\cdot\mid X_t,c)}
+ \log\frac{p_{\theta,t}(X_{t-1}\mid X_t,c)}{p_{0,t}(X_{t-1}\mid X_t,c)}\\
+&=\sum_t\E_{P_\theta}K_t(X_t,c).
+\end{align}
+To justify the second statement, let $Y=D(X_0)$ be the common decoded output. The joint law of $(\xi,Y)$ adds a deterministic variable and hence has the same KL as the trajectory law. Applying the chain rule in the other direction,
+\begin{align}
+\KL(P_\theta\Vert P_0)
+&=\KL(P_\theta^Y\Vert P_0^Y)
+ +\E_{Y\sim P_\theta^Y}\KL(P_\theta^{\xi\mid Y}\Vert P_0^{\xi\mid Y})\\
+&\geq\KL(P_\theta^Y\Vert P_0^Y),
+\end{align}
+because KL is nonnegative. This is a bound on distributions under the stated common-kernel assumptions. A single sampled average of conditional KLs is an estimator, not an exact terminal-image KL.
+\end{proof}
+
+\paragraph{Where the repository differs from an exact path constraint.}
+The reference reward uses $\bar K=(Td)^{-1}\sum_tK_t(X_t,c)$ and then $S=(1+\bar K/s)^{-1}$. Its expectation is not obtained by applying the nonlinear transform to $\E\bar K$. Bounding the contribution $0.10S$ bounds its numerical reward range, not the path KL or all perceptual changes. Deterministic terminal transitions also require care: unequal point masses have infinite KL, so omitting them does not automatically preserve a full-trajectory upper bound. The implemented quantity is explicitly the stochastic-transition statistic.

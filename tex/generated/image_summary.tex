@@ -1,0 +1,13 @@
+\begin{table}[t]\centering\small
+\begin{tabular}{llrrr}\toprule
+Model & Condition & Detected & LPIPS & Class CLIP\\\midrule
+RAR & Marked original & 100.0\% & 0.0000 & 0.3030 \\
+RAR & Clean LoRA 2,500 & 4.9\% & 0.6692 & 0.3044 \\
+RAR & Clean full 2,500 & 7.2\% & 0.6618 & 0.3032 \\
+RAR & NFPA 40 & 21.5\% & 0.4221 & 0.2630 \\
+DCAE & Marked original & 100.0\% & 0.0000 & 0.2934 \\
+DCAE & Clean LoRA 2,500 & 0.2\% & 0.1510 & 0.2840 \\
+DCAE & Clean full 2,500 & 0.4\% & 0.2148 & 0.2816 \\
+DCAE & NFPA 40 & 33.6\% & 0.5082 & 0.2664 \\
+\bottomrule\end{tabular}
+\caption{Matched image measurements, 512 outputs per condition. LPIPS measures paired drift; class CLIP is an incomplete utility proxy.}\end{table}

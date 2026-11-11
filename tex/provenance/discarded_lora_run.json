@@ -1,0 +1,171 @@
+{
+  "discarded_at_utc": "2026-11-08T12:15:30.256795+00:00",
+  "reason": "User requested removal after qualitative recalibration because the quality-selected LoRA attacker did not evade detection and was not a useful defense comparison.",
+  "removed_run_directories": [
+    "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-attack-lora-20261108T103901Z",
+    "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/preserving-evaluation-20261108T112328Z"
+  ],
+  "manifest_sha256": {
+    "training": "c15eec5b6114ca14fa247f50c87a5e2312a3bf2f8a1d09cfc11c6f6e3368ebbe",
+    "evaluation": "077eedfeb07931e1dbd6db803f47dfc4f076787288dd4039a2b624ee0a84c331"
+  },
+  "owner_results_sha256": "6a1975b232feb6e1a6a48ed09854d5495b15440ddfad100b47b40bb935dae393",
+  "final_outcomes": {
+    "original": {
+      "n": 64,
+      "originally_detected": 64,
+      "raw_removal": {
+        "count": 0,
+        "n": 64,
+        "rate": 0.0
+      },
+      "preservation": {
+        "count": 64,
+        "n": 64,
+        "rate": 1.0
+      },
+      "preservation_among_original_positives": {
+        "count": 64,
+        "n": 64,
+        "rate": 1.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 64,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 64,
+        "rate": 0.0
+      },
+      "preservation_failure_reasons": {},
+      "joint_success_ids": []
+    },
+    "fixed": {
+      "n": 64,
+      "originally_detected": 64,
+      "raw_removal": {
+        "count": 0,
+        "n": 64,
+        "rate": 0.0
+      },
+      "preservation": {
+        "count": 60,
+        "n": 64,
+        "rate": 0.9375
+      },
+      "preservation_among_original_positives": {
+        "count": 60,
+        "n": 64,
+        "rate": 0.9375
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 64,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 60,
+        "rate": 0.0
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 1,
+        "clip_image_cosine:outside_bounds": 2,
+        "lpips:outside_bounds": 1
+      },
+      "joint_success_ids": []
+    },
+    "adapted": {
+      "n": 64,
+      "originally_detected": 64,
+      "raw_removal": {
+        "count": 0,
+        "n": 64,
+        "rate": 0.0
+      },
+      "preservation": {
+        "count": 59,
+        "n": 64,
+        "rate": 0.921875
+      },
+      "preservation_among_original_positives": {
+        "count": 59,
+        "n": 64,
+        "rate": 0.921875
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 64,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 59,
+        "rate": 0.0
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 3,
+        "clip_image_cosine:outside_bounds": 2
+      },
+      "joint_success_ids": []
+    }
+  },
+  "selection_summary": {
+    "original": {
+      "name": "anchor-16-step-2500",
+      "anchor_weight": 16.0,
+      "step": 2500,
+      "n": 32,
+      "preserved": 30
+    },
+    "fixed": {
+      "name": "anchor-4-step-2500",
+      "anchor_weight": 4.0,
+      "step": 2500,
+      "n": 32,
+      "preserved": 28
+    },
+    "adapted": {
+      "name": "anchor-4-step-2500",
+      "anchor_weight": 4.0,
+      "step": 2500,
+      "n": 32,
+      "preserved": 29
+    }
+  },
+  "jobs": [
+    {
+      "job_id": "2139355",
+      "actual_h100_hours": 0.43166666666666664
+    },
+    {
+      "job_id": "2139356",
+      "actual_h100_hours": 0.43166666666666664
+    },
+    {
+      "job_id": "2139357",
+      "actual_h100_hours": 0.43166666666666664
+    },
+    {
+      "job_id": "2140658",
+      "actual_h100_hours": 0.15861111111111112
+    },
+    {
+      "job_id": "2140659",
+      "actual_h100_hours": 0.1411111111111111
+    },
+    {
+      "job_id": "2140660",
+      "actual_h100_hours": 0.13833333333333334
+    },
+    {
+      "job_id": "2140661",
+      "actual_h100_hours": 0.13416666666666666
+    }
+  ],
+  "spent_h100_hours": 1.8672222222222221,
+  "retained": "This small negative-result and compute record; reusable implementation and its validated tests. Full run artifacts were deleted after qualitative recalibration.",
+  "new_quality_rule_sha256": "7fa0c0b8827622a83813cbc514d2e55a095284f4c4fdbfb7bf111b4d669af5a0"
+}

@@ -1,0 +1,25 @@
+\section{Image detection: dataset shift and a failed intervention}
+\label{sec:image_bench}
+\paragraph{Question.} Can a classifier trained on a broad collection of real and generated images recognize images from a different acquisition pipeline? This part is independent of DDPO and watermarking: it concerns supervised classifiers and their generalization.
+
+The image notebook starts from ArtiFact's 2,440,031 available images, takes a seeded stratified 15\% sample, and reserves a stratified 20\% holdout from that sample. This is an image-level holdout, not a guarantee of unseen-generator evaluation. Five models are compared: EfficientNet-B4, a CLIP classifier, ConvNeXt V2 Tiny, DINOv2 ViT-base and ResNet-50. CIFAKE and Shoes serve as external evaluations. The CIFAKE input resolution differs sharply from the ArtiFact pipeline, making resolution and processing part of the shift.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{lrrr}\toprule
+Model & ArtiFact F1 & CIFAKE F1 & Shoes F1\\\midrule
+EfficientNet-B4 & .9346 & .3333 & .6700\\
+CLIP classifier & .8039 & .3377 & .6732\\
+ConvNeXt V2 Tiny & .3811 & .3333 & .3834\\
+DINOv2 ViT-base & .6245 & .4564 & .3233\\
+ResNet-50 & .7562 & .3786 & .5398\\\bottomrule
+\end{tabular}
+\caption{Retained notebook execution, job 1153220. Macro F1 exposes single-class collapse that accuracy can obscure.}
+\end{table}
+
+For example, a classifier predicting one class on a balanced dataset has 50\% accuracy but macro F1 of one third: the predicted class has precision $1/2$ and recall one, hence F1 $2/3$, while the other class has F1 zero. Averaging yields $1/3$. Thus the CIFAKE rows near 0.3333 are consistent with unhelpful single-class predictions, not moderately successful discrimination.
+
+\paragraph{The intervention and its rejection.} The project retrains ConvNeXt on balanced ArtiFact data with downsampling/upsampling, JPEG recompression, blur, color changes and flips. The prespecified exploratory gate requires macro-F1 improvement on both external datasets and no more than 0.03 loss on ArtiFact. Its macro-F1 changes are zero on all three evaluations, so the candidate is rejected. An increase in ranking performance without a corresponding thresholded decision improvement is not a pass of that gate. The retained Shoes AUROC changes substantially, but the operational macro-F1 criterion still fails.
+
+The notebook also retains an earlier historical motivation describing 99.9\% ArtiFact accuracy. That number belongs to an earlier execution. It must not replace the current ConvNeXt result of 61.58\% accuracy and 0.3811 macro F1. Preserving both with explicit provenance is necessary to avoid an internally contradictory report.
+
+\paragraph{Interpretation.} The transfer gap is compatible with shortcuts involving resolution, compression or content sources, but the benchmark alone does not identify their causal contributions. External results informed the intervention design, so even a successful exploratory intervention would need untouched confirmation. These limitations motivate the later independent official-DDA evaluation rather than a claim that a high ArtiFact holdout score establishes robust image forensics.

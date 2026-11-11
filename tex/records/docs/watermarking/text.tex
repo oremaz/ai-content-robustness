@@ -1,0 +1,555 @@
+\section{Text watermarking and
+removal}\label{record-docs-watermarking-text-md-text-watermarking-and-removal}
+
+Target: \textbf{Qwen/Qwen3.5-4B instruct}. BIRA and ordinary rewriting
+use \textbf{Llama-3.1-8B-Instruct}. Every current test arm has 256
+responses. TextSeal 1 and deleted Qwen-Base experiments are excluded.
+
+TextSeal 2 changes the sampler. The DistSeal-inspired text adaptation
+learns a hidden-state teacher and distils it into merged student
+weights; this is not an official DistSeal text implementation.
+
+\subsection{Access and
+interpretation}\label{record-docs-watermarking-text-md-access-and-interpretation}
+
+BIRA and ordinary paraphrasing receive text only. Direct resampling and
+smoothing receive simulated top-10 model probabilities. For TextSeal 2
+these are \textbf{pre-watermark underlying logits}: results do not
+establish bypass when an API exposes only its keyed sampling
+distribution. For the student they come from the merged watermarked
+model. Smoothing uses an independent Qwen3.5-0.8B instruct reference.
+
+Direct resampling and smoothing generate fresh answers to the same
+question; their similarity to an earlier answer is not an entailment
+requirement. Jina cosine is continuous similarity, not a preservation
+percentage. NLI is reported only for rewrites, using entailment in both
+directions.
+
+\subsection{TextSeal
+2}\label{record-docs-watermarking-text-md-textseal-2}
+
+The released v2 deduplicated Gamma detector uses nominal p-value
+thresholds 0.001 (primary) and 0.01. The 256-example null sets cannot
+precisely validate a 0.1\% false-positive rate.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected primary
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Primary 95\% CI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected secondary
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Eligible
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Original marked output & 256 & 253/256 (98.8\%) & {[}96.6\%, 99.8\%{]} &
+99.6\% & 256 \\
+Clean-model negative control & 256 & 1/256 (0.4\%) & {[}0.0\%, 2.2\%{]}
+& 0.8\% & 256 \\
+Ordinary paraphrasing & 256 & 15/256 (5.9\%) & {[}3.3\%, 9.5\%{]} &
+15.2\% & 256 \\
+BIRA & 256 & 0/256 (0.0\%) & {[}0.0\%, 1.4\%{]} & 2.3\% & 256 \\
+Direct top-10 resampling & 256 & 1/256 (0.4\%) & {[}0.0\%, 2.2\%{]} &
+0.4\% & 256 \\
+Confidence smoothing (adapted) & 256 & 0/256 (0.0\%) & {[}0.0\%,
+1.4\%{]} & 1.2\% & 256 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC vs human
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Original marked output & 0.9999 \\
+Clean-model negative control & 0.4384 \\
+Ordinary paraphrasing & 0.6868 \\
+BIRA & 0.4983 \\
+Direct top-10 resampling & 0.4633 \\
+Confidence smoothing (adapted) & 0.4483 \\
+\end{longtable}
+}
+
+Observed human false positives: 0/256 at the primary threshold. The
+clean-model row reports the separate model-output false-positive rate.
+
+\subsubsection{Quality and
+similarity}\label{record-docs-watermarking-text-md-quality-and-similarity}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Jina cosine
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Jina mean 95\% CI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Bidirectional NLI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mistral PPL
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Numeric-set F1
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & 0.9339 & {[}0.9294, 0.9378{]} & 79.7\% & 8.0651
+& 0.8842 \\
+BIRA & 0.9108 & {[}0.9063, 0.9151{]} & 47.3\% & 9.9020 & 0.7134 \\
+Direct top-10 resampling & 0.8627 & {[}0.8556, 0.8696{]} & N/A: fresh
+answer & 7.7509 & N/A: fresh answer \\
+Confidence smoothing (adapted) & 0.8402 & {[}0.8334, 0.8469{]} & N/A:
+fresh answer & 8.3436 & N/A: fresh answer \\
+\end{longtable}
+}
+
+PPL uses the independent Mistral-7B evaluator; lower is more probable
+under that model, not proof of truth or utility. Numeric-set F1 checks
+sets of numbers rather than their roles.
+
+\subsubsection{Output
+diagnostics}\label{record-docs-watermarking-text-md-output-diagnostics}
+
+Original generation budget: 200 Qwen tokens; \textbf{254/256 originals
+hit the budget}. These possibly unfinished outputs are retained rather
+than filtered.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Empty
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Flagged degeneration
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Length cap
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mean attempts
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+NLI truncated
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & 0 & 0 & 0 & 1.0000 & 8/256 \\
+BIRA & 0 & 0 & 0 & 1.0156 & 10/256 \\
+Direct top-10 resampling & 0 & not evaluated & 254 & not measured &
+N/A \\
+Confidence smoothing (adapted) & 0 & not evaluated & 251 & not measured
+& N/A \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Trigram repetition
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & not measured \\
+BIRA & not measured \\
+Direct top-10 resampling & 0.0374 \\
+Confidence smoothing (adapted) & 0.0538 \\
+\end{longtable}
+}
+
+Missing diagnostics are not treated as zero. The NLI model truncates
+overlong pairs to its 512-token context. Full per-condition summaries,
+both thresholds and all similarity controls are in the
+\href{../docs/watermarking/data/metrics.json}{portable metric snapshot}.
+
+\subsubsection{Paired detector
+transitions}\label{record-docs-watermarking-text-md-paired-detector-transitions}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Originally detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Now undetected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fraction of original positives
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Original negatives now detected
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & 253 & 238 & 94.1\% & 0 \\
+BIRA & 253 & 253 & 100.0\% & 0 \\
+Direct top-10 resampling & 253 & 252 & 99.6\% & 0 \\
+Confidence smoothing (adapted) & 253 & 253 & 100.0\% & 0 \\
+\end{longtable}
+}
+
+These counts show how many initially detected outputs become undetected.
+They exclude pre-existing false negatives from the denominator. For
+resampling/smoothing, this is a transition between fresh responses to
+the same prompt, not necessarily removal from the original text.
+
+\subsection{DistSeal-inspired
+student}\label{record-docs-watermarking-text-md-distseal-inspired-student}
+
+The primary threshold is the frozen validation-derived score
+\textbf{\textgreater-0.6263284683}, with a secondary threshold
+\textbf{\textgreater-0.6305184364}. Labels
+\texttt{\seqsplit{fpr001}}/\texttt{\seqsplit{fpr01}} are target
+operating points, not measured guarantees or Gamma p-values.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected primary
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Primary 95\% CI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detected secondary
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Eligible
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Original marked output & 256 & 118/256 (46.1\%) & {[}39.9\%, 52.4\%{]} &
+50.0\% & 256 \\
+Clean-model negative control & 256 & 2/256 (0.8\%) & {[}0.1\%, 2.8\%{]}
+& 0.8\% & 256 \\
+External learned teacher & 256 & 106/256 (41.4\%) & {[}35.3\%, 47.7\%{]}
+& 45.3\% & 256 \\
+Ordinary paraphrasing & 256 & 9/256 (3.5\%) & {[}1.6\%, 6.6\%{]} & 3.9\%
+& 256 \\
+BIRA & 256 & 1/256 (0.4\%) & {[}0.0\%, 2.2\%{]} & 0.4\% & 256 \\
+Direct top-10 resampling & 256 & 102/256 (39.8\%) & {[}33.8\%, 46.1\%{]}
+& 42.6\% & 256 \\
+Confidence smoothing (adapted) & 256 & 18/256 (7.0\%) & {[}4.2\%,
+10.9\%{]} & 8.6\% & 256 \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Condition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+AUROC vs human
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Original marked output & 0.9880 \\
+Clean-model negative control & 0.6713 \\
+External learned teacher & 0.9883 \\
+Ordinary paraphrasing & 0.7640 \\
+BIRA & 0.3766 \\
+Direct top-10 resampling & 0.9854 \\
+Confidence smoothing (adapted) & 0.8837 \\
+\end{longtable}
+}
+
+Observed human false positives: 0/256 at the primary threshold. The
+clean-model row reports the separate model-output false-positive rate.
+
+\subsubsection{Quality and
+similarity}\label{record-docs-watermarking-text-md-quality-and-similarity-1}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Jina cosine
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Jina mean 95\% CI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Bidirectional NLI
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mistral PPL
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Numeric-set F1
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & 0.9338 & {[}0.9297, 0.9378{]} & 80.5\% & 8.4756
+& 0.8404 \\
+BIRA & 0.9116 & {[}0.9071, 0.9161{]} & 60.9\% & 9.4751 & 0.6787 \\
+Direct top-10 resampling & 0.8484 & {[}0.8411, 0.8556{]} & N/A: fresh
+answer & 7.9477 & N/A: fresh answer \\
+Confidence smoothing (adapted) & 0.8317 & {[}0.8237, 0.8395{]} & N/A:
+fresh answer & 8.6016 & N/A: fresh answer \\
+\end{longtable}
+}
+
+PPL uses the independent Mistral-7B evaluator; lower is more probable
+under that model, not proof of truth or utility. Numeric-set F1 checks
+sets of numbers rather than their roles.
+
+\subsubsection{Output
+diagnostics}\label{record-docs-watermarking-text-md-output-diagnostics-1}
+
+Original generation budget: 200 Qwen tokens; \textbf{256/256 originals
+hit the budget}. These possibly unfinished outputs are retained rather
+than filtered.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Empty
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Flagged degeneration
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Length cap
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mean attempts
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+NLI truncated
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & 0 & 0 & 0 & 1.0000 & 1/256 \\
+BIRA & 0 & 0 & 1 & 1.0820 & 17/256 \\
+Direct top-10 resampling & 0 & not evaluated & 254 & not measured &
+N/A \\
+Confidence smoothing (adapted) & 0 & not evaluated & 252 & not measured
+& N/A \\
+\end{longtable}
+}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Trigram repetition
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & not measured \\
+BIRA & not measured \\
+Direct top-10 resampling & 0.0522 \\
+Confidence smoothing (adapted) & 0.0645 \\
+\end{longtable}
+}
+
+Missing diagnostics are not treated as zero. The NLI model truncates
+overlong pairs to its 512-token context. Full per-condition summaries,
+both thresholds and all similarity controls are in the
+\href{../docs/watermarking/data/metrics.json}{portable metric snapshot}.
+
+\subsubsection{Paired detector
+transitions}\label{record-docs-watermarking-text-md-paired-detector-transitions-1}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Originally detected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Now undetected
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fraction of original positives
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Original negatives now detected
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ordinary paraphrasing & 118 & 110 & 93.2\% & 1 \\
+BIRA & 118 & 117 & 99.2\% & 0 \\
+Direct top-10 resampling & 118 & 66 & 55.9\% & 50 \\
+Confidence smoothing (adapted) & 118 & 107 & 90.7\% & 7 \\
+\end{longtable}
+}
+
+These counts show how many initially detected outputs become undetected.
+They exclude pre-existing false negatives from the denominator. For
+resampling/smoothing, this is a transition between fresh responses to
+the same prompt, not necessarily removal from the original text.
+
+\subsection{Watermark creation and student
+training}\label{record-docs-watermarking-text-md-watermark-creation-and-student-training}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Stage
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Training
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Sampler
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Measured outcome
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+TextSeal 2 & No weight training & temperature 1, top-p .95, cap 200; rho
+.9, ngram 3 & 253/256 original responses detected at p\textless=.001 \\
+Latent teacher & 7,500 steps & learned hidden-state hook & Best
+validation bit accuracy 70.4\%; not per-response detection \\
+Distilled student & 8,000 steps, LoRA rank 128 & ordinary sampling from
+merged weights & 118/256 original student responses detected at primary
+threshold \\
+\end{longtable}
+}
+
+\subsection{Qualitative
+comparisons}\label{record-docs-watermarking-text-md-qualitative-comparisons}
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Watermark
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Eight pairs
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+TextSeal 2 & Ordinary paraphrasing &
+\href{records/docs/watermarking/qualitative/text-textseal2-vanilla.tex}{View} \\
+TextSeal 2 & BIRA &
+\href{records/docs/watermarking/qualitative/text-textseal2-bira.tex}{View} \\
+TextSeal 2 & Direct top-10 resampling &
+\href{records/docs/watermarking/qualitative/text-textseal2-direct_topk.tex}{View} \\
+TextSeal 2 & Confidence smoothing (adapted) &
+\href{records/docs/watermarking/qualitative/text-textseal2-smoothing.tex}{View} \\
+DistSeal-inspired student & Ordinary paraphrasing &
+\href{records/docs/watermarking/qualitative/text-latent-vanilla.tex}{View} \\
+DistSeal-inspired student & BIRA &
+\href{records/docs/watermarking/qualitative/text-latent-bira.tex}{View} \\
+DistSeal-inspired student & Direct top-10 resampling &
+\href{records/docs/watermarking/qualitative/text-latent-direct_topk.tex}{View} \\
+DistSeal-inspired student & Confidence smoothing (adapted) &
+\href{records/docs/watermarking/qualitative/text-latent-smoothing.tex}{View} \\
+\end{longtable}
+}
+
+All eight pairs per method use the same fixed positions; figures are
+previews and their pages retain full verbatim text.
+\href{records/docs/watermarking/historical.tex}{Historical paper
+controls} are separate from these current target experiments.
+
+\href{../docs/watermarking/README.md}{Overview} \textbar{}
+\href{records/docs/watermarking/metrics.tex}{Metric definitions}

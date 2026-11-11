@@ -1,0 +1,39 @@
+{
+  "guard_quality_manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261108T013500980495Z/manifest.json",
+  "guard_manifest_sha256": "ebdfaf777ffeba810100624d62014e484448bbb1fbef2dbd1a995c99a9fa4754",
+  "guard_owner_results_sha256": "69285b341dc8f8b7e215af25099e8165f1b2ac050352cb76b24f3bc805f4fee2",
+  "baseline": {
+    "blocked": {
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T194821Z/manifest.json",
+      "sha256": "ae275f7d98c55b25fa3b4567302da495773b72a451ecb686dc81a2c32718c610"
+    },
+    "ratio": {
+      "manifest": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/paper_writing/text-exposure-quality-20261107T203752Z/manifest.json",
+      "sha256": "2466d4003ae4a0a4759995ea866da653975b3964c52237de12a795bc0e32c330"
+    }
+  },
+  "checks": {
+    "blocked": {
+      "original_answers_byte_identical": true,
+      "relevant_sampling_equal": true,
+      "selection_equal": true,
+      "key_equal": true,
+      "evaluation_ids_equal": true
+    },
+    "ratio": {
+      "original_answers_byte_identical": true,
+      "relevant_sampling_equal": true,
+      "selection_equal": true,
+      "key_equal": true,
+      "evaluation_ids_equal": true
+    }
+  },
+  "sampling_scope": "All sampling fields match for ratio. For direct and smoothing, the guard additionally declares ratio exponents used only by ratio arms; all baseline sampling fields match.",
+  "scope": "Reused 32 development answers; guard designed after baseline failure, not independent confirmation. Interface-specific public-prefix calibration is recomputed.",
+  "outputs": [
+    "tex/generated/exposure_guard_results.tex",
+    "tex/generated/exposure_guard_qualitative.tex",
+    "tex/provenance/text_exposure_guard_samples.json",
+    "tex/sections/experiment_support_guard.tex"
+  ]
+}

@@ -1,0 +1,454 @@
+\section{DistSeal-inspired student: Ordinary
+paraphrasing}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-distseal-inspired-student-ordinary-paraphrasing}
+
+The candidate is a rewrite of the original response. Both detection and
+preservation failures are retained.
+
+Eight pairs selected by fixed test positions before inspecting detection
+or quality outcomes. Undetected originals and unsuccessful attacks
+remain included.
+
+\begin{recordfigure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Sixteen-panel text preview}]{figures/text-latent-vanilla.png}}
+\caption{Sixteen-panel text preview}
+\end{recordfigure}
+
+The figure previews up to the first 360 original characters per
+response; full texts below are unabridged. Emoji use Unicode codepoints
+in the preview to avoid missing-glyph boxes. Owner scores and quality
+metrics use full responses.
+
+{\scriptsize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Example
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Test position
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Before
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+After
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Jina
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & 0 & Not detected \textbar{} score=-0.7047 & Not detected \textbar{}
+score=-0.7222 & 0.9823 \\
+2 & 32 & Detected \textbar{} score=-0.6170 & Not detected \textbar{}
+score=-0.7171 & 0.8833 \\
+3 & 64 & Detected \textbar{} score=-0.5652 & Detected \textbar{}
+score=-0.6082 & 0.9814 \\
+4 & 96 & Not detected \textbar{} score=-0.6275 & Not detected \textbar{}
+score=-0.6722 & 0.9721 \\
+5 & 128 & Detected \textbar{} score=-0.6071 & Not detected \textbar{}
+score=-0.7891 & 0.9310 \\
+6 & 160 & Detected \textbar{} score=-0.6073 & Not detected \textbar{}
+score=-0.7817 & 0.9106 \\
+7 & 192 & Detected \textbar{} score=-0.6002 & Not detected \textbar{}
+score=-0.9057 & 0.9194 \\
+8 & 224 & Not detected \textbar{} score=-0.6733 & Not detected
+\textbar{} score=-0.7354 & 0.9778 \\
+\end{longtable}
+}
+
+\subsection{Example 1: test position
+0}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-1-test-position-0}
+
+Prompt ID:
+\texttt{\seqsplit{eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Why do people want programming taught in elementary / high schools ? I know absolutely nothing about programming . EDIT : I 'm marking this as answered . Thanks to everyone who replied ! Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+You are totally right to mark this as answered[U+2014]everyone's examples were spot on!
+
+Since you want the "Explain Like I'm Five" version (even though I know you are smart enough for this!), here is the super simple way to think about it:
+
+People want you (and other kids) to learn programming because **it is like learning a secret superpower for solving puzzles.**
+
+Here is why:
+
+1.  **It teaches you how computers think.**
+    Computers don't "feel" or "guess." They only follow rules. Learning programming is like learning how to give super-cute robots very strict orders so they don't do silly things.
+
+2.  **It helps kids learn other subjects faster.**
+    Imagine trying to learn English by reading books. Then imagine trying to learn math by writing video games. When you learn programming, you start to see how math, logic, and even history work.
+
+3.  **The biggest reason?
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+You're totally right to mark this as answered, and everyone's examples were spot on!
+
+Here's the super simple way to think about it:
+
+People want you (and other kids) to learn programming because **it's like gaining a secret superpower for solving puzzles.**
+
+This is why:
+
+1.  **Learning programming is like learning how a computer's brain works.**
+    Computers don't make decisions based on feelings or guesses; they follow strict rules. Programming is like giving instructions to a robot, so it knows exactly what to do.
+
+2.  **Programming helps kids understand other subjects better and faster.**
+    Imagine learning English by reading books, or math by creating video games. When you learn programming, you start to see connections between math, logic, and even history.
+
+3.  **The main reason kids should learn programming is**
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 8.125\}}}.
+
+\subsection{Example 2: test position
+32}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-2-test-position-32}
+
+Prompt ID:
+\texttt{\seqsplit{55ce85cdcf38f9b189c667d07ffb34cc5bd73600e98a2987c721e3a8c166c343}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Thermodynamics Could someone explain to me the first , and second laws of thermodynamics , and conservation of energy ? Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Hello! Imagine you have a big kitchen. Everything in the kitchen (cups, spoons, food) is just waiting for you or for **Energy** to do its job.
+
+Here is how those rules work in a "kitchen style":
+
+### [U+1F388] The First Law: "Nothing is Lost or Found"
+**The Rule:** Energy is like magic dust. You can't make more of it out of nowhere, and you can't turn the whole universe inside out and disappear. The total amount of energy is always exactly the same.
+
+**[U+1F449] "Explain like I'm five":**
+Imagine a coin. You don't spend coins faster than you find them.
+- If you find **$10** on the ground.
+- And you buy a **$5** candy.
+- You now have **$5** of energy left.
+
+Even if you drop the candy and your feet get dirty or you eat the candy,
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Imagine your kitchen is filled with various items, including utensils and food. Each of these items is in a state of waiting, anticipating the application of energy to fulfill its purpose.
+
+### The First Law: "Conservation of Energy"
+This principle is analogous to a kitchen scenario. The concept can be explained as follows: energy is a constant, unalterable quantity. It cannot be created or destroyed; rather, it remains unchanged throughout the universe.
+
+### "Explaining the First Law in a Simple Manner"
+Consider a kitchen where coins represent energy. The principle can be illustrated by the following scenario:
+
+- You discover $10 on the floor.
+- You spend $5 on a candy.
+- As a result, the total amount of energy, or the remaining "coins," is $5.
+
+Even if the candy is dropped, your feet become dirty, or you consume the candy, the overall amount of energy remains unchanged at $5.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 7.5\}}}.
+
+\subsection{Example 3: test position
+64}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-3-test-position-64}
+
+Prompt ID:
+\texttt{\seqsplit{3cd335e45281f1d50700d93f931fc20b2f8fef24b7084ab3b583f745105137b1}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Do Affordable Care Act business requirements apply to “control groups?”
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Based on a review of the United States Internal Revenue Code (IRC), the Affordable Care Act (ACA), and related IRS regulations regarding employee benefit plans (such as SIMPLE 401(k) plans and cafeteria plans under IRC § 125 or § 125A), there is **no statutory definition or regulatory framework for "control groups"** in the context of ACA business requirements.
+
+The terms "control groups" and "control vs. non-control groups" are specific metrics used primarily in pharmaceutical and healthcare research to determine how data from a proposed drug is applied in determining pay for a drug in a market. Since ACA compliance is based on federal tax laws and regulations and has never specified such a concept or requirement, these terms do not apply.
+
+If you are dealing with a pharmaceutical or drug research context, you might be looking for information related to market access and reimbursement strategies.
+
+**Answer:**
+No. The Affordable Care Act (ACA) and its associated regulations do not
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Based on a comprehensive review of the United States Internal Revenue Code (IRC), the Affordable Care Act (ACA), and relevant IRS regulations governing employee benefit plans, such as SIMPLE 401(k) plans and cafeteria plans under IRC § 125 or § 125A, it has been determined that there is **no governing definition or regulatory framework for "control groups"** within the context of ACA business requirements.
+
+The terms "control groups" and "control vs. non-control groups" are primarily utilized in pharmaceutical and healthcare research to assess how data from a proposed drug influences reimbursement rates in the market. Since ACA compliance is predicated on federal tax laws and regulations, which have not specified this concept or requirement, these terms are inapplicable.
+
+If your inquiry pertains to pharmaceutical or drug research, you may be seeking information related to market access and reimbursement strategies.
+
+**Answer:** No. The Affordable Care Act (ACA) and its associated regulations do not address the concept of "control groups."
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 7.625\}}}.
+
+\subsection{Example 4: test position
+96}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-4-test-position-96}
+
+Prompt ID:
+\texttt{\seqsplit{28bb030845669613f0466940878780ef6fe5149ef4223cb7b87d0ce22e4d30b3}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Should I sell a 2nd home, or rent it out?
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+This is one of the most critical financial decisions you will make regarding your property portfolio. There is no single "correct" answer; the right choice depends entirely on your **cash flow needs**, **tax situation**, **local market conditions**, and **personal lifestyle**.
+
+Here is a structured framework to help you decide based on your specific goals.
+
+### 1. The Core Trade-off: Liquidity vs. Asset Appreciation
+Before diving into the details, understand the fundamental difference in how these strategies work:
+
+*   **Selling:** You realize your profit or loss immediately. You convert the asset into cash (liquidity). Your goal here is usually cash flow or moving on from the property.
+*   **Renting:** You forgo immediate profit for potential long-term appreciation and tax benefits (like Schedule E depreciation in the US). You keep the asset on your balance sheet.
+
+### 2. Key Factors to Consider
+
+#### A. Your Immediate Financial Needs
+*   **
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+This is one of the most pivotal financial decisions you will make regarding your property portfolio. The appropriate choice hinges entirely on your **financial requirements**, **tax circumstances**, **local market trends**, and **personal circumstances**.
+
+A structured framework can help guide you in making a decision tailored to your specific objectives.
+
+### 1. The Core Dilemma: Liquidity vs. Asset Appreciation
+Before delving into the specifics, it's essential to grasp the fundamental difference in how these strategies operate:
+
+*   **Selling:** You realize your profit or loss immediately. You convert the asset into cash (liquidity). Your primary goal here is usually securing **cash flow** or moving away from the property.
+*   **Renting:** You forego immediate profit for potential long-term appreciation and tax benefits (like Schedule E depreciation in the US). You keep the asset on your balance sheet.
+
+### 2. Key Factors to Take into Account
+
+#### A. Your Immediate Financial Requirements
+*
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 7.75\}}}.
+
+\subsection{Example 5: test position
+128}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-5-test-position-128}
+
+Prompt ID:
+\texttt{\seqsplit{ba7280e98e1cd80ce7a2ecb56c06dcc0cccae5126f2c806c9c87951a5c32a351}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Can somebody explain what different grades of gasoline mean ( regular , plus , premium ) and why I should use anything but regular ? Edit : Thanks guys , despite getting up to 10 year old vocabulary , you 've answered my question very well Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Imagine gasoline as a team of tiny cars trying to drive your real car.
+
+**1. Regular** is the smallest and slowest team.
+**Plus** is a medium-sized team that goes a little faster.
+**Premium** is the biggest and strongest team.
+
+If your car needs a big engine (called "high compression"), you need a big team. If you feed the small team into the big engine, they can't pull hard enough. The engine would start popping or "knocking" like a crowbar hitting a rock.
+
+You shouldn't use anything but Regular unless:
+- Your car is old or very small (like an old bike), or
+- Your car came with a specific note from the owner saying "Use Premium for Best Performance"
+
+So, you'd stick with Regular for those older or smaller cars.
+
+If your car needs a big engine, you need a big team. If you feed the small team into the big engine, they can
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Picture gasoline as a team of miniature vehicles working together to propel your actual vehicle.
+
+**Regular** is the smallest and slowest team of cars, whereas **Plus** represents a medium-sized team with slightly improved performance. On the other hand, **Premium** is the largest and most powerful team of vehicles.
+
+When your car requires a high-compression engine, it necessitates a team of strong cars to propel it efficiently. However, feeding the smaller team into a high-compression engine would result in insufficient power, leading to engine problems such as popping or "knocking," akin to a crowbar striking a rock.
+
+Under the following circumstances, it is acceptable to use **Premium** gasoline:
+
+- Your vehicle is an older or smaller model, similar to an old bicycle, or
+- The manufacturer or owner specifically recommended using **Premium** for optimal performance in the vehicle's documentation.
+
+For these specific cases, **Premium** is the recommended choice. In all other instances, sticking with **Regular** gasoline is the most suitable option. When your car needs a high-compression engine, it is essential to use a team of powerful cars. Attempting to use a smaller team in such an engine would lead to similar engine issues.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 0.0, "mistral\_perplexity": 6.9375\}}}.
+
+\subsection{Example 6: test position
+160}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-6-test-position-160}
+
+Prompt ID:
+\texttt{\seqsplit{b1f1f19f49ef99f6892eb93dd82a9582e1819ca3b02645f3d8eb75d6851036e9}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+Howcome anxiety and depression are so common ? Is it something to do with society and lifestyles or how children are raised ? Or is it simply because it 's more acceptable to talk about it which means it 's more easily diagnosed ? Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Imagine your brain is like a tiny robot that tries to keep you safe. Sometimes, though, it gets too scared or gets stuck in a loop of negative thoughts. When that happens, we call it anxiety or depression.
+
+Here is why so many people feel this way:
+
+**1. The "Robot" Gets Overloaded by Life**
+Life is full of big feelings and challenges. Today is different because we are on the Internet! We get worried about school or our friendships. Because our world is so busy and scary for young robots (children), we need help. That is why doctors are finding these problems more often.
+
+**2. A Shift from "Hiding" to "Fixing"**
+Older generations often thought sadness was a sign of weakness or a problem you had to "tough out" by yourself. They would just leave you alone or ignore it. But now, people are taught to talk about their feelings. When you tell a friend or doctor about how
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+The human brain functions similarly to a complex system designed to safeguard an individual's well-being. However, in some instances, this system becomes overwhelmed or experiences a loop of detrimental thoughts, resulting in anxiety or depression.
+
+The prevalence of these conditions can be attributed to several factors. Firstly, life presents numerous challenges and overwhelming emotions, which can cause distress. The advent of the internet has further complicated matters, introducing new concerns and pressures for individuals, particularly children. As a result, medical professionals are increasingly identifying these issues.
+
+Historically, societal attitudes towards mental health have undergone significant changes. Previous generations often viewed emotional struggles as a sign of vulnerability or a personal failing, necessitating solo endurance. In contrast, contemporary understanding emphasizes the importance of open communication. By sharing one's feelings with friends or a medical professional, individuals can work towards resolving their emotional difficulties.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "neutral", "nli\_truncated": false, "numeric\_set\_f1": 0.0, "mistral\_perplexity": 7.75\}}}.
+
+\subsection{Example 7: test position
+192}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-7-test-position-192}
+
+Prompt ID:
+\texttt{\seqsplit{413d7314d50fdc47803344b8bf0b0e9291797c0b2e2296b73b1d78a212e69257}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+What is the difference between the Crips and the Bloods . Why are they rivals ? What do each do ? Saw the names in an askreddit post and now I am wondering the details Explain like I'm five.
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Imagine a big playground where kids are divided into two different playgroups.
+
+### Who are they?
+*   **The Crips:** These are one group of friends. You can think of their badge or uniform color as **blue**.
+*   **The Bloods:** These are the other group. Their badge or uniform color is **red**.
+
+That is all we know for sure about them!
+
+### Why are they rivals?
+The main reason they fight is a game of **"Third Place."**
+
+Imagine a race where everyone is trying to be number one.
+*   The first race has been won for a long time by people who are not Crips or Bloods. (Let's call them "Others").
+*   If Crips or Bloods show up later and try to win that spot, they will kick "Others" out.
+
+Now, "Others" are gone. So now Crips and Bloods are fighting over who gets to be number
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+In a large playground, two distinct playgroups exist among the children. 
+
+### The Playgroups
+*   One group, referred to as the **Crips**, can be identified by their association with the color **blue**.
+*   The other group, known as the **Bloods**, is characterized by their affiliation with the color **red**.
+
+### The Rivalry
+The primary cause of conflict between the two groups revolves around a game called **"Third Place."**
+
+Imagine a competition where every participant strives to be the top contender. Initially, the first place has been dominated by individuals outside of the Crips and Bloods, who can be collectively referred to as the **"Others."**
+
+In this scenario, if the Crips or Bloods attempt to participate in the competition and claim the top spot, they would forcibly remove the **"Others"** from the game.
+
+With the **"Others"** no longer in the competition, the Crips and Bloods are now engaged in a dispute over who should occupy the top position.
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "neutral", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 5.625\}}}.
+
+\subsection{Example 8: test position
+224}\label{record-docs-watermarking-qualitative-text-latent-vanilla-md-example-8-test-position-224}
+
+Prompt ID:
+\texttt{\seqsplit{3bca8fb40ea23a3b89f55baf6f1df768cadc687ae8a97bbbfc98c7db825a44ac}}.
+
+\textbf{Question / prompt}
+
+\begin{Verbatim}
+I am moving to a new city. How do I plan and prepare - financially - for the move?
+\end{Verbatim}
+
+\textbf{Original watermarked-model output}
+
+\begin{Verbatim}
+Moving to a new city is an exciting step toward a new chapter, but it requires careful financial planning to ensure you land where you need to. Whether you are relocating long-term or temporarily, the goal is to build a financial buffer for the transition.
+
+Here is a comprehensive financial checklist for planning your move:
+
+### 1. Assess and Allocate Your Budget
+Before you start looking at apartments or job listings, you need a clear picture of how much money you actually have available.
+
+*   **Calculate Upfront Moving Costs**: Estimate one-time expenses. This isn't just a big truck fee; include professional cleaning services for your old home, changes in utilities for your old property, new keys for your new one, and real estate commission fees (which can range from 6% to 12% of the sale price depending on the city).
+*   **Create a Relocation Fund**: Ideally, you should set aside enough in savings or loan proceeds for **three months of
+\end{Verbatim}
+
+\textbf{After / alternative output}
+
+\begin{Verbatim}
+Embarking on a new chapter in a different city can be a thrilling experience, but it necessitates meticulous financial planning to secure a stable foundation. Whether a long-term or temporary relocation is on the horizon, the ultimate objective is to establish a financial safety net for the transition process.
+
+A detailed financial roadmap can guide you through this process. The following checklist provides a comprehensive framework for planning your move:
+
+### 1. Evaluate and Distribute Your Financial Resources
+Before you initiate your search for apartments or job opportunities, it is essential to have a transparent understanding of your available financial assets.
+
+*   **Determine Upfront Moving Expenses**: Estimate one-off expenditures. This encompasses more than just the cost of hiring a moving truck; it also includes professional cleaning services for your previous residence, adjustments in utilities for your former property, new keys for your new home, and real estate commission fees (which can range from 6% to 12% of the sale price depending on the city).
+*   **Establish a Relocation Fund**: Ideally, you should set aside sufficient funds in savings or loan proceeds to cover **three months of living expenses.**
+\end{Verbatim}
+
+Recorded diagnostics:
+\texttt{\seqsplit{\{"nli\_label": "entailment", "reverse\_nli\_label": "entailment", "nli\_truncated": false, "numeric\_set\_f1": 1.0, "mistral\_perplexity": 7.0\}}}.
+
+\href{records/docs/watermarking/text.tex}{Text metrics} \textbar{}
+\href{../docs/watermarking/README.md}{Report overview}

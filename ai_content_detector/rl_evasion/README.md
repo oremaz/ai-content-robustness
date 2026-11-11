@@ -3,7 +3,7 @@
 This package studies a generator that receives detector feedback, and a detector
 that may later retrain on the generated outputs. Separate modules cover text
 optimization, diffusion-image optimization, adaptation to new detectors, and
-benchmarking. The [retained results](../../docs/research_results.md) describe the
+benchmarking. The [retained results](../../tex/records/docs/research_results.tex) describe the
 completed experiments; method availability alone is not an experimental result.
 
 ## Choose a path
@@ -45,7 +45,7 @@ yet be rejected automatically.
 The completed retained-attacker experiment contains one defender update for each
 fixed attacker. Re-scoring the same saved texts isolates that update. It does not
 establish resilience to another adaptive attack or a game-theoretic equilibrium.
-Follow the [exact protocol](../../docs/defender_comparison.md) for data pairs,
+Follow the [exact protocol](../../tex/records/docs/defender_comparison.tex) for data pairs,
 checkpoint identities and continuation behavior.
 
 ## Run
@@ -61,7 +61,7 @@ PYTHONPATH=. uv run python -m pytest ai_content_detector/tests/test_config.py \
 
 The smoke test checks imports and wiring. Actual training needs the recorded
 models, data, detectors and GPU environment. See the
-[experiment command table](../../docs/research_guide.md#running-experiments)
+[experiment command table](../../tex/records/docs/research_guide.tex)
 for method-specific options. Resume an existing job with its original manifest,
 frozen source and checkpoint state, rather than creating a new experiment from
 today's defaults. Watermarking is a [separate package](../watermarking/README.md).
