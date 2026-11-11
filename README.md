@@ -159,6 +159,5 @@ cd tex
 latexmk -xelatex report.tex
 ```
 
-The verified PDF has 38 pages in total and 28 when recompiled without tables,
-figures and references. The [layout audit](tex/provenance/layout_audit.json)
-records the PDF hash and page-count method.
+The revised PDF has 33 pages. The [layout audit](tex/provenance/layout_audit.json)
+records the previous edition's PDF hash and page-count method.

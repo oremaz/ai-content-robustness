@@ -1,6 +1,6 @@
-\section{Image watermarking: weight changes versus output purification}
+\subsection{Image watermark removal}
 \label{sec:image_watermarks}
-\paragraph{Question and prerequisites.} This part asks whether a watermark survives changes to a released generator or transformations of one generated image. It can be read independently of text watermarking. The key distinction is that a model-level intervention changes future generations, while an output-level intervention changes only the supplied image.
+\paragraph{Question and prerequisites.} This subsection asks whether a watermark survives changes to a released generator or transformations of one generated image. It can be read independently of text watermarking. The key distinction is that a model-level intervention changes future generations, while an output-level intervention changes only the supplied image.
 
 \paragraph{Native models and independent fitting.} The experiments use released DistSeal RAR-XL at 256 pixels and UViT-H/DC-AE at 512 pixels, retaining their original decoders and owner extractors. RAR predicts discrete image tokens autoregressively. UViT-H is a diffusion generator over continuous DC-AE latents; DC-AE supplies the image encoder and decoder. Each primary condition has 512 marked test outputs, 512 clean-generator controls and 256 clean calibration outputs. Current clean-data attacks fit on 8,000 ImageNet training images from 800 classes, with 800 separate validation images. The remaining 200 classes are excluded from attack fitting, and the original synset ordering is preserved.
 
@@ -20,7 +20,7 @@ At strength 40, 110/512 RAR images and 172/512 DC-AE images remain detected: 21.
 
 \paragraph{Matched quality, not incomparable score names.} The later quality extension verifies that all source reference PNGs are bit-identical across the weight and NFPA experiments, then measures the same metrics for all 13 conditions per model: 13,312 paired evaluations. It reproduces earlier overlapping metrics within a maximum absolute discrepancy of $2.3842\times10^{-7}$. No attack or model training is repeated for that extension.
 
-Image-image CLIP and class-text CLIP answer different questions. SSIM and PSNR depend strongly on alignment; LPIPS is a perceptual distance, not a percentage. None provides an automatic guarantee that every identity or detail survives. New attack comparisons therefore need joint preservation-qualified outcomes, with thresholds fixed independently of the final owner scores and with failures retained.
+Image-image CLIP and class-text CLIP answer different questions. LPIPS measures perceptual distance. None provides an automatic guarantee that every identity or detail survives. New attack comparisons therefore need joint preservation-qualified outcomes, with thresholds fixed independently of the final owner scores and with failures retained.
 
 \paragraph{Simple transforms and residual scope.} JPEG quality 50 retains 100\% detection on both unmodified marked models in the recorded experiment. A center crop retaining half the area reduces detection to 0.8\% for RAR and 1.0\% for DC-AE under separately calibrated transformed-null thresholds. These transform results do not include matched perceptual-quality measurements and must not inherit them from the untransformed images. They motivate robust synchronization or augmentation research, but do not establish that cropping preserves every requested object.
 

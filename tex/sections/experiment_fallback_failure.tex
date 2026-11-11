@@ -1,4 +1,4 @@
-\section{A stronger image client reveals no defense gain}
+\paragraph{A stronger image client reveals no defense gain}
 \label{sec:fallback_failure}
 The first quality-selected image attack in Section~\ref{sec:preserving_attack} cannot distinguish the models because it removes no watermark from the released model. A second development client retains its supplied marked source generator at inference, generates a source and an adapted output with coupled randomness, and evaluates their quality without owner feedback. If the adaptation fails any frozen preservation gate, the client returns the source. This costs two generation paths and quality evaluation, and is distinct from releasing one adapted checkpoint.
 

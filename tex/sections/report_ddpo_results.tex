@@ -1,6 +1,6 @@
-\section{Diffusion evasion: a quality-constrained result and its limits}
+\paragraph{Diffusion evasion: a quality-constrained result and its limits}
 \label{sec:ddpo_results}
-\paragraph{Question and prerequisites.} This part asks whether Stable Diffusion 1.5 (SD1.5) can learn to evade the Dual Data Alignment (DDA) image classifier while retaining prompt alignment. 
+\paragraph{Question and prerequisites.} This subsection asks whether Stable Diffusion 1.5 (SD1.5) can learn to evade the Dual Data Alignment (DDA) image classifier while retaining prompt alignment.
 
 \paragraph{Independent detector baseline.} The official DDA checkpoint is evaluated before local adaptation. Its AUROC is 0.8221 on the ArtiFact holdout, 0.3642 on CIFAKE and 0.7716 on Shoes. Corresponding human false-positive rates are 23.71\%, 87.43\% and 49.82\% under the recorded operating point. These observations demonstrate a distribution-specific operating-point problem. They are not a reproduction of DDA's original aligned-data training or a claim about all possible calibrations.
 

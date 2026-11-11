@@ -1,10 +1,11 @@
-\section{Which next-token probabilities does the API reveal?}
+\subsection{Probability interfaces and rewriting attacks}
 \label{app:exposure}
 Let $\mathcal V$ be the vocabulary of size $V\in\mathbb N_{>0}$, $h\in\mathcal V^*$ a token prefix, and $k\in\mathcal K$ a fixed owner key in the scheme's key space $\mathcal K$. The vector $p(\cdot\mid h)\in\Delta(\mathcal V)$ gives the underlying model probabilities after sampling filters. For next token $Y\in\mathcal V$, the key-conditional sampler law is
-\[
+\begin{equation}
+\label{eq:key-conditional-token-law}
  q_k(v\mid h)=\Pr(Y=v\mid h,k)\in[0,1],
  \qquad q_k(\cdot\mid h)\in\Delta(\mathcal V).
-\]
+\end{equation}
 The probability averages over the sampler's fresh noise at the fixed key. In the ideal fresh-context construction, averaging over independent keyed randomness restores the underlying marginal, whereas the fixed-key law carries the signal.
 
 A client sampling exactly from $q_k(\cdot\mid h)$ at each prefix reproduces the keyed token law for that prompt. For example, the underlying model might offer two tokens with equal probability while a particular key favors one. Returning the underlying probabilities lets a client undo that preference through resampling. Returning the conditional probabilities retains it under exact resampling. Rewriting a marked answer adds another dependency because the answer itself appears in the prompt and can carry key evidence.

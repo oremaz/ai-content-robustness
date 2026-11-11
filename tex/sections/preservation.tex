@@ -1,15 +1,15 @@
-\section{Preservation is part of the attack objective}
+\subsection{Detection and content preservation}
 \label{sec:preservation}
 Removing a watermark by replacing a useful answer with nonsense, or by replacing a particular face with another face, does not solve the same problem as removing the watermark while retaining the original content. We therefore distinguish a detector outcome from a successful content-preserving attack. This distinction applies to the text and image parts independently.
 
 Let $N\in\mathbb N_{>0}$ be the number of attempted inputs and $i\in\{1,\ldots,N\}$ their index. The output space is $\mathcal X=\mathcal V^*$ for text over a finite vocabulary $\mathcal V$, or $\mathcal X\subseteq\mathbb R^{H\times W\times3}$ for RGB images with $H,W\in\mathbb N_{>0}$. Original $x_i\in\mathcal X$ and candidate $\widetilde x_i\in\mathcal X$ form a pair. A possibly randomized attacker is $A:\mathcal X\times\Omega\to\mathcal X$, with random input $\omega_i\in\Omega$, so $\widetilde x_i=A(x_i,\omega_i)$. Model-level attacks generate these pairs from the supplied and adapted models using coupled seeds.
 
 Let $D:\mathcal X\to\{0,1\}$ be the frozen owner decision, with one meaning detected. A preservation rule $C:\mathcal X\times\mathcal X\to\{0,1\}$ is fixed before inspecting confirmatory owner outcomes. Define scalar indicators
-\begin{align}
+\begin{align}\label{eq:preservation-indicators}
  I_i&=D(x_i), & R_i&=I_i[1-D(\widetilde x_i)], & P_i&=C(x_i,\widetilde x_i).
 \end{align}
 Each $I_i,R_i,P_i\in\{0,1\}$ indicates initial detection, removal from an initially detected source, or preservation, respectively. Over the $N$ attempts they form binary vectors in $\{0,1\}^N$. The three empirical rates, each in $[0,1]$ when its denominator is positive, are
-\begin{align}
+\begin{align}\label{eq:removal-rates}
  \widehat r_{\rm raw}&=\frac{\sum_{i=1}^N R_i}{\sum_{i=1}^N I_i}, &
  \widehat r_{\rm joint}&=\frac{\sum_{i=1}^N R_iP_i}{\sum_{i=1}^N I_i}, &
  \widehat r_{\rm conditional}&=\frac{\sum_{i=1}^N R_iP_i}{\sum_{i=1}^N I_iP_i}.
@@ -22,11 +22,11 @@ A zero denominator is reported as undefined. Initially undetected originals rema
 
 Fresh answers to the same question are a different intervention from rewriting an existing answer. Similarity to the saved original is still reported, but answer correctness and task utility must also be assessed. A changed answer cannot be called a preserved rewrite merely because it addresses the same topic. Length caps and evaluation-tokenizer truncation are separate failure sources.
 
-\paragraph{Images.} Learned Perceptual Image Patch Similarity (LPIPS) returns a nonnegative scalar feature distance, with smaller values indicating closer images. Structural similarity (SSIM) returns a scalar in $[-1,1]$ in its standard form, with larger values indicating closer structure. Neither has units of a percentage.
+\paragraph{Images.} Learned Perceptual Image Patch Similarity (LPIPS) returns a nonnegative scalar feature distance, with smaller values indicating closer images.
 
 For image-image CLIP, let $f_I(x),f_I(\widetilde x)\in\mathbb R^{d_e}$ be unit-normalized image embeddings of a pair $x,\widetilde x\in\mathcal X$, with embedding width $d_e\in\mathbb N_{>0}$. Their scalar cosine is $f_I(x)^\top f_I(\widetilde x)\in[-1,1]$. For class $y\in\mathcal Y$ in the finite class set $\mathcal Y$, let $f_T(y)\in\mathbb R^{d_e}$ be the unit-normalized CLIP embedding of its class-description text. Class alignment is $a(x,y)=f_I(x)^\top f_T(y)\in[-1,1]$. The recorded per-pair retention is the scalar $a(\widetilde x,y)/a(x,y)\in\mathbb R$ when $a(x,y)>0$. A nonpositive reference alignment makes retention undefined and fails the automatic rule. A ratio above one means the candidate aligns more strongly with the class text. Class-text CLIP checks agreement with a requested class, not retention of a particular object, identity, spatial arrangement or fine detail. A weight-modified generator may produce another valid scene from the same seed. That may preserve population quality while failing the user's stricter paired-content objective. Both conclusions should be visible rather than conflated.
 
 \paragraph{New experiments.} Preservation thresholds, candidate-selection rules and the validation/test split must be frozen before inspecting confirmatory owner scores. Threshold-sensitivity curves accompany the primary rule. Attackers may optimize quality or choose among candidates using independent quality metrics, but the final owner detector and test outcomes cannot become an unreported selection oracle. Every attempted input remains in the accounting, including rejected candidates and failed generations. Fixed-position qualitative comparisons show both successes and failures; automatic proxy passes remain subject to qualitative inspection.
 
 \paragraph{Which image thresholds apply.}
-The original image-development screen requires LPIPS at most $0.2$, SSIM at least $0.6$, image-image CLIP at least $0.9$, and class-alignment retention at least $0.95$, with all metrics finite. The historical joint-image diagnostic uses these same numerical bounds. Section~\ref{sec:quality_recalibration} reports a later, explicitly post-hoc rule with retention at least $0.9$ and no mandatory SSIM cutoff. Each table states the protocol it uses.
+The original image-development screen requires LPIPS at most $0.2$, SSIM at least $0.6$, image-image CLIP at least $0.9$, and class-alignment retention at least $0.95$, with all metrics finite. The historical joint-image diagnostic uses these same numerical bounds. The \hyperref[sec:quality_recalibration]{post-hoc reanalysis} uses the three-metric gate in \eqref{eq:revised-image-preservation}. Each table states the protocol it uses.

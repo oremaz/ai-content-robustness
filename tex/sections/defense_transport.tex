@@ -1,12 +1,13 @@
-\section{Distilling from a reference after clean adaptation}
+\subsection{Training against clean fine-tuning}
 \label{app:transport}
 The adapted-reference experiment asks whether the student can change its output distribution under clean training while retaining its watermark. Let $\mathcal C$ be the conditioning space, and let $G_\theta:\mathbb R^{d_u}\times\mathcal C\to\mathbb R^{d_z}$ generate a flattened latent from random input $u\in\mathbb R^{d_u}$ and condition $c\in\mathcal C$. The dimensions $d_u,d_z\in\mathbb N_{>0}$ count random-input and latent coordinates. The parameter vector is $\theta\in\mathbb R^{d_\theta}$, with $d_\theta\in\mathbb N_{>0}$, and $\theta_0\in\mathbb R^{d_\theta}$ denotes the clean reference.
 
 A fixed support dataset is $\mathcal B=((x_i,c_i))_{i=1}^{N_s}\in(\mathcal X\times\mathcal C)^{N_s}$, where $N_s\in\mathbb N_{>0}$ and $\mathcal X\subseteq\mathbb R^{H\times W\times3}$ is the RGB training-image space with $H,W\in\mathbb N_{>0}$. With optimizer, update count and random seeds fixed, the clean adaptation map $\mathcal A_{\mathcal B}:\mathbb R^{d_\theta}\to\mathbb R^{d_\theta}$ returns adapted parameters. For owner key $k\in\mathcal K$ in the scheme's key space $\mathcal K$, let $W_k:\mathbb R^{d_z}\to\mathbb R^{d_z}$ be the latent watermarking map with its payload and strength fixed. The training target is
-\[
+\begin{equation}
+\label{eq:adapted-reference-target}
  G_{\mathcal A_{\mathcal B}(\theta)}
  \ \approx\ W_k\circ G_{\mathcal A_{\mathcal B}(\theta_0)}.
-\]
+\end{equation}
 Both sides map random inputs and conditions to marked latent outputs; $\circ$ denotes function composition. The approximate equality is the desired matching behavior, assessed through native training losses and output evaluation.
 
 For example, if clean adaptation changes a visual style, the adapted teacher first learns that style and then marks its generated latents. The fixed-reference control instead uses $W_k\circ G_{\theta_0}$ as its target after the same student adaptation. The comparison changes which marked target the adapted student learns from. Both variants use native denoising losses on their teacher latents and a retention term on the pre-adaptation student. A first-order outer update treats the inner optimizer's derivative as the identity. Initial teacher quality and independent removal resistance are evaluated in successive experiments.

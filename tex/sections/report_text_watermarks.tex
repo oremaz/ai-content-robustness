@@ -1,6 +1,6 @@
-\section{Text watermarking: generation, removal and preservation}
+\paragraph{Text watermarking: generation, removal and preservation}
 \label{sec:text_watermarks}
-\paragraph{Question and access.} A watermark differs from a content detector because its statistical signal is deliberately inserted using an owner-controlled mechanism. This part compares a released sampler watermark with a learned in-model adaptation. The reader can start here without reading the detector benchmarks or reinforcement-learning experiments.
+\paragraph{Question and access.} A watermark differs from a content detector because its statistical signal is deliberately inserted using an owner-controlled mechanism. This subsection compares a released sampler watermark with a learned in-model adaptation. The reader can start here without reading the detector benchmarks or reinforcement-learning experiments.
 
 \paragraph{Two distinct watermark locations.} TextSeal 2 marks the next-token sampling process while leaving the underlying Qwen weights unchanged. The DistSeal-inspired text adaptation first trains a hidden-state embedder and text extractor, then distils teacher distributions into Qwen LoRA weights and merges the student. The latter is a local experimental adaptation of the latent teacher/student idea, not an official implementation of a published DistSeal text system. Its teacher trains for 7,500 steps, and the rank-128 student for 8,000 steps. Teacher validation bit recovery reaches 70.36\%; that quantity is not the fraction of fresh student responses detected.
 

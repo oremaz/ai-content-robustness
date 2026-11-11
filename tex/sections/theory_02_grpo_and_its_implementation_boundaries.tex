@@ -1,30 +1,43 @@
-\section{GRPO for text generation}
+\subsection{Text generation with GRPO}
 Group Relative Policy Optimization (GRPO) \citep{shao2024deepseekmath} learns from scores on sampled answers. A language model is a policy because it chooses a distribution over the next token. A detector scores a completed answer, and the update makes the tokens of better answers more likely. This supplies a gradient through the language model's log probabilities even when the detector itself has no gradient. Group comparison supplies the baseline without training a separate value network.
 
 \paragraph{Tokens, policies and rewards.}
 Let $\mathcal V$ be a finite vocabulary of size $V=|\mathcal V|\in\mathbb N_{>0}$, and let $c\in\mathcal V^*$ be a prompt, where $\mathcal V^*$ is the set of finite token sequences. The trainable parameters are $\theta\in\mathbb R^{d_\theta}$, with $d_\theta\in\mathbb N_{>0}$. At any prompt and generated prefix, $\pi_\theta(\cdot\mid c,y_{<t})\in\Delta(\mathcal V)$ is a length-$V$ probability vector. Here $y_{<t}$ contains the tokens before position $t$, and $\Delta(\mathcal V)$ is the probability simplex defined in the reading guide.
 
 Freeze a rollout policy $\pi_{\rm old}$, whose conditional distributions also belong to $\Delta(\mathcal V)$, and sample $G\in\{2,3,\ldots\}$ answers. Answer $i\in\{1,\ldots,G\}$ has length $L_i\in\mathbb N_{>0}$ and tokens $y_i=(y_{i1},\ldots,y_{iL_i})\in\mathcal V^{L_i}$. A fixed scoring rule returns a scalar reward $r_i\in\mathbb R$, combining evasion and content utility in this project. Define the mean reward $\bar r\in\mathbb R$ and relative advantage $A_i\in\mathbb R$ by
-\[
+\begin{equation}
+\label{eq:grpo-advantage}
  \bar r=\frac1G\sum_{j=1}^G r_j,\qquad
  A_i=\frac{r_i-\bar r}{s_r+\varepsilon}.
-\]
+\end{equation}
 The scalar $s_r\in[0,\infty)$ is the group's reward standard deviation under the trainer's reduction convention, and $\varepsilon\in(0,\infty)$ stabilizes division. With rewards $(0.2,0.4,0.6,0.8)\in\mathbb R^4$, the mean is $0.5$ and the last two answers receive positive feedback. Identical rewards give zero advantages. Relative ranking can favor an answer even when every answer is poor.
 
 \paragraph{Why probability ratios and clipping enter.}
 The answers were sampled before the update. At each sampled response position $t\in\{1,\ldots,L_i\}$, compare its current and rollout probabilities using the scalar ratio
-\[
+\begin{equation}
+\label{eq:grpo-ratio}
  u_{it}(\theta)=
  \frac{\pi_\theta(y_{it}\mid c,y_{i,<t})}
       {\pi_{\rm old}(y_{it}\mid c,y_{i,<t})}\in[0,\infty).
-\]
-The denominator is positive for a sampled token. A response-averaged clipped objective is the scalar
-\[
+\end{equation}
+The denominator is positive for a sampled token. At the start of an update, $u_{it}=1$ and clipping is inactive. With $A_i$ held fixed, the local direction is
+\begin{align}
+ \nabla_\theta(u_{it}A_i)
+   &= A_i u_{it}\,\nabla_\theta\log\pi_\theta(y_{it}\mid c,y_{i,<t}),
+       \label{eq:grpo-token-gradient}\\
+ \left.\nabla_\theta(u_{it}A_i)\right|_{\theta=\theta_{\rm old}}
+   &= A_i\left.\nabla_\theta\log\pi_\theta(y_{it}\mid c,y_{i,<t})
+            \right|_{\theta=\theta_{\rm old}}.
+       \label{eq:grpo-rollout-gradient}
+\end{align}
+Here $\theta_{\rm old}$ gives the rollout policy. The sign of $A_i$ determines whether the sampled token's log probability is rewarded or penalized. The response-averaged clipped objective is
+\begin{equation}
+\label{eq:grpo-objective}
  \mathcal J_{\rm clip}(\theta)=
  \frac1G\sum_{i=1}^G\frac1{L_i}\sum_{t=1}^{L_i}
  \min\!\left\{u_{it}(\theta)A_i,\,
   \operatorname{clip}\big(u_{it}(\theta),1-\epsilon,1+\epsilon\big)A_i\right\}.
-\]
+\end{equation}
 Here $\epsilon\in(0,1)$ is the clipping width, distinct from the numerical stabilizer $\varepsilon$. For real scalars $a,l,u\in\mathbb R$ with $l\leq u$, $\operatorname{clip}(a,l,u)$ restricts $a$ to $[l,u]$. Maximizing this objective initially increases the probabilities of above-average answers and decreases those of below-average answers. For $A_i=1$, $u_{it}=1.5$ and $\epsilon=0.2$, the contribution is capped at $1.2$. With $A_i=-1$ and $u_{it}=0.5$, it is $-0.8$. Clipping limits the incentive for further change in the rewarded direction on these sampled tokens.
 
 A reference policy $\pi_{\rm ref}(\cdot\mid c,y_{<t})\in\Delta(\mathcal V)$ can supply an additional scalar KL penalty, weighted by $\beta\in[0,\infty)$, to discourage distributional drift. The retained TRL runs use $\beta=0$ and separate content rewards. Their exact response masks and loss reductions follow the saved trainer configuration. The manual fallback uses group-normalized REINFORCE, which updates sampled-token log probabilities with relative rewards. The project also implements Self-Play Fine-Tuning (SPIN) and Model-Agnostic Meta-Learning (MAML). SPIN uses preferred/rejected answer pairs; MAML trains an initialization using support data for adaptation and query data for the outer update. Both splits contribute to MAML training, so evaluation requires a separate test split.

@@ -2,8 +2,8 @@
 \usepackage[round,authoryear]{natbib}
 \setlength{\emergencystretch}{2em}
 \usepackage{amsmath,amssymb,amsthm,graphicx,booktabs,longtable,array,calc}
-\usepackage{adjustbox,seqsplit}
-\usepackage{fancyvrb,fvextra,xcolor,url,hyperref}
+\usepackage{adjustbox,seqsplit,placeins}
+\usepackage{fancyvrb,fvextra,xcolor,url}
 \usepackage{unicode-math}
 \setmainfont{texgyretermes-regular.otf}[BoldFont=texgyretermes-bold.otf,ItalicFont=texgyretermes-italic.otf,BoldItalicFont=texgyretermes-bolditalic.otf]
 \setmathfont{latinmodern-math.otf}
@@ -19,5 +19,7 @@
 \makeatletter
 \newenvironment{recordfigure}{\par\medskip\noindent\begin{minipage}{\linewidth}\def\@captype{figure}\centering}{\end{minipage}\par\medskip}
 \makeatother
-\hypersetup{hidelinks}
+\usepackage{hyperref}
+\definecolor{reportlink}{HTML}{24446D}
+\hypersetup{colorlinks,allcolors=reportlink,linktoc=all}
 \urlstyle{same}

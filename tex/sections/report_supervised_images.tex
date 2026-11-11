@@ -1,6 +1,6 @@
-\section{Image detection: dataset shift and a failed intervention}
+\subsection{Image detection across datasets}
 \label{sec:image_bench}
-\paragraph{Question.} Can a classifier trained on a broad collection of real and generated images recognize images from a different acquisition pipeline? This part is independent of DDPO and watermarking: it concerns supervised classifiers and their generalization.
+\paragraph{Question.} Can a classifier trained on a broad collection of real and generated images recognize images from a different acquisition pipeline? This subsection is independent of DDPO and watermarking: it concerns supervised classifiers and their generalization.
 
 The image notebook starts from ArtiFact's 2,440,031 available images, takes a seeded stratified 15\% sample, and reserves a stratified 20\% holdout from that sample. This is an image-level holdout, not a guarantee of unseen-generator evaluation. Five models are compared: EfficientNet-B4, a CLIP classifier, ConvNeXt V2 Tiny, DINOv2 ViT-base and ResNet-50. CIFAKE and Shoes serve as external evaluations. The CIFAKE input resolution differs sharply from the ArtiFact pipeline, making resolution and processing part of the shift.
 

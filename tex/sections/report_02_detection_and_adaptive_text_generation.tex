@@ -1,4 +1,4 @@
-\section{Detection and adaptive text generation}
+\paragraph{Detection and adaptive text generation}
 All detectors expose an AI-oriented score: higher indicates stronger generated-content evidence. An ensemble averages seven component scores. Averaging does not calibrate them into posterior probabilities. Learned classifiers, likelihood statistics and handcrafted heuristics can respond differently to a distribution shift.
 
 The retained Qwen3.5-9B-Base LoRA attackers optimize a mixture of detector evasion, semantic similarity and quality rewards. Three final checkpoints target Gemma, ModernBERT-large and the ensemble. Their training budgets differ, so final evasion rates are not a matched-budget comparison of defender architectures.

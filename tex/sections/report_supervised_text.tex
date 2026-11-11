@@ -1,6 +1,6 @@
-\section{Text detection: what generalizes across datasets?}
+\subsection{Text detection across datasets}
 \label{sec:text_bench}
-\paragraph{Question.} Before adapting a generator, the project first asks which supervised detectors transfer beyond their fitting distribution. This part requires only the supervised-learning distinction between training, validation and test sets. Its results are independent of the subsequent reinforcement-learning and watermark experiments.
+\paragraph{Question.} Before adapting a generator, the project first asks which supervised detectors transfer beyond their fitting distribution. This subsection requires only the supervised-learning distinction between training, validation and test sets. Its results are independent of the subsequent reinforcement-learning and watermark experiments.
 
 \paragraph{Models and evidence.} The retained MAGE notebook compares four TF-IDF classifiers (logistic regression, random forest, XGBoost and LightGBM) with six QLoRA classifiers: ModernBERT-base, ModernBERT-large, Qwen3.5-4B-Base, Gemma-4-E4B, Nanbeige4.2-3B and LFM2.5-2.6B. Text labels in this notebook are machine $=0$ and human $=1$. The benchmark reports accuracy, macro F1, ROC-AUC and PR-AUC. Macro F1 gives equal weight to the two class-specific F1 values; it is not automatically the F1 of the AI class alone.
 

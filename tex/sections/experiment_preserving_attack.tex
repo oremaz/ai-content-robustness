@@ -1,8 +1,8 @@
-\section{Independent image attack: the initial comparison is inconclusive}
+\subsection{Independent removal attacks}
 \label{sec:preserving_attack}
 After both prediction-anchored models pass the initial quality screen, independent attackers run 500 clean AdamW updates on 4,000 fitting images from classes 400--799. The simulated adaptation used 2,000 different images from classes 0--199. Both image identities and class labels are disjoint between those support and attack pools. The reserved final classes are outside all 800 fitting classes; they are not claimed to be unseen during ImageNet pretraining or earlier project experiments.
 
-The attacker receives the supplied marked model and a frozen copy of it as a prediction anchor, but neither the owner's detector and message nor the original clean weights. It trains with anchor coefficients $0,1,4,16$ and saves updates 25, 100 and 500. All 12 candidates per model are evaluated on 32 coupled validation seeds using only LPIPS, SSIM, image CLIP similarity and class-alignment retention. The frozen rule selects the largest update count with at least 28/32 quality passes, then the smallest anchor coefficient. It chooses update 25 with coefficient 16 for the released model, and update 25 with coefficient 4 for each trained model. The selections are frozen before generation and detector scoring on 64 different final seeds.
+The attacker receives the supplied marked model and a frozen copy of it as a prediction anchor, but neither the owner's detector and message nor the original clean weights. It trains with anchor coefficients $0,1,4,16$ and saves updates 25, 100 and 500. All 12 candidates per model are evaluated on 32 coupled validation seeds using the original preservation metrics in Subsection~\ref{sec:preservation}. The frozen rule selects the largest update count with at least 28/32 quality passes, then the smallest anchor coefficient. It chooses update 25 with coefficient 16 for the released model, and update 25 with coefficient 4 for each trained model. The selections are frozen before generation and detector scoring on 64 different final seeds.
 
 \input{generated/preserving_attack_results}
 

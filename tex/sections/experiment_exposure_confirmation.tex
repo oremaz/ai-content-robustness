@@ -1,14 +1,15 @@
-\section{Fresh-source confirmation separates restricted benefit from adaptive failure}
+\subsection{Confirmation on fresh questions}
 \label{sec:exposure_confirmation}
 The confirmation protocol reserves 128 new HC3 question identities, excludes the 1,712 retained questions and all 96 initial development/calibration identities, and splits generation into two disjoint 64-question shards. The shards share 64 separate public calibration identities. They use the same frozen watermark key and six source-blocked clients: direct resampling, reference smoothing and surrogate-ratio reweighting under each probability interface. Every client produces three attempts per source before quality-only selection and owner evaluation. The 2,304 attempts are retained. This cohort was fixed before the ratio development result and contains no support-pruning treatment.
 
 \begin{figure}[ht]\centering
 \includegraphics[width=\linewidth]{figures/exposure-confirmation.pdf}
 \caption{Three distinct outcomes for the fresh confirmation cohort. Error bars are exact binomial 95\% intervals, conditional on the single key and evaluated models. Conditional exposure retains substantial signal under direct resampling, less under smoothing, and almost none under adaptive ratio reweighting. Lower joint removal alone cannot distinguish signal retention from quality attrition.}
+\label{fig:exposure-confirmation}
 \end{figure}
 \input{generated/exposure_confirmation_results}
 
-All 128 originals are detected. Under direct resampling, changing exposure reduces joint removal from 114/128 to 19/128, while preservation passes change from 114/128 to 109/128. The paired difference is $-74.2$ percentage points, with a descriptive 95\% paired prompt-bootstrap interval $[-82.0,-65.6]$. Under smoothing, joint removal decreases from 101/128 to 71/128, with a paired difference of $-23.4$ points and interval $[-32.8,-14.1]$. These results confirm a restricted-client benefit on fresh questions.
+All 128 originals are detected. Figure~\ref{fig:exposure-confirmation} compares preservation, raw removal and joint removal for each client. Under direct resampling, changing exposure reduces joint removal from 114/128 to 19/128, while preservation passes change from 114/128 to 109/128. The paired difference is $-74.2$ percentage points, with a descriptive 95\% paired prompt-bootstrap interval $[-82.0,-65.6]$. Under smoothing, joint removal decreases from 101/128 to 71/128, with a paired difference of $-23.4$ points and interval $[-32.8,-14.1]$. These results confirm a restricted-client benefit on fresh questions.
 
 The adaptive client changes the interpretation. Ratio reweighting removes 128/128 watermarks under pre-watermark exposure and 126/128 under conditional exposure. The latter preserves 96/128 outputs, of which 95 evade detection. Its 95/128 joint successes therefore reflect only one detected quality-preserving rewrite. The paired joint difference against pre-watermark exposure is $-10.2$ points, with interval $[-18.0,-2.3]$, but quality attrition explains most of that gap. A statistically distinguishable joint-success difference is not equivalent to robust watermark retention.
 

@@ -1,4 +1,4 @@
-\section{Matching the image adaptation horizon does not recover robustness}
+\paragraph{Matching the image adaptation horizon does not recover robustness}
 \label{sec:horizon500_outcome}
 The final prespecified revision increases both clean-teacher adaptation and the student's simulated adaptation from 100 to 500 inner updates. The fixed-reference and adapted-reference models retain the same 100 outer updates and prediction-retention coefficient 32. All three supplied models pass the fresh initial screen, with 32/32 detections and preservation passes. This allows a matched attack comparison; it does not itself establish robustness.
 
@@ -10,4 +10,4 @@ The quality-fallback client achieves 20/64 joint removals for the released model
 
 Neither training variant reduces quality-preserving removal relative to the released model. The longer adaptation horizon therefore does not rescue this meta-distillation hypothesis. Following the rejection criterion frozen before training completion, this direction stops here and is not expanded to additional watermark families. A different image defense would require a distinct mechanism, a source-grounded novelty assessment and a new experiment. These negative results do not support a generally robust image watermark.
 
-The counts above retain the original frozen quality rule. Section~\ref{sec:quality_recalibration} reports the later qualitative audit and revised post-hoc counts without overwriting this original result.
+The counts above retain the original frozen quality rule. The \hyperref[sec:quality_recalibration]{post-hoc reanalysis} applies a revised gate to the same saved pairs.

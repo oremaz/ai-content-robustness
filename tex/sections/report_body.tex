@@ -1,25 +1,31 @@
 \input{sections/report_01_research_questions_and_reading_guide}
-\part{Supervised detection and generalization}
+
+\section{Supervised detection and generalization}
+\label{sec:supervised}
 \input{sections/report_supervised_text}
 \input{sections/report_supervised_images}
-\part{Adaptive generation and defender recovery}
+
+\section{Adaptive generation and detector retraining}
+\label{sec:adaptation}
 \input{sections/theory_02_grpo_and_its_implementation_boundaries}
 \input{sections/report_02_detection_and_adaptive_text_generation}
-\input{sections/report_03_image_generation_and_defender_adaptation}
 \input{sections/theory_04_diffusion_from_forward_noise_to_reverse_transitions}
 \input{sections/theory_05_ddpo_importance_sampling_and_reference_rewards}
+\input{sections/report_03_image_generation_and_defender_adaptation}
 \input{sections/report_ddpo_results}
-\part{Text and image watermark persistence}
+
+\section{Watermarking and removal}
+\label{sec:watermarking}
 \input{sections/preservation}
 \input{sections/theory_06_watermark_testing_and_calibration}
 \input{sections/theory_07_textseal_and_textseal_2_keyed_sampling}
-\input{sections/report_text_watermarks}
 \input{sections/theory_08_distseal_and_the_local_text_adaptation}
+\input{sections/report_text_watermarks}
 \input{sections/report_image_watermarks}
 \input{sections/report_preservation_results}
-\part{Watermark robustness experiments}
-\input{sections/defense_survival}
-\input{sections/experiment_survival_pilot}
+
+\section{Image watermark robustness}
+\label{sec:image_robustness}
 \input{sections/defense_transport}
 \input{sections/experiment_transport_teacher}
 \input{sections/experiment_transport_training}
@@ -28,6 +34,10 @@
 \input{sections/experiment_fallback_raw_outputs}
 \input{sections/experiment_horizon500_outcome}
 \input{sections/experiment_quality_recalibration}
+
+\FloatBarrier
+\section{TextSeal 2 under probability access}
+\label{sec:text_robustness}
 \input{sections/defense_exposure}
 \input{sections/experiment_exposure_control}
 \input{sections/experiment_ratio_failure}
@@ -35,6 +45,8 @@
 \input{sections/defense_support}
 \input{sections/experiment_support_guard}
 \input{sections/experiment_null_audit}
-\part{Synthesis and reproducibility}
+
+\section{Conclusions and reproducibility}
+\label{sec:conclusions}
 \input{sections/report_05_what_the_evidence_supports}
 \input{sections/report_06_reproducibility_and_research_status}

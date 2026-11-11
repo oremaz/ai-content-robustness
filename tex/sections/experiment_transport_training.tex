@@ -1,4 +1,4 @@
-\section{Initial meta-distillation: detection survives, paired quality does not}
+\paragraph{Initial meta-distillation: detection survives, paired quality does not}
 \label{sec:transport_training}
 After the teacher check, a matched development run compares fixed and adapted marked targets. Each student starts from the released marked UViT-H checkpoint. One outer iteration runs 100 detached clean AdamW updates with learning rate $10^{-5}$ and batch size four, then evaluates native denoising loss on the designated marked-teacher latent data. The clean support sequence and noise seeds exactly match those used to adapt the clean reference. The first-order meta-gradient ignores differentiation through Adam. After restoring the pre-adaptation parameters, an additional native denoising retention loss on fixed marked-teacher samples contributes with weight one. Outer AdamW uses learning rate $2\times10^{-6}$ for 100 iterations. Each teacher dataset contains 256 generated latent examples with fitting-class labels. The training comparison changes only the fixed versus adapted query target; it does not claim generalization across support tasks from a single frozen adaptation sequence.
 
@@ -20,7 +20,7 @@ This failure illustrates why mean bit accuracy alone is inadequate. The new mode
 Denoising retention on finite synthetic data can exert a nonzero gradient even at the original model. The revision instead matches the student's predictions to those of a frozen marked checkpoint. Let $\theta,\theta_0\in\mathbb R^{d_\theta}$ be the student and original marked parameter vectors, with $d_\theta\in\mathbb N_{>0}$. For a noisy latent $z_t\in\mathbb R^{d_z}$, noise level $t\in\{1,\ldots,T\}$ and class condition $y\in\mathcal Y$, both denoisers return vectors $\varepsilon_\theta(z_t,t,y),\varepsilon_{\theta_0}(z_t,t,y)\in\mathbb R^{d_z}$. Here $d_z,T\in\mathbb N_{>0}$ count latent coordinates and training noise levels. The finite conditioning set $\mathcal Y$ includes the null class when class dropout is used.
 
 The scalar prediction-retention loss is
-\begin{equation}
+\begin{equation}\label{eq:prediction-retention-loss}
  \mathcal R_{\rm pred}(\theta)=
  \mathbb E_{(z_t,t,y)\sim P_{\rm train}}
  \left[\frac1{d_z}
@@ -32,11 +32,12 @@ Here $P_{\rm train}$ is the prescribed probability law on $\mathbb R^{d_z}\times
 For local perturbation $\delta=\theta-\theta_0\in\mathbb R^{d_\theta}$, let
 $J(z_t,t,y)=\left.\partial\varepsilon_\theta(z_t,t,y)/\partial\theta\right|_{\theta=\theta_0}
 \in\mathbb R^{d_z\times d_\theta}$ be the prediction Jacobian. A first-order expansion of the predictions gives the quadratic approximation
-\[
+\begin{equation}
+\label{eq:prediction-retention-rms}
  \mathcal R_{\rm pred}(\theta_0+\delta)
  \approx \frac1{d_z}\mathbb E\|J\delta\|_2^2
  =\frac1{d_z}\delta^\top\mathbb E[J^\top J]\delta.
-\]
+\end{equation}
 The expectation is over the same $P_{\rm train}$, $J\delta\in\mathbb R^{d_z}$ and $\mathbb E[J^\top J]\in\mathbb R^{d_\theta\times d_\theta}$. Thus the anchor penalizes parameter changes according to their effect on denoiser predictions at training inputs. It supplies a local prediction constraint; paired output quality is still evaluated independently. The revision also raises its scalar coefficient to 32, so comparison with the failed run combines a target change and a coefficient change. Both query-target variants share this revision.
 
 \begin{table}[ht]\centering\small
@@ -49,4 +50,4 @@ Adapted target & 32/32 & 31/32 & 0.9956 & 0.0075\\\bottomrule
 \caption{Revised prediction-anchor screen, with a newly frozen seed set. Both trained models pass the initial detection and preservation requirements. These are initial outputs, before an independent removal attack.}
 \end{table}
 
-The revised runs complete in 797 and 733 allocation seconds for fixed and adapted targets, respectively. The fresh screen verifies all 96 native PNG hashes, labels and indices. Passing permits the next experiment; it does not demonstrate robustness. A blind attacker subsequently trains on disjoint clean fitting images, receiving neither the owner detector nor the original clean model. Its denoising objective is augmented by a prediction anchor to a frozen copy of the supplied marked checkpoint, with coefficients $0,1,4,16$. All four 500-update runs and their 25-, 100- and 500-update exports are retained for each of the three starting models. Quality-only validation selects an export before owner evaluation on separately reserved classes and seeds. Sections~\ref{sec:preserving_attack}--\ref{sec:quality_recalibration} report the completed removal evaluations.
+The revised runs complete in 797 and 733 allocation seconds for fixed and adapted targets, respectively. The fresh screen verifies all 96 native PNG hashes, labels and indices. Passing permits the next experiment; it does not demonstrate robustness. A blind attacker subsequently trains on disjoint clean fitting images, receiving neither the owner detector nor the original clean model. Its denoising objective is augmented by a prediction anchor to a frozen copy of the supplied marked checkpoint, with coefficients $0,1,4,16$. All four 500-update runs and their 25-, 100- and 500-update exports are retained for each of the three starting models. Quality-only validation selects an export before owner evaluation on separately reserved classes and seeds. Subsection~\ref{sec:preserving_attack} reports the removal experiments.
