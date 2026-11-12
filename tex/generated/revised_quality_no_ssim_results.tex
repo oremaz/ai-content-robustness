@@ -1,6 +1,6 @@
 \begin{table}[ht]\centering\small
 \begin{tabular}{llrrr}\toprule
-Horizon & Model & Old joint & Revised joint & Raw quality\\\midrule
+\shortstack{Inner\\steps} & Model & \shortstack{Historical\\joint} & \shortstack{Retained\\joint} & \shortstack{Candidate\\pass}\\\midrule
 100 & original & 20/64 & 28/64 & 33/64\\
 100 & fixed & 22/64 & 26/64 & 31/64\\
 100 & adapted & 22/64 & 31/64 & 35/64\\
@@ -8,4 +8,4 @@ Horizon & Model & Old joint & Revised joint & Raw quality\\\midrule
 500 & fixed & 21/64 & 28/64 & 30/64\\
 500 & adapted & 20/64 & 28/64 & 30/64\\
 \bottomrule\end{tabular}
-\caption{Post-hoc quality-rule reanalysis of frozen attacks. Joint removal requires loss of owner detection and preservation. Raw quality counts exclude source fallbacks. The two horizons use different generation seeds, so compare each variant to its own original baseline. This is not fresh confirmation.}\end{table}
+\caption{Post-hoc preservation reanalysis of open-weight DistSeal UViT-H/DC-AE clean-training attacks, with 64 paired inputs per row. Inner steps gives the clean adaptation horizon used in training the defense candidates. Original is the released marked generator; Fixed and Adapted are the meta-distilled reference variants. Historical joint uses LPIPS $\leq0.2$, SSIM $\geq0.6$, image CLIP $\geq0.9$ and class retention $\geq0.95$. Retained joint uses LPIPS $\leq0.2$, image CLIP $\geq0.9$ and class retention $\geq0.9$. Candidate pass counts raw adapted images passing the retained rule before any source fallback. Joint counts simultaneous preservation and loss of owner detection at bit accuracy $\leq0.6875$. The two horizons have different generation seeds; comparisons are paired within each horizon. This reuses evaluated data.}\end{table}

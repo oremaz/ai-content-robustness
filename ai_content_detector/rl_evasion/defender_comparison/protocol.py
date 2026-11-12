@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import socket
+import time
 from pathlib import Path
 
 import numpy as np
@@ -114,18 +115,42 @@ def score_checkpointed(pool, texts, directory):
     state = load_checkpoint(path, signature) or {"config": signature, "scores": {}}
     with StopRequest() as stop:
         for name in pool.specifications:
-            values = state["scores"].setdefault(name, [])
+            values=state["scores"].setdefault(name,[])
+            size=getattr(pool,'inference_batch_sizes',{}).get(name,8)
+            if type(size) is not int or size<1:
+                raise ValueError('Invalid detector inference batch size')
+            last_saved=len(values);saved_at=time.monotonic()
             try:
-                for offset in range(len(values), len(texts), 8):
+                while len(values)<len(texts):
                     if stop.requested:
+                        atomic_save(state,path)
                         raise CheckpointPause("Detector evaluation scores retained")
-                    scores = pool.get(name).predict_batch(texts[offset:offset + 8])
-                    scores = np.asarray(scores, dtype=float)
-                    if (not np.isfinite(scores).all() or (scores < 0).any() or (scores > 1).any()
-                            or len(scores) != min(8, len(texts) - offset)):
+                    offset=len(values)
+                    defender=pool.get(name)
+                    if name in getattr(pool,'inference_batch_sizes',{}):
+                        defender.inference_batch_size=size
+                    scores=None;oom=False
+                    try:
+                        scores=defender.predict_batch(texts[offset:offset+size])
+                    except torch.cuda.OutOfMemoryError:
+                        if size==1:
+                            raise
+                        oom=True
+                    if oom:
+                        import gc
+                        size=max(1,size//2)
+                        gc.collect();torch.cuda.empty_cache()
+                        print('Reducing detector batch after OOM:',name,size,flush=True)
+                        continue
+                    scores=np.asarray(scores,dtype=float)
+                    if (not np.isfinite(scores).all() or (scores<0).any() or (scores>1).any()
+                            or len(scores)!=min(size,len(texts)-offset)):
                         raise ValueError(f"Invalid predictions from {name}")
                     values.extend(scores.tolist())
-                    atomic_save(state, path)
+                    if (len(values)-last_saved>=128 or time.monotonic()-saved_at>=30
+                            or len(values)==len(texts) or stop.requested):
+                        atomic_save(state,path)
+                        last_saved=len(values);saved_at=time.monotonic()
                     if stop.requested:
                         raise CheckpointPause("Detector evaluation scores saved")
             finally:

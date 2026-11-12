@@ -1,21 +1,27 @@
 {
   "report": {
-    "pages": 38,
+    "pages": 45,
     "references_pages": 1,
-    "text_only_pages_excluding_references": 28,
-    "text_only_count_method": "Recompiled the same sources without table and figure environments, including captions, and counted pages before References. Front matter and equations are included.",
-    "pdf_sha256": "b1268acdf434313ff91c5a98f3573a09873a1b1428351f7acf68684d89837ae4",
+    "text_only_pages_excluding_references": 27,
+    "text_only_count_method": "Recompiled the same active sources after removing figure, table and longtable environments including captions; counted pages before References. Front matter and equations are included.",
+    "pdf_sha256": "e2ac74fe5a207fc7d7166f406c45a5b77ef076cf8527d4a6b89ee929539a2bce",
     "out_of_page_text_pages": [],
     "overfull_vboxes": 0,
     "overfull_hboxes": 0,
     "missing_glyphs": 0,
     "undefined_citations_or_references": 0,
     "duplicate_labels": 0,
-    "pedagogy_validation": {
-      "included_source_files": 51,
-      "generated_evidence_tables_unchanged": 13,
-      "mathematical_checks": "Coordinate-averaged prediction retention and Jacobian dimensions, subset-pruning total variation, and GRPO clipping examples checked numerically.",
-      "visual_review": "GRPO introduction, DDPO, TextSeal 2 and prediction-retention pages inspected."
+    "summary_pages": 1,
+    "validation": {
+      "date": "2026-11-12",
+      "focused_cpu_tests_passed": 27,
+      "portable_publication_files": 171,
+      "portable_publication_galleries": 54,
+      "retained_result_tables_numeric_rows_unchanged": 11,
+      "retained_image_rule_rows_verified": 26,
+      "qualitative_source_hashes_verified": true,
+      "visual_review": "Summary; attack notation and mathematics; full text comparisons; SD1.5 and RAR paired images; retained image table; teacher and rejected clock examples.",
+      "scope": "Report and reporting assets only; no new model training or RAR improvement job."
     }
   }
 }

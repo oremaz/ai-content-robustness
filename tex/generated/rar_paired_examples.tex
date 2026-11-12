@@ -1,0 +1,6 @@
+
+\begin{figure}[p]\centering
+\includegraphics[width=\linewidth,height=.75\textheight,keepaspectratio]{figures/rar-paired-audit.png}
+\caption{DistSeal RAR-XL at 256 pixels, with its original clean decoder. Columns show the initial marked source, a sample after 2,500 clean LoRA updates of the generator, and output-only NFPA purification at strength 20. Rows are fixed source positions 0 and 256 from the 512-image cohort, chosen without outcome filtering. The LoRA column uses the source's class and generation seed; NFPA transforms that same source PNG using an independent SD2.1 model. LPIPS and image CLIP compare each candidate with the left image; class retention is candidate class-text CLIP divided by source class-text CLIP. The retained pair rule requires LPIPS at most 0.2, image CLIP at least 0.9 and class retention at least 0.9. Class-valid replacements can fail the paired-content checks. Uniform resizing is for display only.}
+\label{fig:rar-paired-audit}
+\end{figure}

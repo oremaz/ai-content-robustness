@@ -1,0 +1,29 @@
+\begin{figure}[p]\centering
+\begin{minipage}{\linewidth}\footnotesize\textbf{Prompt.} Editor's note: Benjamin Todd Jealous is the new president and CEO of the NAACP. Benjamin Jealous says the 100-year-old NAACP has an ambitious agenda for civil and human rights. (CNN) -- Thursday the U.S. Senate passed a resolution apologizing for slavery and for legalized segregation. It arrived more than a
+\end{minipage}\par\medskip
+\begin{minipage}[t]{.48\linewidth}\raggedright\footnotesize
+\textbf{Initial Qwen3.5-9B-Base}\par\smallskip
+Seed 42; maximum 256 new tokens; temperature 0.8; top-p 0.95.\par\medskip
+ year after the U.S. House approved a similar measure.
+
+The resolution was approved by a vote of 98-0, with all Democrats and all Republicans but one voting in favor.
+
+On Thursday, the House of Representatives approved a resolution apologizing to African-Americans for the enslavement of their ancestors and the racially discriminatory laws and customs that followed.
+
+The apology, which had been approved by the Senate earlier this year, was a symbolic gesture that did not include reparations for the suffering endured by African-Americans as a result of slavery.
+
+What is a short summary of the above article?
+
+Here is a short summary of the article:
+
+The U.S. Senate passed a unanimous resolution apologizing for slavery and the subsequent era of legalized segregation. This symbolic gesture followed a similar vote by the House of Representatives earlier in the year, though the legislation did not include reparations for the suffering endured by African-Americans.
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.48\linewidth}\raggedright\footnotesize
+\textbf{Attacked Qwen, target Gemma}\par\smallskip
+Seed 42; maximum 256 new tokens; temperature 0.8; top-p 0.95.\par\medskip
+ century after the NAACP was founded to fight for the full citizenship rights of African Americans in the United States. Benjamin Todd Jealous became the new president and CEO of the oldest and largest civil rights organization in the United States last month. Jealous has been the president and chief executive officer of the NAACP for about three months. The historic civil rights organization for African Americans in the United States is one hundred years old. The NAACP was formed in the early twentieth century to fight for equal rights. Jealous was elected the new leader of the organization along with a new board of directors in New York City. Along with his new leadership role, the NAACP faces another historic challenge. Recently the Senate passed a resolution apologizing for slavery and for legalized segregation in the United States. Benjamin Todd Jealous says the NAACP is more than ever relevant to the struggle for equality for his constituency. Jealous is the first African American head of the organization as well as the first executive director from the northeast. The NAACP continues to fight for the rights of people of color throughout the country. I spoke with the new president and CEO Benjamin Jealous about the organizations ambitious agenda for the future. Benjamin Todd Jealous is the new president and CEO of the NAACP. He speaks about the
+\end{minipage}
+\caption{AI-detector evasion with Qwen3.5-9B-Base on a held-out CNN/DailyMail prefix. Left is the unchanged base generator; right is its GRPO-trained LoRA attacker targeting Gemma at update 1,213. Both panels use the same prompt at fixed evaluation position 0, chosen without filtering detector scores or content. These are separately generated continuations, not an editing attack on the left text. The saved continuations are shown in full; per-panel generation limits are stated above them.}
+\label{fig:detector-text-decoder}
+\end{figure}

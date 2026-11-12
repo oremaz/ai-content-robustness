@@ -1,9 +1,9 @@
 \begin{table}[ht]\centering\small
 \begin{tabular}{llrrrr}\toprule
-Scheme & Rewrite & Initial + & Raw removed & Proxy pass & Joint success\\\midrule
-TextSeal 2 & vanilla & 253 & 238 & 154 & 141 \\
-TextSeal 2 & bira & 253 & 253 & 62 & 62 \\
-Text student & vanilla & 118 & 110 & 152 & 60 \\
-Text student & bira & 118 & 117 & 62 & 28 \\
+Scheme & Rewrite & \shortstack{Initially\\detected} & Removed & \shortstack{Text-rule\\pass} & Joint\\\midrule
+TextSeal 2 & Ordinary & 253 & 238 & 154 & 141 \\
+TextSeal 2 & BIRA & 253 & 253 & 62 & 62 \\
+Text student & Ordinary & 118 & 110 & 152 & 60 \\
+Text student & BIRA & 118 & 117 & 62 & 28 \\
 \bottomrule\end{tabular}
-\caption{Post-hoc joint text diagnostics, 256 outputs per arm. Proxy pass requires the stated automatic checks and Jina cosine at least .90. Joint success also requires original detection followed by non-detection. These are counts, not certified factual-preservation rates.}\end{table}
+\caption{Post-hoc paired text-watermark audit on Qwen3.5-4B instruct, 256 source answers per row. TextSeal 2 uses native $p\leq0.001$; the local distilled student uses extractor score $>-0.6263284683$. Initially detected counts marked sources passing that test. Removed counts their attacked answers that become undetected. Text-rule pass counts all rewrites satisfying bidirectional NLI entailment without truncation, exact numeric-set agreement, valid positive independent Mistral perplexity, no wrapper leakage or long letter runs, and Jina cosine $\geq0.90$. Joint counts the intersection of removal and text-rule pass. Ordinary and BIRA rewriting both use independent Llama-3.1-8B-Instruct with output-only target access. These counts use automatic proxies and are not human annotations.}\end{table}

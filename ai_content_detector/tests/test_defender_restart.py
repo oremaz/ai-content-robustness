@@ -55,3 +55,28 @@ def test_defender_native_resume_preserves_best_model_and_validation(tmp_path, mo
     assert replay.retrain(texts, references) == actual
     for name, weight in resumed.model.state_dict().items():
         assert torch.equal(replay.model.state_dict()[name], weight), name
+
+
+def test_dataset_fingerprint_does_not_serialize_defender(tmp_path, monkeypatch):
+    import dill
+    from datasets import Dataset
+
+    class Tripwire:
+        def __getstate__(self):
+            raise AssertionError("Dataset fingerprint tried to serialize the defender")
+
+    class Fingerprinted(Exception):
+        pass
+
+    defender = make_defender(tmp_path)
+    defender.serialization_tripwire = Tripwire()
+
+    def inspect_map(dataset, function, **kwargs):
+        dill.dumps(function)
+        result = function({"text": ["ai0"]})
+        assert result["input_ids"] == [[1, 3, 5, 2]]
+        raise Fingerprinted
+
+    monkeypatch.setattr(Dataset, "map", inspect_map)
+    with pytest.raises(Fingerprinted):
+        defender.retrain([f"ai{i}" for i in range(8)], [f"human{i}" for i in range(8)])

@@ -113,7 +113,7 @@ def main():
     output = ROOT / "tex/provenance" / (stem + ".json")
     output.write_text(json.dumps(results, indent=2) + "\n")
     rows = [r"\begin{table}[ht]\centering\small", r"\begin{tabular}{llrrr}\toprule",
-            r"Horizon & Model & Old joint & Revised joint & Raw quality\\\midrule"]
+            r"\shortstack{Inner\\steps} & Model & \shortstack{Historical\\joint} & \shortstack{Retained\\joint} & \shortstack{Candidate\\pass}\\\midrule"]
     for horizon, study in results["studies"].items():
         for name, value in study["conditions"].items():
             new = value["revised_raw"]
@@ -123,10 +123,7 @@ def main():
                         f"{new['preservation']['count']}/{n}" + r"\\")
         print(horizon, {name: value["revised_raw"]["joint_removal"]["count"]
                         for name, value in study["conditions"].items()}, flush=True)
-    rows += [r"\bottomrule\end{tabular}", r"\caption{Post-hoc quality-rule reanalysis of frozen attacks. "
-             r"Joint removal requires loss of owner detection and preservation. Raw quality counts exclude source "
-             r"fallbacks. The two horizons use different generation seeds, so compare each variant to its own "
-             r"original baseline. This is not fresh confirmation.}\end{table}"]
+    rows += [r"\bottomrule\end{tabular}", r"\caption{" + 'Post-hoc preservation reanalysis of open-weight DistSeal UViT-H/DC-AE clean-training attacks, with 64 paired inputs per row. Inner steps gives the clean adaptation horizon used in training the defense candidates. Original is the released marked generator; Fixed and Adapted are the meta-distilled reference variants. Historical joint uses LPIPS $\\leq0.2$, SSIM $\\geq0.6$, image CLIP $\\geq0.9$ and class retention $\\geq0.95$. Retained joint uses LPIPS $\\leq0.2$, image CLIP $\\geq0.9$ and class retention $\\geq0.9$. Candidate pass counts raw adapted images passing the retained rule before any source fallback. Joint counts simultaneous preservation and loss of owner detection at bit accuracy $\\leq0.6875$. The two horizons have different generation seeds; comparisons are paired within each horizon. This reuses evaluated data.' + r"}\end{table}"]
     (ROOT / "tex/generated" / (stem + ".tex")).write_text("\n".join(rows) + "\n")
 
 

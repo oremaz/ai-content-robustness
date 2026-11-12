@@ -100,6 +100,14 @@ def response_mask(sequence_length, prompt_length, device):
     return (torch.arange(sequence_length-1, device=device) >= max(0, prompt_length-1))[None]
 
 
+def training_steps(manifest, clean=False):
+    scheduled=manifest['text_training']['clean_steps' if clean else 'steps']
+    limit=scheduled if clean else manifest.get('distillation_stop_step',scheduled)
+    if type(limit) is not int or not 0<limit<=scheduled:
+        raise ValueError('Distillation stop step must be a positive integer within the original schedule')
+    return limit,scheduled
+
+
 def fit(manifest, stop, clean=False):
     root = Path(manifest["directory"])
     name = manifest.get("clean_stage", "text_clean") if clean else manifest.get("distillation_stage", "distill")
@@ -107,7 +115,7 @@ def fit(manifest, stop, clean=False):
     output.mkdir(exist_ok=True)
     data = json.loads(Path(manifest["data"]).read_text())["text"]
     config = manifest["text_training"]
-    steps = config["clean_steps"] if clean else config["steps"]
+    steps, scheduled_steps = training_steps(manifest, clean)
     source = manifest.get("clean_source", str(root / manifest.get("distilled_model", "distill/model"))) if clean else manifest["qwen"]["path"]
     mode = config.get("mode", "lora")
     model, tokenizer = load_model(source, training=True, training_mode=mode, lora_rank=config.get("lora_rank", 64))
@@ -135,13 +143,16 @@ def fit(manifest, stop, clean=False):
         restore_rng(state["rng"])
         step, tokens_seen, history = state["step"], state["tokens_seen"], state["history"]
         del state
+        if step > steps:
+            raise ValueError("Saved training step already exceeds requested stop step")
     clock = CheckpointClock(600)
     rows = data["removal" if clean else "train"]
     def save():
         atomic_save({"signature": signature, "model": model_state(model), "optimizer": optimizer.state_dict(),
                      "rng": rng_state(), "step": step, "tokens_seen": tokens_seen, "history": history}, restart)
         write_json(output / "progress.json", {"step": step, "tokens_seen": tokens_seen, "history": history,
-                                              "uses_original_weights_for_attack": False if clean else None})
+                                              "uses_original_weights_for_attack": False if clean else None,
+                                              "stop_step": steps, "schedule_steps": scheduled_steps})
         clock.saved()
     def export_intermediate():
         if clean and step in config.get("export_steps", []) and step != steps:
@@ -154,7 +165,7 @@ def fit(manifest, stop, clean=False):
         optimizer.zero_grad(set_to_none=True)
         loss_sum = 0.
         lr = (config["clean_lr"] if clean else config["lr"]) * min(1., (step+1)/100)
-        lr *= .1 + .9 * .5 * (1 + math.cos(math.pi * step / steps))
+        lr *= .1 + .9 * .5 * (1 + math.cos(math.pi * step / scheduled_steps))
         for group in optimizer.param_groups:
             group["lr"] = lr
         indices = np.random.default_rng(manifest["seed"] + step).integers(len(rows), size=config["accumulation"])
@@ -204,6 +215,7 @@ def fit(manifest, stop, clean=False):
     model.save_pretrained(output / "model", max_shard_size="2GB")
     tokenizer.save_pretrained(output / "model")
     write_json(output / "complete.json", {"steps": step, "tokens_seen": tokens_seen,
+                "stop_step": steps, "schedule_steps": scheduled_steps,
                 "merged": True, "architecture_changed": False, "ordinary_sampler_at_inference": True,
                 "source": source, "original_weights_accessed_during_attack": False if clean else None})
 

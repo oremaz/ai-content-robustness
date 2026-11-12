@@ -11,7 +11,7 @@ Unchanged & 32/32 & 32/32 & 0.9937 & 0.0000\\
 Fixed target & 32/32 & 24/32 & 0.9961 & 0.1219\\
 Adapted target & 32/32 & 20/32 & 0.9971 & 0.1254\\\bottomrule
 \end{tabular}
-\caption{Initial generation screen after 100 outer updates. Both trained models fail the requirement of at least 28/32 preservation passes, despite retaining watermark detection. No removal attack is run on them.}
+\caption{DistSeal UViT-H/DC-AE at 512 pixels, with open-weight student training. Unchanged is the released marked generator; Fixed and Adapted use their respective marked-teacher targets. Each row uses 32 coupled evaluation seeds. Detected counts owner bit accuracy $>0.6875$; Preserved counts pairs against the unchanged generator passing LPIPS $\leq0.2$, SSIM $\geq0.6$, image CLIP $\geq0.9$ and class retention $\geq0.95$. Mean bit accuracy measures recovered watermark bits, while Mean LPIPS measures paired perceptual distance. After 100 outer updates with denoising retention, both trained models fail the required 28/32 preservation passes; no removal attack is run on these failed candidates.}
 \end{table}
 
 This failure illustrates why mean bit accuracy alone is inadequate. The new models still emit detectable marks, but do not meet the paired-content constraint required for the next stage. All 96 native PNG hashes, sample indices, labels and preservation sums are verified. The result is retained as a development failure; neither a robust defense nor a benefit of the adapted target is established.
@@ -47,7 +47,7 @@ Unchanged & 32/32 & 32/32 & 0.9956 & 0.0000\\
 Fixed target & 32/32 & 32/32 & 0.9951 & 0.0077\\
 Adapted target & 32/32 & 31/32 & 0.9956 & 0.0075\\\bottomrule
 \end{tabular}
-\caption{Revised prediction-anchor screen, with a newly frozen seed set. Both trained models pass the initial detection and preservation requirements. These are initial outputs, before an independent removal attack.}
+\caption{DistSeal UViT-H/DC-AE at 512 pixels, with open-weight student training. Unchanged is the released marked generator; Fixed and Adapted use their respective marked-teacher targets. Each row uses 32 coupled evaluation seeds. Detected counts owner bit accuracy $>0.6875$; Preserved counts pairs against the unchanged generator passing LPIPS $\leq0.2$, SSIM $\geq0.6$, image CLIP $\geq0.9$ and class retention $\geq0.95$. Mean bit accuracy measures recovered watermark bits, while Mean LPIPS measures paired perceptual distance. The revised prediction anchor uses coefficient 32 and a newly frozen seed cohort. Both trained variants pass the 28/32 detection and preservation screens before independent removal attacks.}
 \end{table}
 
 The revised runs complete in 797 and 733 allocation seconds for fixed and adapted targets, respectively. The fresh screen verifies all 96 native PNG hashes, labels and indices. Passing permits the next experiment; it does not demonstrate robustness. A blind attacker subsequently trains on disjoint clean fitting images, receiving neither the owner detector nor the original clean model. Its denoising objective is augmented by a prediction anchor to a frozen copy of the supplied marked checkpoint, with coefficients $0,1,4,16$. All four 500-update runs and their 25-, 100- and 500-update exports are retained for each of the three starting models. Quality-only validation selects an export before owner evaluation on separately reserved classes and seeds. Subsection~\ref{sec:preserving_attack} reports the removal experiments.

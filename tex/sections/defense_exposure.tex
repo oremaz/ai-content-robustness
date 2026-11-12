@@ -1,5 +1,7 @@
 \subsection{Probability interfaces and rewriting attacks}
 \label{app:exposure}
+All clients in this section use a locally simulated closed-source probability interface. They can submit prefixes and consume advertised token probabilities, but cannot read or update target weights. The independent reference model is public. The output-only reference-rewriting control in the pruning table is labelled separately. These contracts differ from the open-weight image attacks in the preceding section.
+
 Let $\mathcal V$ be the vocabulary of size $V\in\mathbb N_{>0}$, $h\in\mathcal V^*$ a token prefix, and $k\in\mathcal K$ a fixed owner key in the scheme's key space $\mathcal K$. The vector $p(\cdot\mid h)\in\Delta(\mathcal V)$ gives the underlying model probabilities after sampling filters. For next token $Y\in\mathcal V$, the key-conditional sampler law is
 \begin{equation}
 \label{eq:key-conditional-token-law}

@@ -424,3 +424,58 @@ def test_notebook_inference_adapter_is_reenabled_for_supervised_warmup(tmp_path,
     assert any("lora_B" in name and grad is not None and grad.abs().sum() > 0 for name, grad in gradients.items())
     assert any("classifier" in name and grad is not None and grad.abs().sum() > 0 for name, grad in gradients.items())
     assert all(parameter.grad is None for parameter in model.parameters() if not parameter.requires_grad)
+
+
+def test_diveye_packed_cache_reuses_legacy_rows_and_resumes(tmp_path):
+    import hashlib
+    import sqlite3
+
+    directory = tmp_path / 'features'
+    directory.mkdir()
+    expected = np.arange(83, dtype=np.float64)
+    expected[2] = np.nan
+    key = hashlib.sha256(('revision' + 'legacy').encode()).hexdigest()
+    atomic_save(expected, directory / (key + '.pt'))
+    calls = []
+
+    def extract(text):
+        calls.append(text)
+        return expected + 1
+
+    defender = FeatureDefender({'family': 'diveye', 'feature_cache': str(directory)}, tmp_path / 'detector', device='cpu')
+    defender.extractor = SimpleNamespace(SPACE_REVISION='revision', extract_features=extract)
+    actual = defender.features(['legacy', 'fresh', 'fresh'])
+    np.testing.assert_allclose(actual, np.stack([expected, expected + 1, expected + 1]), equal_nan=True)
+    assert calls == ['fresh']
+    assert list(directory.glob('*.pt')) == [directory / (key + '.pt')]
+    with sqlite3.connect(directory / 'features.sqlite3') as cache:
+        assert cache.execute('SELECT COUNT(*) FROM features').fetchone()[0] == 2
+        assert cache.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
+
+    def forbidden(text):
+        raise AssertionError('Cached features were recomputed')
+
+    defender.extractor = SimpleNamespace(SPACE_REVISION='revision', extract_features=forbidden)
+    np.testing.assert_allclose(defender.features(['fresh', 'legacy']), actual[[1, 0]], equal_nan=True)
+    defender.extractor = SimpleNamespace(SPACE_REVISION='new-revision', extract_features=extract)
+    defender.features(['fresh'])
+    assert calls == ['fresh', 'fresh']
+
+
+def test_inference_chunk_size_preserves_classifier_scores(tmp_path):
+    from ai_content_detector.tests.test_defender_restart import make_defender
+    from ai_content_detector.rl_evasion.defender_comparison.defenders import TorchDefender
+    defender=make_defender(tmp_path)
+    from transformers import BatchEncoding
+    original_tokenizer=defender.tokenizer
+    class Tokenizer:
+        def __call__(self,texts,**kwargs):
+            return BatchEncoding(original_tokenizer(texts,**kwargs),tensor_type='pt')
+    defender.tokenizer=Tokenizer()
+    defender.max_length=16
+    texts=[f'ai{i}' for i in range(8)]+[f'human{i}' for i in range(8)]
+    defender.inference_batch_size=4
+    before=TorchDefender.predict_batch(defender,texts)
+    defender.inference_batch_size=16
+    after=TorchDefender.predict_batch(defender,texts)
+    np.testing.assert_allclose(before,after,atol=1e-6,rtol=1e-6)

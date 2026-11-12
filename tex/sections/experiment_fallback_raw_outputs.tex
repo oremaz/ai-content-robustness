@@ -5,8 +5,8 @@ The final client in Section~\ref{sec:fallback_failure} always returns an output 
 Raw outputs must satisfy every original gate in Subsection~\ref{sec:preservation}. Low LPIPS alone can therefore coincide with a failed gate. The bit-accuracy labels are rounded for display; owner decisions use their full values and the frozen strict threshold $>0.6875$.
 
 \begin{figure}[p]\centering
-\includegraphics[width=.84\linewidth]{figures/preserving-fallback-triplets-original.png}
-\caption{Released model: source, raw adaptation and returned output. LPIPS and the raw preservation decision are shown in the middle column. A low raw bit accuracy is insufficient for joint success if the content changes too much.}
+\includegraphics[width=.80\linewidth]{figures/preserving-fallback-triplets-original.png}
+\caption{Open-weight clean-training removal from released DistSeal UViT-H/DC-AE at 512 pixels. Columns show the initial marked output, the raw generator output after 500 clean updates, and the returned output after quality fallback. Rows are fixed source positions 0, 16, 32 and 48 from 64 final inputs, without outcome filtering. The middle column gives LPIPS and the historical four-metric preservation decision; a failure returns the source. Bit accuracy labels are rounded; owner detection uses strict accuracy $>0.6875$. Thus a raw non-detection need not count as a preserved removal.}
 \label{fig:fallback-triplets}
 \end{figure}
 

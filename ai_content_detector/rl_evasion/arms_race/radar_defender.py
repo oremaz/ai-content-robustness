@@ -158,11 +158,13 @@ class AdaptiveClassifierDefender:
             )
 
         # Tokenize
+        tokenizer, max_length = self.tokenizer, self.max_length
+
         def tokenize_fn(examples):
-            return self.tokenizer(
+            return tokenizer(
                 examples["text"],
                 truncation=True,
-                max_length=self.max_length,
+                max_length=max_length,
                 padding="max_length",
             )
 

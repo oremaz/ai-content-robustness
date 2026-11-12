@@ -14,7 +14,22 @@ The historical pilot instead uses 50 images of a single class. Its outcomes diff
 
 DC-AE partial merging provides a different warning. At 75\% marked weights, detection falls to zero, but LPIPS is 0.8684 and class-text CLIP falls from 0.2934 to 0.2141. That is suppression with a substantial measured utility cost. Clean LoRA is much closer to the original samples under the recorded perceptual measurements.
 
-\paragraph{Output-only NFPA.} NFPA receives saved image outputs and an independent public SD2.1 model. It receives neither target weights nor owner detector feedback. The experiment simulates an output-only provider; it does not query a commercial service. Strengths zero, 20 and 40 are fixed in advance, with 40 the primary setting. Zero strength still performs regeneration; a separate resize-only arm measures the resizing intervention.
+\paragraph{Output-only NFPA: predict a neighbouring frame.} Next-Frame Prediction Attack \citep{qiu2025nfpa} receives only a saved target image $x\in[0,1]^{H\times W\times3}$, with pixel dimensions $H,W\in\mathbb N_{>0}$, and uses independent public Stable Diffusion 2.1. It does not receive target weights, target probabilities, the owner key or detector feedback. The intuition is to regenerate the scene as if a camera moved slightly: a nearby frame may retain its subject while disturbing watermark features. This is a simulated output-only provider, not a commercial-service experiment.
+
+First resize to $512\times512$, encode, and apply DDIM inversion to obtain noise $z_T^{(0)}\in\mathbb R^{h\times w\times d}$, where $T\in\mathbb N_{>0}$ is the inversion endpoint and SD2.1 has latent dimensions $h=w=64$ and $d=4$. Inversion seeks noise whose denoising approximately reconstructs the supplied image. The paper proposes a bounded flow $f\in\mathbb R^{h\times w\times2}$ and warped next-frame noise:
+\[
+f^*\in\arg\max_{\|f\|_\infty\leq\delta}
+ \|z_T^{(0)}-W(z_T^{(0)};f)\|_1,
+\qquad z_T^{(1)}=W(z_T^{(0)};f^*).
+\]
+Here $W$ is spatial backward warping, $\delta\geq0$ bounds displacement, and the scalar $\ell_1$ objective encourages a different latent without consulting a watermark detector. The local experiment calls the released camera-motion pipeline with motion vector $(\delta,\delta,0)\in\mathbb R^3$, rather than implementing a new unrestricted flow optimizer.
+
+Denoise the two-frame latent jointly. In each attention head, the next frame uses its queries $Q_1\in\mathbb R^{N\times d_k}$ but the first frame's keys $K_0\in\mathbb R^{N\times d_k}$ and values $V_0\in\mathbb R^{N\times d_v}$:
+\[
+ A_1=\operatorname{softmax}_{\mathrm{row}}(Q_1K_0^\top/\sqrt{d_k})V_0
+ \in\mathbb R^{N\times d_v}.
+\]
+Here $N$ is the number of spatial positions at that attention layer, and $d_k,d_v\in\mathbb N$ are head dimensions. The first frame keeps self-attention, providing a scene anchor. Return the second decoded frame, resized to the target's native resolution. This conditioning encourages consistency but does not guarantee identity or detail preservation. Our fixed recipe uses ten inversion/denoising steps, guidance 7.5, an empty prompt, and strengths $\delta\in\{0,20,40\}$, with 40 primary. Zero still regenerates the image; resize-only is a separate control.
 
 At strength 40, 110/512 RAR images and 172/512 DC-AE images remain detected: 21.5\% and 33.6\%. LPIPS is 0.4221 and 0.5082, respectively. Class-text CLIP falls to 0.2630 and 0.2664, compared with original means 0.3030 and 0.2934. Qualitative examples show changes to faces, objects and framing. This is neither universal removal nor exact content preservation.
 

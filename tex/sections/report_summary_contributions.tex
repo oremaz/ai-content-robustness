@@ -1,0 +1,17 @@
+\section*{Summary of contributions}
+This report evaluates AI-content detection, adaptive generation and watermark removal through reproducible text and image experiments. Its contributions are the controlled comparisons, paired output evidence, preservation-aware accounting and documented negative results.
+
+\paragraph{Detector generalization.}
+Ten text classifiers and five image classifiers are compared across datasets. Qwen reaches macro F1 of 0.9236 on MAGE and 0.8310 on Pile; Gemma reaches 0.9499 on peer reviews. Image transfer is weaker: EfficientNet falls from 0.9346 on ArtiFact to 0.3333 on CIFAKE. A ConvNeXt augmentation intervention fails its acceptance criterion. These measurements show how dataset and processing shifts affect the retained classifiers.
+
+\paragraph{Adaptive generators and detector retraining.}
+GRPO trains Qwen3.5-9B-Base LoRA attackers against Gemma, ModernBERT-large and a seven-detector ensemble. One defender update reduces evasion on identical saved outputs from 77.2\% to 0.2\%, 96.8\% to 1.0\%, and 94.8\% to 0.4\%, respectively. Each branch evaluates 500 generated and 500 human passages; attacker budgets differ. For SD1.5 against DDA, a validation-selected DDPO checkpoint raises held-out evasion from 1.2\% to 8.2\% while retaining 99.1\% of mean CLIP alignment. A later 99.4\%-evasion checkpoint retains only 63.3\%, exposing the utility cost.
+
+\paragraph{Watermark removal and content preservation.}
+The experiments cover TextSeal 2 and a local distilled text watermark on Qwen3.5-4B instruct, plus released DistSeal RAR-XL and UViT-H/DC-AE image generators. Rewriting, probability access, weight changes and output purification have distinct access contracts. Raw detection losses are joined with paired-content checks. Under the retained three-metric image rule, 2,500 clean LoRA updates produce 339/512 joint removals for DC-AE and 0/512 for RAR. RAR still retains class alignment on many outputs; changed sampled scenes fail the paired-image rule. Examples and component counts make that distinction visible.
+
+\paragraph{Robustness candidates and probability interfaces.}
+Image meta-distillation yields no reliable defense gain: the revised post-hoc analysis gives 29/64 joint removals for the released model and 28/64 for each variant. On 128 fresh TextSeal 2 questions, conditional probability exposure reduces joint direct-resampling removals from 114/128 to 19/128, but an adaptive ratio client removes 95 of 96 quality-passing outputs. Support pruning reduces ratio-client joint removals from 21/32 to 3/32 or 1/32 on reused development sources. Fresh confirmation of pruning remains outstanding.
+
+\paragraph{Calibration and reproducibility.}
+An independent human-null diagnostic flags 5/4,096 prefixes at the unchanged nominal TextSeal 2 threshold of 0.001. Frozen inputs, source hashes, saved outputs and explicit selection rules support the comparisons. Single-key results, automatic preservation proxies, post-hoc reanalyses and the absence of a second adaptive attacker round bound the conclusions.

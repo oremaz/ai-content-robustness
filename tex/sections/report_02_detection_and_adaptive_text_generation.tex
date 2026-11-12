@@ -11,10 +11,12 @@ Gemma & 1,213 & 77.2\% & 0.2\%\\
 ModernBERT-large & 1,487 & 96.8\% & 1.0\%\\
 Seven-detector ensemble & 502 & 94.8\% & 0.4\%\\\bottomrule
 \end{tabular}
-\caption{One defender update, evaluated on identical saved attack texts: 500 generated and 500 human passages per branch, threshold 0.5.}
+\caption{Unwatermarked Qwen3.5-9B-Base after GRPO LoRA training against the named target detector. Updates is the attacker training count. Before and after columns measure evasion of the warmed target and its subsequent defender update on identical saved continuations, with 500 generated and 500 human passages per branch. Evasion is the generated fraction with AI score below 0.5; human passages assess false positives separately. The attack has open-weight generator access and detector-score feedback. Unequal budgets prevent a matched-compute ranking of targets.}
 \end{table}
 
 Each defender update uses fresh fitting outputs while evaluation reuses the original saved texts. This isolates changes to the defender. It establishes recovery against a fixed attacker. It does not establish resistance to a second adaptive RL round. Single-seed results, unequal training budgets and diagnostic reuse limit generalization claims.
 
 The RoBERTa diagnostic illustrates checkpoint instability: evasion on 100 prompts reaches 98\% at step 500 and falls to 36\% at step 600. Selecting a favorable checkpoint after viewing diagnostic results can overstate robustness or attack reliability. Confirmatory testing must use untouched prompts and a prespecified selection rule.
 
+
+\input{generated/detector_text_examples}

@@ -10,7 +10,7 @@ The revised rule targets preservation of the main objects and scene. Let $x$ be 
  R_{\mathrm{cls}}(x,x')\geq 0.9
  \right\},
 \end{equation}
-with a failure assigned if any metric is nonfinite. We apply this rule to the saved pairs. The original prespecified counts and the owner detection threshold remain the basis of the primary comparison. The model-assisted inspection used to inform the revision covered 32 validation pairs.
+with a failure assigned if any metric is nonfinite. We apply this rule to the saved pairs. Historical tables retain their original prespecified counts. The retained-rule tables use this revision, explicitly as post-hoc reanalysis, while the owner detection threshold remains unchanged. The model-assisted inspection used to inform the revision covered 32 validation pairs.
 
 \input{generated/revised_quality_no_ssim_results}
 
@@ -20,6 +20,6 @@ Figure~\ref{fig:image-clock-evasion} shows why the removal count still depends o
 
 \begin{figure}[!htbp]\centering
 \includegraphics[width=.98\linewidth]{figures/worst-quality-evasion-30.png}
-\caption{The highest-LPIPS output that evaded detection in the latest attack on the released model. The clock casing and surrounding structure change substantially.}
+\caption{DistSeal UViT-H/DC-AE at 512 pixels: left is the released marked source at final position 30, right its raw output after the selected open-weight clean-training attack in the 500-step defense study. This pair was selected post hoc as the highest-LPIPS owner non-detection among the 64 original-model candidates. LPIPS 0.329, image CLIP 0.753 and class retention 0.816 all fail the retained limits 0.2, 0.9 and 0.9; the label also gives historical SSIM 0.586. The clock casing and scene structure change, so this removal is not a joint success.}
 \label{fig:image-clock-evasion}
 \end{figure}

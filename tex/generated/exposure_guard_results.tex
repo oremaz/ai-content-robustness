@@ -1,12 +1,12 @@
 \begin{table}[ht]\centering\small
-\begin{tabular}{lrrrr}\toprule
-Exposed law / attack & Preserved & Raw removed & Joint removed & Word copies\\\midrule
-Prune 10 / direct & 23/32 & 4/32 & 3/32 & 0/32\\
-Prune 10 / smooth & 25/32 & 18/32 & 15/32 & 0/32\\
-Prune 10 / ratio & 25/32 & 4/32 & 3/32 & 0/32\\
-Prune 20 / direct & 23/32 & 3/32 & 3/32 & 0/32\\
-Prune 20 / smooth & 27/32 & 15/32 & 13/32 & 0/32\\
-Prune 20 / ratio & 24/32 & 2/32 & 1/32 & 0/32\\
-Independent reference & 22/32 & 32/32 & 22/32 & 0/32\\
+\begin{tabular}{llrrrr}\toprule
+Exposed law / attack & Access & Preserved & Removed & Joint removed & Word copies\\\midrule
+Prune 10 / direct & P & 23/32 & 4/32 & 3/32 & 0/32\\
+Prune 10 / smooth & P & 25/32 & 18/32 & 15/32 & 0/32\\
+Prune 10 / ratio & P & 25/32 & 4/32 & 3/32 & 0/32\\
+Prune 20 / direct & P & 23/32 & 3/32 & 3/32 & 0/32\\
+Prune 20 / smooth & P & 27/32 & 15/32 & 13/32 & 0/32\\
+Prune 20 / ratio & P & 24/32 & 2/32 & 1/32 & 0/32\\
+Independent reference & O & 22/32 & 32/32 & 22/32 & 0/32\\
 \bottomrule\end{tabular}
-\caption{Blind quality-only selection on 32 sources; 32 originals are detected. Raw removal includes failed-preservation outputs, while joint removal requires the unchanged similarity, entailment and fluency gates. Reused development sources do not constitute independent confirmation.}\end{table}
+\caption{TextSeal 2 simulated probability-only development experiment with Qwen3.5-4B instruct on 32 HC3 source answers, all originally detected at native $p\leq0.001$. Pre uses underlying probabilities; Conditional uses the estimated keyed sampler law. Access: P is simulated probability-only target access; O uses only the saved marked answer. The independent reference is Qwen3.5-0.8B. Preserved counts first-quality-passing selections under Jina cosine $\geq0.9$, bidirectional untruncated entailment, exact number sets, finite perplexity no greater than 1.5 times the original, and completion/repetition checks. Removed counts selected outputs evading owner detection regardless of quality; Joint counts preservation and removal together. Word copies counts normalized source equality. All fractions retain the 32-input denominator. Three attempts are frozen before quality selection and owner scoring. These sources are reused development data. Prune 10 and Prune 20 retain at least 90\% and 80\% of the ordinary top-ten estimated probability mass. Independent reference rewrites outside the advertised support.}\end{table}

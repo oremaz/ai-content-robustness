@@ -12,13 +12,13 @@ Reference & Clean detected & Marked detected & Preserved & Mean LPIPS\\\midrule
 Fixed & 0/32 & 32/32 & 31/32 & 0.0411\\
 Adapted & 0/32 & 32/32 & 31/32 & 0.0396\\\bottomrule
 \end{tabular}
-\caption{Prerequisite teacher validation. Preservation compares the post-hoc marked image with its corresponding clean reference. These counts do not measure robustness of a distilled generator after a removal attack.}
+\caption{DistSeal teacher prerequisite screen with open-weight UViT-H/DC-AE at 512 pixels. Fixed marks the released clean generator; Adapted marks that generator after 100 clean updates. Clean and Marked detected count owner positives before and after latent embedding at strict bit accuracy $>0.6875$, out of 32 coupled seeds per teacher. Preserved counts marking pairs passing LPIPS $\leq0.2$, SSIM $\geq0.6$, image CLIP $\geq0.9$ and class retention $\geq0.95$. Mean LPIPS compares each marked output with its own clean reference. This is teacher validation before student removal attacks.}
 \end{table}
 
-Both teachers pass the screen. Figure~\ref{fig:teacher-marking} compares each reference with its own marked output. All 128 native PNG hashes, sample indices, class labels and preservation sums are verified against the saved records. The allocation uses 622 seconds on one H100, including a slow dependency startup and quality evaluation. A matched first-order meta-distillation comparison is launched separately; a trained model's initial quality, independent removal attacks, calibration and repeated-seed confirmation still require evaluation. No robustness gain is inferred from the table above.
+Both teachers pass the screen. Figure~\ref{fig:teacher-marking} compares each reference with its own marked output. All 128 native PNG hashes, sample indices, class labels and preservation sums are verified against the saved records. The allocation uses 622 seconds on one H100, including a slow dependency startup and quality evaluation. The completed matched first-order meta-distillation comparison and independent removal attacks follow below; repeated-seed confirmation remains outstanding. No robustness gain is inferred from the table above.
 
 \begin{figure}[p]\centering
 \includegraphics[width=\linewidth]{figures/transport-teacher.png}
-\caption{The fixed and adapted references before and after post-hoc marking. Rows show positions 0, 8, 16 and 24, chosen after the run without filtering by detection or quality. The display is resized uniformly; native outputs are retained. Similarity of marking pairs is a different question from similarity between the two independently adapted generators.}
+\caption{DistSeal teacher validation using UViT-H/DC-AE and its released decoder at 512 pixels. Columns, left to right: fixed clean reference, its marked version, the reference after 100 clean generator updates, and its marked version. Rows are fixed positions 0, 8, 16 and 24 of the 32-seed screen, selected without outcome filtering. Labels give source index, ImageNet class index and owner bit accuracy; detection requires $>0.6875$. Marking uses latent strength 0.5. Each marking pair shares a reference; fixed versus adapted columns need not depict the same scene. Display resizing preserves native PNGs.}
 \label{fig:teacher-marking}
 \end{figure}

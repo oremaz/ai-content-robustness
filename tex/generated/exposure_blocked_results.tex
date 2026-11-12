@@ -1,9 +1,9 @@
 \begin{table}[ht]\centering\small
-\begin{tabular}{lrrrr}\toprule
-Exposed law / attack & Preserved & Raw removed & Joint removed & Word copies\\\midrule
-Pre / direct & 25/32 & 32/32 & 25/32 & 0/32\\
-Pre / smoothing & 22/32 & 32/32 & 22/32 & 0/32\\
-Conditional / direct & 24/32 & 7/32 & 5/32 & 0/32\\
-Conditional / smoothing & 27/32 & 16/32 & 12/32 & 0/32\\
+\begin{tabular}{llrrrr}\toprule
+Exposed law / attack & Access & Preserved & Removed & Joint removed & Word copies\\\midrule
+Pre / direct & P & 25/32 & 32/32 & 25/32 & 0/32\\
+Pre / smoothing & P & 22/32 & 32/32 & 22/32 & 0/32\\
+Conditional / direct & P & 24/32 & 7/32 & 5/32 & 0/32\\
+Conditional / smoothing & P & 27/32 & 16/32 & 12/32 & 0/32\\
 \bottomrule\end{tabular}
-\caption{Development rewrite test after blind quality-only selection; all 32 originals are detected. Raw removal includes failed-preservation outputs, while joint removal requires the unchanged similarity, entailment and fluency gates. Reused sources do not constitute independent confirmation.}\end{table}
+\caption{TextSeal 2 simulated probability-only development experiment with Qwen3.5-4B instruct on 32 HC3 source answers, all originally detected at native $p\leq0.001$. Pre uses underlying probabilities; Conditional uses the estimated keyed sampler law. Access: P is simulated probability-only target access; O uses only the saved marked answer. The independent reference is Qwen3.5-0.8B. Preserved counts first-quality-passing selections under Jina cosine $\geq0.9$, bidirectional untruncated entailment, exact number sets, finite perplexity no greater than 1.5 times the original, and completion/repetition checks. Removed counts selected outputs evading owner detection regardless of quality; Joint counts preservation and removal together. Word copies counts normalized source equality. All fractions retain the 32-input denominator. Three attempts are frozen before quality selection and owner scoring. These sources are reused development data.}\end{table}

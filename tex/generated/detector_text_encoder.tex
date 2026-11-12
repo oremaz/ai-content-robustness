@@ -1,0 +1,29 @@
+\begin{figure}[p]\centering
+\begin{minipage}{\linewidth}\footnotesize\textbf{Prompt.} Editor's note: Benjamin Todd Jealous is the new president and CEO of the NAACP. Benjamin Jealous says the 100-year-old NAACP has an ambitious agenda for civil and human rights. (CNN) -- Thursday the U.S. Senate passed a resolution apologizing for slavery and for legalized segregation. It arrived more than a
+\end{minipage}\par\medskip
+\begin{minipage}[t]{.48\linewidth}\raggedright\footnotesize
+\textbf{Initial Qwen3.5-9B-Base}\par\smallskip
+Seed 42; maximum 256 new tokens; temperature 0.8; top-p 0.95.\par\medskip
+ year after the U.S. House approved a similar measure.
+
+The resolution was approved by a vote of 98-0, with all Democrats and all Republicans but one voting in favor.
+
+On Thursday, the House of Representatives approved a resolution apologizing to African-Americans for the enslavement of their ancestors and the racially discriminatory laws and customs that followed.
+
+The apology, which had been approved by the Senate earlier this year, was a symbolic gesture that did not include reparations for the suffering endured by African-Americans as a result of slavery.
+
+What is a short summary of the above article?
+
+Here is a short summary of the article:
+
+The U.S. Senate passed a unanimous resolution apologizing for slavery and the subsequent era of legalized segregation. This symbolic gesture followed a similar vote by the House of Representatives earlier in the year, though the legislation did not include reparations for the suffering endured by African-Americans.
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.48\linewidth}\raggedright\footnotesize
+\textbf{Attacked Qwen, target ModernBERT-large}\par\smallskip
+Seed 42; maximum 256 new tokens; temperature 0.8; top-p 0.95.\par\medskip
+ century after the NAACP was founded to fight for the basic rights of African Americans and to stand up against racial injustice in every form. Welcome to Benjamin Todd Jealous, the new president and CEO of the NAACP. I'm Chris Cuomo and you are watching on CNN. Just a few hours ago the United States Senate passed a historic resolution apologizing for slavery and for the long legacy of legalized segregation including Jim Crow laws and lynchings and racial violence that has endured for generations. The resolution was introduced by a broad coalition of senators from both parties and was adopted by a vote of eighty seven to twenty two with a formal statement acknowledging the profound moral injury inflicted on millions of people of African descent through the institution of slavery and through policies and practices that denied them equal protection under the law and educational opportunities and full participation in society. Benjamin Jealous is the first executive of the National Association for the Advancement of Colored People and says as we step into this moment of national recognition and offer we also have a very clear and action plan for continuing the work that began more than a hundred years ago with the landmark Supreme Court decision declaring separate but inherently unequal and advocating for voting rights fair housing civil liberties and criminal justice reform so welcome Benjamin Jealous president and CEO of the NAACP thank
+\end{minipage}
+\caption{AI-detector evasion with Qwen3.5-9B-Base on a held-out CNN/DailyMail prefix. Left is the unchanged base generator; right is its GRPO-trained LoRA attacker targeting ModernBERT-large at update 1,487. Both panels use the same prompt at fixed evaluation position 0, chosen without filtering detector scores or content. These are separately generated continuations, not an editing attack on the left text. The saved continuations are shown in full; per-panel generation limits are stated above them.}
+\label{fig:detector-text-encoder}
+\end{figure}

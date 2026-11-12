@@ -1,8 +1,18 @@
-\paragraph{Joint removal and preservation on retained image pairs}
-The following diagnostic reuses the complete paired quality measurements and frozen owner decisions. No image generation or attack training is repeated. Every score is joined by its original sample index; output-only cases are additionally matched through the original PNG hash and the sealed NFPA input identifier. The reconstructed owner decisions must reproduce the recorded detection counts before they enter this table.
+\paragraph{Joint removal under the retained image-preservation rule}
+The saved pairs are evaluated with the retained three-metric rule in \eqref{eq:revised-image-preservation}. Table~\ref{tab:retained-image-preservation} uses LPIPS at most 0.2, image--image CLIP at least 0.9 and class-alignment retention at least 0.9. SSIM is excluded from this rule. Each source, candidate, class label and frozen owner decision is joined by its original sample index; output-only cases also use the PNG hash and sealed NFPA input ID. The owner decisions reproduce the recorded detection counts before entering the table.
 
 \input{generated/quality_qualified_images}
 
-The strict rule exposes a distinction hidden by raw detection rates. RAR clean-LoRA candidates frequently remain aligned with the requested class but change the individual scene, so none passes this paired-content rule. DC-AE clean LoRA preserves many original images while removing the signal: at 2,500 steps, 283 of 512 attempted inputs are joint successes, compared with 511 raw removals. At NFPA strength 40, neither model has a joint success under this rule. Lower NFPA strength retains some candidates; regeneration is therefore neither uniformly unsuccessful nor uniformly content preserving.
+The columns answer different questions. Removed measures loss of the owner signal. Pair-rule pass measures the conjunction of the automatic preservation checks over all attempted inputs. Joint counts inputs satisfying both. A zero in Joint can therefore arise from failed removal, failed preservation or both.
 
-These thresholds are a post-hoc diagnostic on already inspected results. They do not provide an untouched benchmark, a human-quality guarantee, or evidence that RAR is robust to every quality-preserving attack. The receipt retains alternative LPIPS limits and per-metric failure counts. Subsequent confirmatory experiments must specify their primary rule on independent validation data and retain continuous metrics and qualitative failures alongside these counts.
+For DC-AE, 2,500 clean LoRA updates remove 511/512 owner detections. Of the 340 candidates passing the retained pair rule, 339 evade detection. The former four-metric rule gave 284 preservation passes and 283 joint removals. These are two post-hoc analyses of the same images, with their rules and counts retained separately in provenance.
+
+\input{generated/rar_proxy_components}
+
+RAR requires a different interpretation. All 512 clean-LoRA outputs at 2,500 updates exceed the paired LPIPS limit, although 451 retain at least 90\% of their source's class alignment. Mean class CLIP is 0.3044 after this attack and 0.3030 for the original generator. The high paired distance establishes a failure to reproduce the same sampled scene under this proxy. It does not establish that every generated image is visually poor. Class alignment alone also cannot establish realism, diversity or preservation of the original scene. Figure~\ref{fig:rar-paired-audit} shows fixed source/attack pairs alongside these diagnostics.
+
+Output purification has a different pattern. RAR NFPA at strength zero passes the retained pair rule on 144/512 inputs and achieves 4/512 joint removals; at strength 20 those counts are 8/512 and 1/512. At strength 40, neither RAR nor DC-AE has a joint removal under this rule. Thus the retained table does not show uniform destruction of RAR image quality across all methods.
+
+The current-rule application to the earlier 512-pair cohorts is exploratory. The rule was informed by the later DC-AE image review, and its use here does not validate it for every RAR image. The archived historical audit and the new retained-rule audit preserve all per-input joins, component failures and counts. Further RAR improvement experiments remain prospective.
+
+\input{generated/rar_paired_examples}

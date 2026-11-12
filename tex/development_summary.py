@@ -61,7 +61,7 @@ def text_summary(manifest):
         for attack in ["direct", "smooth", "ratio"]:
             names[guard+"_"+attack] = guard.replace("guard", "Prune ")+" / "+attack
     names["reference_only"] = "Independent reference"
-    rows = [["Exposed law / attack", "Preserved", "Raw removed", "Joint removed", "Word copies"]]
+    rows = [["Exposed law / attack", "Access", "Preserved", "Removed", "Joint removed", "Word copies"]]
     receipt = {"manifest": str(Path(manifest).resolve()), "owner_results_sha256": sha(directory/"owner_results.json"),
                "original_detected": result["original_detected"], "conditions": {},
                "overlap_scope": "Saved generation token IDs, not retokenized text; descriptive, not a calibrated hypothesis test."}
@@ -94,7 +94,7 @@ def text_summary(manifest):
         if sum(r["passed"] for r in chosen[arm].values()) != scores["preservation"]["count"]:
             raise ValueError("Text preservation aggregate changed")
         fraction = lambda field: f"{scores[field]['count']}/{scores[field]['n']}"
-        rows.append([names[arm], fraction("preservation"), fraction("raw_removal"), fraction("joint_removal"), f"{copies}/{len(choices)}"])
+        rows.append([names[arm], "O" if arm == "reference_only" else "P", fraction("preservation"), fraction("raw_removal"), fraction("joint_removal"), f"{copies}/{len(choices)}"])
         receipt["conditions"][arm] = {**scores, "normalized_word_copies": copies,
                                      "mean_saved_four_pair_overlap": statistics.mean(overlaps),
                                      "selected_source_blocking_fallbacks": fallbacks,
@@ -102,12 +102,13 @@ def text_summary(manifest):
     shard = config.get("confirmation", {}).get("shard")
     suffix = ("guard" if config.get("exposure_guard") else "confirmation_"+str(shard)
               if shard is not None else "ratio" if "pre_ratio" in selected else "blocked")
-    caption = (f"Blind quality-only selection on {len(originals)} sources; "
-               f"{result['original_detected']} originals are detected. Raw removal includes failed-preservation "
-               "outputs, while joint removal requires the unchanged similarity, entailment and fluency gates. ")
-    caption += ("Fresh confirmation cohort, disjoint from development sources."
-                if shard is not None else "Reused development sources do not constitute independent confirmation.")
-    (ROOT/f"tex/generated/exposure_{suffix}_results.tex").write_text(table(rows, "lrrrr",
+    caption = 'TextSeal 2 simulated probability-only development experiment with Qwen3.5-4B instruct on 32 HC3 source answers, all originally detected at native $p\\leq0.001$. Pre uses underlying probabilities; Conditional uses the estimated keyed sampler law. Access: P is simulated probability-only target access; O uses only the saved marked answer. The independent reference is Qwen3.5-0.8B. Preserved counts first-quality-passing selections under Jina cosine $\\geq0.9$, bidirectional untruncated entailment, exact number sets, finite perplexity no greater than 1.5 times the original, and completion/repetition checks. Removed counts selected outputs evading owner detection regardless of quality; Joint counts preservation and removal together. Word copies counts normalized source equality. All fractions retain the 32-input denominator. Three attempts are frozen before quality selection and owner scoring. These sources are reused development data.'
+    caption = caption.replace('32 HC3', f'{len(originals)} HC3').replace('32-input', f'{len(originals)}-input')
+    if shard is not None:
+        caption = caption.replace('development experiment', f'fresh-source confirmation shard {shard}').replace('These sources are reused development data.', 'The two confirmation shards contain disjoint question identities.')
+    if config.get("exposure_guard"):
+        caption += ' Prune 10 and Prune 20 retain at least 90\\% and 80\\% of the ordinary top-ten estimated probability mass. Independent reference rewrites outside the advertised support.'
+    (ROOT/f"tex/generated/exposure_{suffix}_results.tex").write_text(table(rows, "llrrrr",
         caption))
     positions = [0, 8, 16, 24]
     qualitative = []
@@ -140,7 +141,7 @@ def image_summary(manifest, suffix=None):
     freeze = read(root/"final_artifact_freeze.json")
     if result["signature"] != config["signature"] or result["selection_hashes"] != freeze["selection_hashes"]:
         raise ValueError("Frozen image owner inputs changed")
-    rows = [["Starting model", "Updates", "Anchor", "Preserved", "Raw removed", "Joint removed"]]
+    rows = [["Starting model", "Updates", "Anchor", "Preserved", "Removed", "Joint removed"]]
     for name, scores in result["conditions"].items():
         selection_path = root/name/"selection.json"
         if sha(selection_path) != result["selection_hashes"][name]:
@@ -207,9 +208,9 @@ def image_summary(manifest, suffix=None):
                         label += f"; LPIPS {raw_quality[index]['lpips']:.3f}\nquality {'pass' if raw_quality[index]['preservation']['passed'] else 'FAIL'}"
                     draw.text((side*tile+3,number*(tile+heading)+2),label,font=font,fill="black")
             triplets.save(ROOT/f"tex/figures/{stem.replace('_','-')}-triplets-{name}.png")
-    caption = "Frozen quality-only-selected image attacks on 64 reserved final seeds and fitting-holdout classes. Each attack is paired with its own supplied marked checkpoint. The distinct selected anchor weights reflect the prespecified selection policy; they are not matched-coefficient comparisons."
+    caption = 'Independent open-weight clean-training attacks against DistSeal UViT-H/DC-AE at 512 pixels. Original is the released marked generator; Fixed and Adapted are the two prediction-anchored meta-distilled variants. Updates counts clean attacker updates, and Anchor is its prediction-retention coefficient. Preserved counts returned outputs passing LPIPS $\\leq0.2$, SSIM $\\geq0.6$, image CLIP $\\geq0.9$ and class-alignment retention $\\geq0.95$. Removed counts returned images losing owner detection, before requiring preservation. Joint counts both outcomes. All fractions use 64 reserved final inputs per starting model, initially all detected at strict bit accuracy $>0.6875$. Checkpoint selection uses 32 separate validation inputs without owner feedback.'
     if config["protocol"].get("quality_fallback"):
-        caption += " The hybrid client returns the marked source on a quality failure; these are gated outputs, not a single adapted checkpoint. Class identities are reused with fresh generation seeds."
+        caption = 'Independent open-weight clean-training attacks against DistSeal UViT-H/DC-AE at 512 pixels. Original is the released marked generator; Fixed and Adapted are the two prediction-anchored meta-distilled variants. Updates counts clean attacker updates, and Anchor is its prediction-retention coefficient. Preserved counts returned outputs passing LPIPS $\\leq0.2$, SSIM $\\geq0.6$, image CLIP $\\geq0.9$ and class-alignment retention $\\geq0.95$. Removed counts returned images losing owner detection, before requiring preservation. Joint counts both outcomes. All fractions use 64 reserved final inputs per starting model, initially all detected at strict bit accuracy $>0.6875$. Checkpoint selection uses 32 separate validation inputs without owner feedback. This experiment returns the marked source when the raw adapted image fails preservation. The reported counts concern returned outputs; the raw adapted generator can fail the pair rule. Updates and anchor coefficients are selected separately for each starting model.'
     (ROOT/f"tex/generated/{stem}_results.tex").write_text(table(rows, "lrrrrr", caption))
     save(ROOT/f"tex/provenance/{stem}_results.json", {"manifest": str(Path(manifest).resolve()),
          "owner_results_sha256": sha(root/"owner_results.json"), "results": result,

@@ -137,3 +137,14 @@ def test_launcher_does_not_use_full_node_temporary_storage(tmp_path):
     assert lines[0] == sys.executable
     assert lines[1].startswith(str(tmp_path/"job-cache-123-"))
     assert not list(tmp_path.glob("job-cache-*"))
+
+
+def test_distillation_stop_cap_preserves_original_schedule():
+    from ai_content_detector.watermarking.text import training_steps
+    manifest={'text_training':{'steps':8000,'clean_steps':1500},'distillation_stop_step':5000}
+    assert training_steps(manifest)==(5000,8000)
+    assert training_steps(manifest,clean=True)==(1500,1500)
+    for invalid in (0,-1,8001,5000.0,True):
+        with pytest.raises(ValueError):
+            training_steps(dict(manifest,distillation_stop_step=invalid))
+    assert training_steps({'text_training':manifest['text_training']})==(8000,8000)

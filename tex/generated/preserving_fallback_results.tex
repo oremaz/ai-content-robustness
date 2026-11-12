@@ -1,8 +1,8 @@
 \begin{table}[ht]\centering\small
 \begin{tabular}{lrrrrr}\toprule
-Starting model & Updates & Anchor & Preserved & Raw removed & Joint removed\\\midrule
+Starting model & Updates & Anchor & Preserved & Removed & Joint removed\\\midrule
 Original & 500 & 0.0 & 64/64 & 20/64 & 20/64\\
 Fixed & 500 & 0.0 & 64/64 & 22/64 & 22/64\\
 Adapted & 500 & 0.0 & 64/64 & 22/64 & 22/64\\
 \bottomrule\end{tabular}
-\caption{Frozen quality-only-selected image attacks on 64 reserved final seeds and fitting-holdout classes. Each attack is paired with its own supplied marked checkpoint. The distinct selected anchor weights reflect the prespecified selection policy; they are not matched-coefficient comparisons. The hybrid client returns the marked source on a quality failure; these are gated outputs, not a single adapted checkpoint. Class identities are reused with fresh generation seeds.}\end{table}
+\caption{Independent open-weight clean-training attacks against DistSeal UViT-H/DC-AE at 512 pixels. Original is the released marked generator; Fixed and Adapted are the two prediction-anchored meta-distilled variants. Updates counts clean attacker updates, and Anchor is its prediction-retention coefficient. Preserved counts returned outputs passing LPIPS $\leq0.2$, SSIM $\geq0.6$, image CLIP $\geq0.9$ and class-alignment retention $\geq0.95$. Removed counts returned images losing owner detection, before requiring preservation. Joint counts both outcomes. All fractions use 64 reserved final inputs per starting model, initially all detected at strict bit accuracy $>0.6875$. Checkpoint selection uses 32 separate validation inputs without owner feedback. This experiment returns the marked source when the raw adapted image fails preservation. The reported counts concern returned outputs; the raw adapted generator can fail the pair rule. Updates and anchor coefficients are selected separately for each starting model.}\end{table}

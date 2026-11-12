@@ -17,7 +17,7 @@ Initial SD1.5 & 1.2\% & .3285 & 100\%\\
 Validation-selected, 5,600 images & 8.2\% & .3256 & 99.1\%\\
 Post-hoc final, 12,800 images & 99.4\% & .2080 & 63.3\%\\\bottomrule
 \end{tabular}
-\caption{The post-hoc final checkpoint is an exploratory evaluation, not a replacement for the validation-selected result. CLIP retention is a ratio of mean alignment scores, not a percentage of visual quality.}
+\caption{Unwatermarked Stable Diffusion 1.5, trained with DDPO using open-weight generator access and warmed DDA score feedback. All rows use the same 500 held-out prompts and coupled noise seeds. Test evasion is the fraction with DDA AI score below 0.5. CLIP is mean image--prompt alignment; Retention divides that mean by initial SD1.5 alignment. The 5,600-image checkpoint is selected on 200 separate validation prompts with a 95\% alignment floor; the 12,800-image checkpoint is a post-hoc diagnostic. Retention measures alignment, not a percentage of visual quality.}
 \end{table}
 
 The final checkpoint's high evasion at threshold 0.5 coexists with AUROC 0.9661. At the warmed defender's frozen validation threshold, approximately 0.01406, its evasion is 38.4\% with 2.8\% human false positives. This distinction matters: crossing a fixed threshold does not imply destroying the detector's ranking ability. Threshold choice must remain separate from test-time attack selection.
@@ -27,3 +27,5 @@ The final checkpoint's high evasion at threshold 0.5 coexists with AUROC 0.9661.
 The follow-up long-run defender job recorded a startup failure involving an unbound receipt helper. A separate recovery directory exists, but its inspected manifest records no new defender job. The public pointer still says pending. Without a verified completion receipt, this report treats the follow-up defense outcome as unresolved rather than reporting a completed result or asserting that no other VM artifact exists.
 
 \paragraph{What was learned.} Training can push fixed-threshold evasion very high while losing prompt alignment. Enforcing a validation utility floor changes the scientific conclusion to a smaller, qualified gain. Both outcomes belong in the report because they answer different questions. The single seed and explored checkpoint trajectory do not establish a general evasion frontier or resistance to another adaptive round.
+
+\input{generated/detector_image_examples}

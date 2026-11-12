@@ -152,8 +152,9 @@ class TorchDefender(AdaptiveClassifierDefender):
         device = next(self.model.parameters()).device
         with torch.no_grad(), torch.autocast(device_type=device.type, dtype=torch.bfloat16,
                                              enabled=device.type == "cuda"):
-            for start in range(0, len(texts), 8):
-                tokens = self.tokenizer(texts[start:start + 8], return_tensors="pt", padding=True,
+            batch_size=getattr(self,"inference_batch_size",8)
+            for start in range(0, len(texts), batch_size):
+                tokens = self.tokenizer(texts[start:start + batch_size], return_tensors="pt", padding=True,
                                         truncation=True, max_length=self.max_length).to(device)
                 logits = self.model(**tokens).logits
                 results.extend(logits.float().softmax(-1)[:, self.ai_label].cpu().tolist())
@@ -214,18 +215,29 @@ class FeatureDefender:
     def features(self, texts):
         if self.specification["family"] != "diveye":
             return self.extractor.transform(texts).toarray().astype(np.float32)
+        import io
+        import sqlite3
+        from contextlib import closing
+
         rows = []
         directory = Path(self.specification.get("feature_cache", self.output_dir.parent / "diveye_features"))
-        with StopRequest() as stop:
+        directory.mkdir(parents=True, exist_ok=True)
+        with closing(sqlite3.connect(directory / "features.sqlite3", isolation_level=None)) as cache, StopRequest() as stop:
+            cache.execute("CREATE TABLE IF NOT EXISTS features (key TEXT PRIMARY KEY, payload BLOB NOT NULL)")
             for text in texts:
                 if stop.requested:
                     raise CheckpointPause("DivEye feature extraction checkpoint retained")
                 key = hashlib.sha256((self.extractor.SPACE_REVISION + text).encode()).hexdigest()
-                path = directory / f"{key}.pt"
-                row = load_checkpoint(path)
-                if row is None:
-                    row = self.extractor.extract_features(text)
-                    atomic_save(row, path)
+                saved = cache.execute("SELECT payload FROM features WHERE key=?", (key,)).fetchone()
+                if saved is not None:
+                    row = torch.load(io.BytesIO(saved[0]), map_location="cpu", weights_only=False)
+                else:
+                    row = load_checkpoint(directory / f"{key}.pt")
+                    if row is None:
+                        row = self.extractor.extract_features(text)
+                    payload = io.BytesIO()
+                    torch.save(row, payload)
+                    cache.execute("INSERT OR IGNORE INTO features VALUES (?,?)", (key, payload.getvalue()))
                 rows.append(row)
         return np.asarray(rows)
 

@@ -4,7 +4,7 @@ The confirmation protocol reserves 128 new HC3 question identities, excludes the
 
 \begin{figure}[ht]\centering
 \includegraphics[width=\linewidth]{figures/exposure-confirmation.pdf}
-\caption{Three distinct outcomes for the fresh confirmation cohort. Error bars are exact binomial 95\% intervals, conditional on the single key and evaluated models. Conditional exposure retains substantial signal under direct resampling, less under smoothing, and almost none under adaptive ratio reweighting. Lower joint removal alone cannot distinguish signal retention from quality attrition.}
+\caption{Fresh-source TextSeal 2 confirmation on Qwen3.5-4B instruct: 128 HC3 answers, one frozen key, all sources detected at $p\leq0.001$. Each group names the probability-only client (direct resampling, confidence smoothing or reference-ratio reweighting); colors distinguish pre-watermark from estimated key-conditional probability exposure. Panels report preservation, owner non-detection and their joint event, each over all 128 sources after quality-only selection among three attempts. The auxiliary reference is Qwen3.5-0.8B. Error bars are exact binomial 95\% intervals conditional on these models and key; joint removal alone cannot separate retained signal from quality attrition.}
 \label{fig:exposure-confirmation}
 \end{figure}
 \input{generated/exposure_confirmation_results}

@@ -80,16 +80,14 @@ def summarize(manifests):
                "conditions": conditions, "paired_joint_differences": paired,
                "analysis_source_sha256": sha(__file__), "bootstrap_seed": 2026110802, "bootstrap_replicates": 10000,
                "uncertainty_scope": "Post-hoc paired prompt bootstrap and unadjusted descriptive exact McNemar tests; fixed single key, conditional on these models and source population. Not training-seed or key uncertainty."}
-    rows = [["Interface / client", "Preserved", "Raw removed", "Joint removed", r"Joint 95\% CI"]]
+    rows = [["Interface / client", "Preserved", "Removed", "Joint removed", r"Joint 95\% CI"]]
     for arm, values in conditions.items():
         fraction = lambda field: str(values[field]["count"])+"/"+str(values[field]["n"])
         low, high = values["joint_removal"]["ci95"]
         rows.append([arm.replace("conditional_", "Conditional / ").replace("pre_", "Pre / "),
                      fraction("preservation"), fraction("raw_removal"), fraction("joint_removal"),
                      f"[{100*low:.1f}, {100*high:.1f}]"+r"\%"])
-    caption = ("Fresh 128-source, single-key confirmation after blind first-quality-passing selection from three attempts. "
-               "Initially detected sources form the removal denominator. Intervals are exact binomial intervals, "
-               "conditional on the evaluated key and models; paired differences are reported separately.")
+    caption = 'Fresh-source simulated probability-only confirmation for native TextSeal 2 on Qwen3.5-4B instruct, 128 HC3 questions and one frozen watermark key. All 128 source answers are detected at $p\\leq0.001$. Pre exposes underlying pre-watermark probabilities; Conditional exposes their estimated keyed sampler law. Direct resamples, smooth mixes an independent Qwen3.5-0.8B reference, and ratio reweights advertised tokens using that reference. Preserved counts outputs passing the frozen text rule; Removed counts owner non-detections regardless of preservation; Joint counts both outcomes. Every removal fraction uses the 128 originally detected sources. Selection takes the first quality-passing attempt among three, before owner scoring. Intervals are exact binomial 95\\% intervals conditional on these models and key.'
     (ROOT/"tex/generated/exposure_confirmation_results.tex").write_text(table(rows,"lrrrr",caption))
     import matplotlib
     matplotlib.use("Agg")

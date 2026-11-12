@@ -1,6 +1,6 @@
 \begin{table}[ht]\centering\small
 \begin{tabular}{lrrrr}\toprule
-Interface / client & Preserved & Raw removed & Joint removed & Joint 95\% CI\\\midrule
+Interface / client & Preserved & Removed & Joint removed & Joint 95\% CI\\\midrule
 Pre / direct & 114/128 & 128/128 & 114/128 & [82.3, 93.9]\%\\
 Pre / smooth & 102/128 & 127/128 & 101/128 & [70.8, 85.6]\%\\
 Conditional / direct & 109/128 & 23/128 & 19/128 & [9.2, 22.2]\%\\
@@ -8,4 +8,4 @@ Conditional / smooth & 112/128 & 80/128 & 71/128 & [46.4, 64.3]\%\\
 Pre / ratio & 108/128 & 128/128 & 108/128 & [76.9, 90.2]\%\\
 Conditional / ratio & 96/128 & 126/128 & 95/128 & [65.7, 81.5]\%\\
 \bottomrule\end{tabular}
-\caption{Fresh 128-source, single-key confirmation after blind first-quality-passing selection from three attempts. Initially detected sources form the removal denominator. Intervals are exact binomial intervals, conditional on the evaluated key and models; paired differences are reported separately.}\end{table}
+\caption{Fresh-source simulated probability-only confirmation for native TextSeal 2 on Qwen3.5-4B instruct, 128 HC3 questions and one frozen watermark key. All 128 source answers are detected at $p\leq0.001$. Pre exposes underlying pre-watermark probabilities; Conditional exposes their estimated keyed sampler law. Direct resamples, smooth mixes an independent Qwen3.5-0.8B reference, and ratio reweights advertised tokens using that reference. Preserved counts outputs passing the frozen text rule; Removed counts owner non-detections regardless of preservation; Joint counts both outcomes. Every removal fraction uses the 128 originally detected sources. Selection takes the first quality-passing attempt among three, before owner scoring. Intervals are exact binomial 95\% intervals conditional on these models and key.}\end{table}

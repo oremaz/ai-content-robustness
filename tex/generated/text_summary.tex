@@ -1,17 +1,17 @@
 \begin{table}[t]\centering\small
-\begin{tabular}{llrr}\toprule
-Scheme & Condition & Detected & Rate\\\midrule
-TextSeal 2 & Original marked & 253/256 & 98.8\% \\
-TextSeal 2 & Clean control & 1/256 & 0.4\% \\
-TextSeal 2 & Ordinary rewrite & 15/256 & 5.9\% \\
-TextSeal 2 & BIRA & 0/256 & 0.0\% \\
-TextSeal 2 & Top-10 resampling & 1/256 & 0.4\% \\
-TextSeal 2 & Smoothing & 0/256 & 0.0\% \\
-Text student & Original marked & 118/256 & 46.1\% \\
-Text student & Clean control & 2/256 & 0.8\% \\
-Text student & Ordinary rewrite & 9/256 & 3.5\% \\
-Text student & BIRA & 1/256 & 0.4\% \\
-Text student & Top-10 resampling & 102/256 & 39.8\% \\
-Text student & Smoothing & 18/256 & 7.0\% \\
+\begin{tabular}{lllrr}\toprule
+Scheme & Condition & Access & Detected & Rate\\\midrule
+TextSeal 2 & Original marked & -- & 253/256 & 98.8\% \\
+TextSeal 2 & Clean control & -- & 1/256 & 0.4\% \\
+TextSeal 2 & Ordinary rewrite & O & 15/256 & 5.9\% \\
+TextSeal 2 & BIRA & O & 0/256 & 0.0\% \\
+TextSeal 2 & Top-10 resampling & P & 1/256 & 0.4\% \\
+TextSeal 2 & Smoothing & P & 0/256 & 0.0\% \\
+Text student & Original marked & -- & 118/256 & 46.1\% \\
+Text student & Clean control & -- & 2/256 & 0.8\% \\
+Text student & Ordinary rewrite & O & 9/256 & 3.5\% \\
+Text student & BIRA & O & 1/256 & 0.4\% \\
+Text student & Top-10 resampling & P & 102/256 & 39.8\% \\
+Text student & Smoothing & P & 18/256 & 7.0\% \\
 \bottomrule\end{tabular}
-\caption{Retained text detections at distinct primary operating points. Probability arms generate fresh responses; the student is a local adaptation.}\end{table}
+\caption{Text-watermark experiments with Qwen3.5-4B instruct on 256 HC3 questions per condition. TextSeal 2 is the native keyed sampler; Text student is the local distilled latent-text adaptation. Detected is the number still flagged by each frozen owner test, and Rate is that count divided by 256. TextSeal 2 uses native $p\leq0.001$; the local student uses extractor score $>-0.6263284683$. Ordinary rewriting and BIRA use Llama-3.1-8B-Instruct on a saved marked answer. Top-10 resampling and smoothing generate fresh answers under simulated probability access; TextSeal 2 exposes pre-watermark probabilities, while the student exposes its marked model probabilities. Access: O means saved outputs only; P means a simulated probability-only target API without target weight access; -- marks a control. Initial detection differs, so post-attack detection alone does not count removals from initially detected sources.}\end{table}

@@ -1,0 +1,51 @@
+\begin{figure}[p]\centering
+\begin{minipage}{\linewidth}\footnotesize\textbf{Prompt.} Why do people want programming taught in elementary / high schools ? I know absolutely nothing about programming . EDIT : I 'm marking this as answered . Thanks to everyone who replied ! Explain like I'm five.
+\end{minipage}\par\medskip
+\begin{minipage}[t]{.315\linewidth}\raggedright\footnotesize
+\textbf{Initial marked Qwen3.5-4B}\par\smallskip
+Owner p-value 3.72e-14; detected.\par\medskip
+Imagine you want to play video games. You probably use a controller to give the game buttons a specific job: "press A" means "move left," and "press B" means "jump."
+
+Some people don't just want to press the buttons; they want to **build their own video games**.
+
+To build a game, you need instructions that a computer can understand. Programming is just a special language that tells the computer what to do. It's like writing the "rulebook" for the computer to follow.
+
+People teach this to kids because:
+1.  **It's a superpower:** Just like learning to speak English helps you talk to friends, learning code helps you talk to computers.
+2.  **It builds good habits:** Programming teaches kids to be very patient (computers don't have feelings!) and to solve puzzles step-by-step, just like solving a math problem.
+3.  **It changes how the world works:** Soon, they
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.315\linewidth}\raggedright\footnotesize
+\textbf{Ordinary Llama rewrite}\par\smallskip
+Owner p-value 0.0439; undetected; paired text proxy pass.\par\medskip
+To engage in video gaming, one often utilizes a controller to assign specific functions to game buttons: "press A" translates to "move left," while "press B" corresponds to "jump."
+
+Individuals who desire more than simply pressing buttons may wish to **design their own video games**.
+
+In order to create a game, it is necessary to provide instructions that a computer can comprehend. Programming serves as a unique language that communicates with the computer, essentially outlining the "rulebook" for it to follow.
+
+This skill is taught to children because:
+1.  **It grants them a superpower:** Just as proficiency in English enables effective communication with friends, learning code allows individuals to interact with computers.
+2.  **It fosters good habits:** Programming educates kids to be extremely patient (computers lack emotions) and to solve puzzles step-by-step, much like solving a math problem.
+3.  **It transforms the world:** Ultimately, they will be able to influence the way things function.
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.315\linewidth}\raggedright\footnotesize
+\textbf{BIRA Llama rewrite}\par\smallskip
+Owner p-value 0.553; undetected; paired text proxy fail.\par\medskip
+If you're interested in playing video games or creating your own interactive experiences, it's common to utilize controllers with pre-defined functions where pressing certain keys or buttons triggers specific actions within the game environment - for example, pressing 'A' can cause your character to move leftwards while pressing 'B' can initiate a jump action.
+
+However, there are individuals who wish to delve deeper into game development by designing and building their own custom games from scratch. 
+
+In order for anyone to create games programmatically, it's essential to establish clear guidelines or 'instructions' that can be comprehended by computers. This unique form of communication with computers, known as programming, essentially functions as a 'blueprint' or'manual' for computers to execute based on written commands.
+
+Educators often introduce programming concepts to children due to its numerous benefits:
+
+1.  Learning programming can grant individuals an extraordinary skillset - much like acquiring proficiency in spoken languages allows for seamless communication with others.
+2.  Engaging in programming can instill valuable habits in young minds by fostering patience as computers are devoid of emotions, thus requiring meticulous problem-solving approaches.
+3.  Developing programming skills can also significantly influence global progress as it enables future generations to reshape digital landscapes with innovative creations.
+\end{minipage}
+\caption{Text watermark removal for TextSeal 2 on Qwen3.5-4B instruct, thinking disabled. Columns show the initial marked answer, an ordinary rewrite and a BIRA rewrite; both attacks use independent Llama-3.1-8B-Instruct with text-only access. This is fixed position 0 of the 256-question HC3 cohort, selected without quality or detection filtering. The original generation budget is 200 tokens, so the source can be incomplete. TextSeal 2 flags native $p\leq0.001$. The paired text proxy requires Jina cosine at least 0.90, bidirectional entailment without NLI truncation, exact numeric-set agreement, valid positive reference perplexity, and no wrapper leakage or long letter runs. Full saved texts are shown.}
+\label{fig:watermark-text-textseal2}
+\end{figure}

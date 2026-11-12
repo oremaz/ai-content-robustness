@@ -1,0 +1,10 @@
+\begin{table}[ht]\centering\small
+\begin{tabular}{lrrrr}\toprule
+RAR intervention & Removed & \shortstack{LPIPS\\pass} & \shortstack{Image CLIP\\pass} & \shortstack{Class retention\\pass}\\\midrule
+Clean LoRA, 2,500 updates & 487 & 0 & 28 & 451 \\
+Clean Full, 2,500 updates & 475 & 0 & 34 & 444 \\
+NFPA, strength 0 & 22 & 356 & 161 & 281 \\
+NFPA, strength 20 & 157 & 11 & 130 & 269 \\
+NFPA, strength 40 & 402 & 2 & 115 & 262 \\
+\bottomrule\end{tabular}
+\caption{RAR-XL watermark attacks on the same 512 saved 256-pixel source images. Removed counts owner non-detections among 512 initially detected originals. Each other column applies one component of the retained proxy independently: LPIPS $\leq0.2$, image--image CLIP $\geq0.9$, or class-alignment retention $\geq0.9$. Their counts are not intersected. Class retention can pass while a different sampled scene fails paired similarity. Clean LoRA/full training requires marked target weights; NFPA has output-only target access. These metrics do not establish population realism or human-rated quality.}\label{tab:rar-proxy-components}\end{table}

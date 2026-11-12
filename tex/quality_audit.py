@@ -57,13 +57,13 @@ def main():
             'sources':sources,'results':results}
     (ROOT/'tex/provenance/quality_audit.json').write_text(json.dumps(output,indent=2)+'\n')
     lines=['\\begin{table}[ht]\\centering\\small','\\begin{tabular}{llrrrr}\\toprule',
-           'Scheme & Rewrite & Initial + & Raw removed & Proxy pass & Joint success\\\\\\midrule']
+           'Scheme & Rewrite & \\shortstack{Initially\\\\detected} & Removed & \\shortstack{Text-rule\\\\pass} & Joint\\\\\\midrule']
     for r in results:
         if r['minimum_jina_cosine']==.9:
             label='TextSeal 2' if r['scheme']=='textseal2' else 'Text student'
-            lines.append(f"{label} & {r['method']} & {r['originally_detected']} & {r['raw_removed_from_positives']} & {r['preservation_proxy_pass']} & {r['joint_removed_and_preservation_pass']} \\\\")
+            lines.append(f"{label} & {('Ordinary' if r['method']=='vanilla' else 'BIRA')} & {r['originally_detected']} & {r['raw_removed_from_positives']} & {r['preservation_proxy_pass']} & {r['joint_removed_and_preservation_pass']} \\\\")
     lines+=['\\bottomrule\\end{tabular}',
-        '\\caption{Post-hoc joint text diagnostics, 256 outputs per arm. Proxy pass requires the stated automatic checks and Jina cosine at least .90. Joint success also requires original detection followed by non-detection. These are counts, not certified factual-preservation rates.}\\end{table}']
+        '\\caption{Post-hoc paired text-watermark audit on Qwen3.5-4B instruct, 256 source answers per row. TextSeal 2 uses native $p\\leq0.001$; the local distilled student uses extractor score $>-0.6263284683$. Initially detected counts marked sources passing that test. Removed counts their attacked answers that become undetected. Text-rule pass counts all rewrites satisfying bidirectional NLI entailment without truncation, exact numeric-set agreement, valid positive independent Mistral perplexity, no wrapper leakage or long letter runs, and Jina cosine $\\geq0.90$. Joint counts the intersection of removal and text-rule pass. Ordinary and BIRA rewriting both use independent Llama-3.1-8B-Instruct with output-only target access. These counts use automatic proxies and are not human annotations.}\\end{table}']
     (ROOT/'tex/generated/quality_qualified_text.tex').write_text('\n'.join(lines)+'\n')
     print(json.dumps([r for r in results if r['minimum_jina_cosine']==.9],indent=2))
 

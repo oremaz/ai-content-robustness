@@ -40,6 +40,91 @@ round remains untested. These results establish recovery against the saved
 attackers. The [experiment record](tex/records/docs/research_results.tex) retains
 the detailed measurements.
 
+The saved ensemble outputs can also be compared with the base generator using
+`scripts/compare_grpo_quality.py MANIFEST`, launched with
+`sbatch scripts/run_grpo_quality.slurm MANIFEST` on one H100 development GPU
+(30-minute limit). The manifest identifies the 500 aligned before/after samples,
+frozen local Mistral-7B and E5 models, and runtime archive. Results include
+prompt-conditioned, token-weighted generation perplexity, mean per-document
+empirical token entropy in bits, E5 similarity to full human references for both
+sets, and MAUVE against the saved baseline human continuations. MAUVE uses custom
+Mistral final-token features, 25 buckets and seed 42; it is not directly comparable
+to default GPT-2 MAUVE scores. These are automatic quality and diversity proxies.
+The optional research dependencies include `mauve-text==0.4.0`. Run artifacts
+and per-sample measurements live under `results/research_workflow/grpo_quality/`.
+
+On 2026-11-12, H100 development job 76441 completed this comparison on all
+500 paired samples. Before/after GRPO, generation perplexity was 3.5509/7.9577,
+mean token entropy was 6.0434/6.8394 bits, E5 similarity was 0.8576/0.8701,
+and custom-feature MAUVE was 0.0992/0.7492. Human continuations had perplexity
+5.6374 and token entropy 6.9258 bits. Perplexity therefore worsens while these
+similarity and diversity measures improve; these results do not establish an
+overall quality gain. The baseline E5 score is now computed, and the recomputed
+after-GRPO score agrees with the retained evaluation. Full protocol and metrics:
+`results/research_workflow/grpo_quality/20261111T230402Z/results.json`.
+
+A separate constrained comparison uses `scripts/generate_constrained_grpo.py`
+and `scripts/run_constrained_grpo.slurm`. It regenerates all 500 prompts with
+both the base model and ensemble checkpoint 502, forbidding `<think>`, `</think>`
+and `OPTIONS:` token sequences, including leading-space and newline encodings.
+Both models use seed 42, temperature 0.8, top-p 0.95, 256 new tokens and batches
+of eight. Human controls remain the original saved continuations. The original
+quality results remain unchanged; `comparison.md` in the constrained run places
+the original and new metric tables together. This changes decoding only and
+does not retrain the attacker or establish its constrained detector evasion rate.
+
+The 500-sample constrained job 76910 was cancelled before completion. Its
+replacement uses `scripts/prepare_grpo_quality_5k.py` to freeze 5,000 unique
+CNN/DailyMail test articles, explicitly excluding all recorded attacker training
+and evaluation prompts. Each article contributes its first 50 words as prompt
+and the remaining human text as semantic reference. MAUVE uses the same 5,000
+human continuations capped at 256 Qwen tokens for both models and both decoding
+regimes. Separate unrestricted and constrained jobs use batches of 32, 256 new
+tokens, temperature 0.8, top-p 0.95 and seed 42. Each requests one H100 in the
+development QoS for up to two hours. MAUVE retains the custom Mistral features
+and 25 clusters, with clustering seeds 42, 43 and 44 recorded separately. More
+samples and seed checks do not establish universal metric reliability. The
+historical 500-sample table is preserved separately; it uses a different cohort
+and human-length rule. The new 5,000-sample tables compare the same fixed test
+cohort. Manifests, overlap audit and tables are retained under
+`results/research_workflow/grpo_quality/test5k-20261111T233619Z/`.
+
+The first 5,000-sample constrained run (77129) failed its literal-string audit:
+155 baseline outputs contained `OPTIONS:` through alternate tokenization such
+as `OPTIONS://`; no thinking tags survived. These outputs are excluded from the
+quality comparison. The corrected `scripts/forbidden_text.py` processor blocks
+literal-string completions across alternate token boundaries, in addition to
+the original token-sequence bans. The corrected run is retained separately in
+`test5k-20261111T233619Z/constrained-v2/`. Its generation cache is independent of
+the failed run. The focused regression tests cover alternate suffix tokens,
+split thinking tags, whole-string tokens, and unrestricted scores.
+
+Both 5,000-sample jobs completed successfully: unrestricted job 77125 in
+1h11m20s and corrected constrained job 77744 in 1h18m50s. Post-run validation
+confirmed 5,000 aligned outputs per model/regime, the same human controls,
+consistent perplexity aggregation, and zero occurrences of the three forbidden
+strings in either constrained set. At clustering seed 42, unrestricted
+before/after GRPO perplexity is 4.2153/7.1682, entropy 6.3101/6.8600 bits,
+E5 similarity 0.8598/0.8764, and MAUVE 0.3340/0.8772. With constraints these
+are 4.5151/7.1609, 6.3237/6.8594 bits, 0.8565/0.8764, and 0.2865/0.8803.
+The human controls have perplexity 5.8132 and entropy 6.9632 bits. Combined
+historical and new tables are in
+`results/research_workflow/grpo_quality/test5k-20261111T233619Z/comparison.md`,
+with counts, literal-string audits and MAUVE seed variation in `validation.json`.
+The forbidden strings alone do not explain the base model's lower MAUVE.
+
+A post-run format audit of all 5,000 constrained outputs finds the standalone
+uppercase word `OPTIONS` in 1,223 base outputs and four GRPO outputs, despite
+zero occurrences of the forbidden literal `OPTIONS:`. Quiz/answer-style regex
+markers occur in 1,805 base outputs, 96 GRPO outputs and 54 human controls.
+These overlapping heuristic markers are not human quality labels. Manual
+inspection of 20 specified examples finds grammatical sentences mixed with
+quiz-format shifts, repetition and contradictions against the human reference.
+The base outputs average 164.1 words, versus 224.0 for GRPO and 195.2 for human
+controls. These distribution differences help explain low MAUVE, but the audit
+does not isolate their causal contributions to the score. Marker definitions
+and complete counts are in the corrected run's `format_audit.json`.
+
 For SD1.5 diffusion evasion, the validation-selected checkpoint increases test
 evasion from 1.2% to 8.2% while retaining 99.1% of mean CLIP alignment. A later
 checkpoint reaches 99.4% evasion with only 63.3% alignment retention. The report
@@ -67,6 +152,66 @@ Raw removal and content-preserving removal have separate denominators.
 The report includes failed candidates, quality failures, paired uncertainty and
 the distinction between development and confirmation. Automatic similarity
 metrics provide proxies for content preservation.
+
+## Translation attack study
+
+The [Qwen3.5-9B instruct translation protocol](docs/experiments/translation.md)
+warms the existing seven-detector ensemble, evaluates TextSeal 2 and the local
+DistSeal-inspired text student with 5,000-sample MAUVE, then tests generation in
+Simplified Chinese, French and Welsh followed by Index-Translate-9B or
+TranslateGemma-12B translation into English. The same frozen ensemble scores
+every condition. `scripts/translation_experiments.py` reuses the existing training
+workers; `scripts/run_translation.slurm` checkpoints and requeues on one H100 in
+development QoS. Full-paper reading and candidate defenses are recorded in the
+protocol; defense implementation awaits stages I and II. No experiment results
+are claimed before the run completes.
+The split audit retained 984 detector training, 488 validation and 5,000 test
+prompts. The warmed seven-member ensemble detects 99.76% of the unwatermarked
+English test outputs, with 0.26% human false positives at threshold 0.5.
+Job `92361` completed this baseline, then stopped on short watermark-training
+responses. The revised watermark-only partitions retain 971 training and 485
+validation responses of at least 128 tokens; all test data and detector results
+remain unchanged. Cache cleanup freed approximately 6,500 file slots without
+removing active dependencies or research artifacts. The obsolete portfolio-root
+environment was then removed, releasing roughly 47,400 additional entries.
+The corrected watermark inputs passed 25 focused CPU tests; job `96060` resumes
+from the completed baseline. The TextSeal 2 English baseline is complete on 5,000 samples: ensemble detection
+is 99.90% (0.26% human false positives), and watermark detection is 99.72%
+(0.06% human false positives at the fixed p <= 0.001 threshold). Custom-feature
+MAUVE averages approximately 0.0209 without the watermark and 0.0203 with it
+across seeds 42, 43 and 44. These similarly low values do not alone establish
+preserved quality. Translation-attack results remain pending. The user-requested two-H100 revision uses disjoint
+DistSeal and non-DistSeal stage lists. TextSeal 2 MAUVE and clean/TextSeal 2
+translation attacks can run while the latent student trains; locked result
+merging preserves the shared cohort and feature caches. Jobs `107004`
+(DistSeal) and `107002` (other work) run on separate H100 allocations; the
+checkpoint handoff preserved student update 2,893. Following a hold at update
+3,321, the user shortened DistSeal distillation to 5,000 total updates while
+retaining its existing optimizer state and learning-rate schedule. Replacement
+job `111368` resumes that branch; job `107002` is unchanged.
+
+The current pilot is narrowed to English and Chinese-to-English only: the same
+first 2,000 prompts, three model versions and two translators (12,000 translated
+outputs). Jobs `116870`, `116871` and `116872` run one model branch per H100.
+Generation/translation start at batches 32/16, with memory fallback and recorded
+GPU telemetry. Existing texts, cached scores/features and the full 5,000-example
+cohort are retained for extension. The revised pilot passed 37 focused CPU tests.
+
+A separate French/Welsh pilot uses the first 200 held-out prompts per language
+and model version, with both translators and the same frozen English-warmed
+ensemble. Job `119154` requests one H100 in development QoS with checkpointing
+and automatic requeue. Its 1,200 source texts and 2,400 translations are stored
+under `french-welsh-200/`, alongside the English/Chinese pilot. It reuses the
+existing watermarked models and calibration without training new detectors.
+
+A zero-shot generator-transfer pilot evaluates the same frozen Qwen-warmed
+ensemble on 128 English continuations from `google/gemma-4-12B-it` and 128
+CNN/DailyMail human controls. The paired first 128 held-out IDs have no overlap
+with detector warmup or validation. Job `120562` uses one H100 in development
+QoS, native instruction formatting with thinking disabled, and existing
+checkpointed generation/scoring. The earlier base-model preparation was removed
+at the user's request, freeing approximately 24 GB. The [transfer protocol](docs/experiments/generator_transfer.md)
+records the command, model revision, validation and pilot limitations.
 
 ## Code structure
 
@@ -159,5 +304,20 @@ cd tex
 latexmk -xelatex report.tex
 ```
 
-The revised PDF has 33 pages. The [layout audit](tex/provenance/layout_audit.json)
-records the previous edition's PDF hash and page-count method.
+The revised PDF has 45 pages, including figures, tables and 1 reference page.
+The text-only build has 27 pages excluding references, within the roughly
+40-page text limit. The [layout audit](tex/provenance/layout_audit.json) records
+the current PDF hash, page-count method and checks. The report revision passed
+27 focused CPU tests and the portable publication audit (171 files, 54 galleries).
+
+The report includes paired detector-evasion and watermark-removal examples,
+mathematical attack descriptions, and explicit target-access labels. The main
+image-removal table applies the retained LPIPS, image-CLIP and class-retention
+rule to all saved pairs; historical SSIM-gated results remain separate.
+[The image audit](tex/image_preservation_audit.py) and
+[qualitative exporter](tex/qualitative_evidence.py) regenerate these assets with
+`PYTHONPATH=. uv run python tex/image_preservation_audit.py` and
+`PYTHONPATH=. uv run python tex/qualitative_evidence.py`. Regeneration needs the
+frozen local experiment artifacts; building the checked-in TeX and PDF assets
+does not require model inference. The qualitative provenance receipt records
+source hashes and fixed example positions.

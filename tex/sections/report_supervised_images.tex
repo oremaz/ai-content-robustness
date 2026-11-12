@@ -13,7 +13,7 @@ ConvNeXt V2 Tiny & .3811 & .3333 & .3834\\
 DINOv2 ViT-base & .6245 & .4564 & .3233\\
 ResNet-50 & .7562 & .3786 & .5398\\\bottomrule
 \end{tabular}
-\caption{Retained notebook execution, job 1153220. Macro F1 exposes single-class collapse that accuracy can obscure.}
+\caption{Supervised AI-image detection: macro F1 of five classifiers fitted on the seeded 15\% ArtiFact sample, from notebook job 1153220. Columns evaluate each fitted classifier on its stratified ArtiFact holdout, external CIFAKE and external Shoes. Rows name the classifier backbone. Higher macro F1 is better; values near one third on balanced data can reflect single-class collapse. No generator adaptation or watermark removal enters this table.}
 \end{table}
 
 For example, a classifier predicting one class on a balanced dataset has 50\% accuracy but macro F1 of one third: the predicted class has precision $1/2$ and recall one, hence F1 $2/3$, while the other class has F1 zero. Averaging yields $1/3$. Thus the CIFAKE rows near 0.3333 are consistent with unhelpful single-class predictions, not moderately successful discrimination.

@@ -1,0 +1,2857 @@
+{
+  "status": "Post-hoc application of the retained three-metric rule to the saved 512-pair cohorts.",
+  "rule_file": "tex/provenance/revised_quality_rule_no_ssim.json",
+  "rule_sha256": "b7130fe3dc3f10d744199183a4528ad60ecff92fa55aa41451704f2b8d10ea1a",
+  "sources": {
+    "results/research_workflow/closed_image/20261104T082631753968Z/manifest.json": "59cd5abbbec20b5a01c71451972f0bbd4b703cd1b56adb91f6f1f08289669fa2",
+    "tex/provenance/revised_quality_rule_no_ssim.json": "b7130fe3dc3f10d744199183a4528ad60ecff92fa55aa41451704f2b8d10ea1a",
+    "results/research_workflow/watermarking/20261026T001727478096Z/rar/watermarked/samples.json": "73ca0c8989a7fcf194f58f75326fb55d2589ef65c55f500ff2c0ee22dc2a2ba9",
+    "results/research_workflow/watermarking/20261026T001727478096Z/rar/results.json": "d18e79a7c3c5eb7c49a015459a828d097a021ef5e505a177443d859bb2227ccb",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/pairs.json": "349bd38380d33d1487e2c772c6369590dd7556eef18e6b5baf6489df8150ff4f",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model01/task.json": "bcaf9b52a430ac61489d45af81745908b214771b32f7cb85cf95381a01a9b987",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_unmodified_supplied.json": "b781aeacb72572172432d62b617754d756e367295c0d8fdc91345ec8bf74d447",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/unmodified_supplied/samples.json": "dd36e23991af675d1f38e35362eae929f192701486e04b655df3b3a62caa4b11",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_merge_0.75.json": "1b0e58e9e139809b44c3a0d45e352dfa4f8c74c4dd488a0c1b3ea3d7c9f46c9b",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/merge_0.75/samples.json": "7c2bf5e951ea8a7c51f39f1cfad73114a7bc7cb8269a2653602cea5944c4879b",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_merge_0.5.json": "23bbb1af1125e2a0f86ab38c68ec3032f1b1aa83f1baec55b0647668e8850e37",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/merge_0.5/samples.json": "cc97fa780fa6a59e1c711408775874895a85579600a101b725587e907f4e8f4e",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_merge_0.25.json": "b39a2490d2572a4388cf71fa3936bdc9bf45fac8a4bda7ee9f6292e919a2dd78",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/merge_0.25/samples.json": "4676094d553d4197a1d37fe88910ff7bac35a0a2d0529147f63abb967184f1aa",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_merge_0.json": "7d78852cd69cd76573ba34a318953f89012bf8043d50fb4d2f72eccc9e5fdde0",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/merge_0/samples.json": "14603a1ac096cafe0ecdd981b5a295356eda61e2d95d3fc676d99180f0f02a48",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_clean_lora_500.json": "c965cc4c7f43b22475b66f0b3df1567a085ec3540537c8fe4341f20c4953e5e2",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_lora_500/samples.json": "5c64124ab4a0151e4c4e9e10e9b325b4f656c02f49e04796d1abb556cf7509eb",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_clean_lora_2500.json": "58c981a4549c0bd3f1f85f074a6337c85cc414f194a234e0c9ebbb9f425e41b1",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_lora_2500/samples.json": "d724f2f48704c70d85757e8b6dd8854cefead9c79fd03d26b8bd7b6b4a1a8656",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_clean_full_500.json": "e476871a771c025e6857e477b39387b338bd9331d81a88dbb961493955d04f1b",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_full_500/samples.json": "985316887c2a613123c9ef068f9ffa2d175b1d8a1f5e70c390f3b7e3f76b9023",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_clean_full_2500.json": "191f3407b0b27915f98a0ebf79bb61818e2a24df2721530b587796126d84ce1e",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_full_2500/samples.json": "9b908aa297c69ec355d78769786f3c652eecdf09174138c44d6183c657b75469",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/output_resize_only.json": "6ee9af24ef245b25ff3ba9d2ecf23199780a75b46df0286bd769e80fbd66a51b",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model01/resize_only_scores.json": "c536416d32aaa6e3a92bb96739ba201251368a3dd8340cc9788d163b49c66d0c",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/output_nfpa_0.json": "5550d0f3941459e6363b1d09b45273fcd3bdfcd3c172d4676e2c3f062fc83d13",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model01/nfpa_0_scores.json": "a7467e52a08078ff45a0f6962986dc2d387f27dd3c02af657e261b2d3caedbca",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/output_nfpa_20.json": "39729e206ebb7557e8d8a86d2afe0457b9565704e1db781be37114c132581bb0",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model01/nfpa_20_scores.json": "26fcc29d8147daa6d52cd7ca84e105965c3104e4316f5d6da9c9b6f409bf3343",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/output_nfpa_40.json": "884e6d6f778ce0efed204b0f9513a03288749379a1f2db9d9df03919870073a8",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model01/nfpa_40_scores.json": "5b16264bc6df9284c0391bfb552868f0168af32ab2448e67f7cd879327298993",
+    "results/research_workflow/watermarking/20261026T001727478096Z/dcae/watermarked/samples.json": "f8c9fb3486f2017964ab2df9c13ee20999d455266eda9fe4c82c0cb14c28184f",
+    "results/research_workflow/watermarking/20261026T001727478096Z/dcae/results.json": "e6225bfe38a0acccbf845de5c726083e68258311152a782f4de47f2ab1301c17",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/pairs.json": "6720d8693abec1cb4d99d4823de38b832b77270891a9b0a92ee9a88ae4956bff",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model02/task.json": "50994a2584236195cabf3fc5d456978c37292e2e5dcdfd7b20fe032cd1c038fd",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_unmodified_supplied.json": "b32dc4ab1d1821921b04255371df6aa059b7feb17d7c6a0eda43879d74e10512",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/unmodified_supplied/samples.json": "992e92e5ba7aff3ef363e1dfc91b023c394c412e1fd31422a244d8639fff17f4",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_merge_0.75.json": "2bd37175ce698aaabf7ddbd48b9b378dd2f299323420a17d155e1c4a2c7eaf10",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/merge_0.75/samples.json": "6d530d46f3e0d3317b59284fa56e4022305ef2799a93db6a306477c951f50fba",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_merge_0.5.json": "274c3252b5b3cc91e63da561df6ceb69d50c836ac881a11293c35c10001f7272",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/merge_0.5/samples.json": "df54bd5898d13fcc4471c0c7e6b856b1781369eee3d1bffa463954c16931cb6c",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_merge_0.25.json": "7bb26b6e82d478fa2989bb6faf572ab52d8c5458f7b29541822e0197d23f79f8",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/merge_0.25/samples.json": "2cd11fb32b11708afffd5c7b4d7a4394cf37e06bad1227ba5c4fbece33dd6916",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_merge_0.json": "dad220c2b012ca2a6ffe8ce11e38fc3e463e6842ee0210c3b4ad5c3cbd548ed7",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/merge_0/samples.json": "76ccd6ebdd6a00b3ce254d23cdc39e31fe83ddf41d34b11d6a34832871af32a2",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_clean_lora_500.json": "db1bb86e13c427a9854fc90c8ebad980e33cfb1ca8ba47b1f42cf3fdf3bf53c3",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/clean_lora_500/samples.json": "acf22dbf0d7ab2659e2fa789bdfd4913458d9a6e82f229db89cb53e16c38f4a8",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_clean_lora_2500.json": "9b21bcf0b458256e25560cc22b9143cd430cc67acb454d8959f6f6587828ef0c",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/clean_lora_2500/samples.json": "e361652c10f7575ce51c2e5d52a672c091da633b597aa272d55fc9791335d1a2",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_clean_full_500.json": "28007d593fa9fb14301cedcb1e999f10aed3f2244ed4367deecc239c06836e46",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/clean_full_500/samples.json": "b4a038409c713e06195dc675e4ab6f6f79374ae16dcfb8cd1de8407f250a45dd",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/weight_clean_full_2500.json": "16c69d471b1795790a371e493e090638474b356016c4a5eff71662f89ebdcfce",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model03/clean_full_2500/samples.json": "95205dfbd29b0507b2f5cc0b3364f3aa11ee29aaff0a55066de8b80636cd68ea",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/output_resize_only.json": "b32dc4ab1d1821921b04255371df6aa059b7feb17d7c6a0eda43879d74e10512",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model02/resize_only_scores.json": "96bac81d101c203a742cfa659120bb7ba9264c6a0b062d5e835e1ab9e69911a5",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/output_nfpa_0.json": "89230872932a4ba6436b96a1760bbb402d848db8cdaccfffe7fe683fd56df6e7",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model02/nfpa_0_scores.json": "76ced912ebdfbe4c3aaf069d640119ff3bcbb19c46f9f221237a8a8a386952b3",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/output_nfpa_20.json": "9f2598bc83843f5e962b7576654268402693b5b87b606af597acae58beedb6f2",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model02/nfpa_20_scores.json": "6e334fb36e83a87d4dde8cef50a55719e71ec79cd8b7be96d0e0a00f0b894624",
+    "results/research_workflow/image_quality/20261104T153348508006Z/dcae/output_nfpa_40.json": "351d976b22264b93d457956092dee6d40b53cc8f7185af462d3fb64483f08a13",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model02/nfpa_40_scores.json": "e1c037da6a36539b8645d6105e6f1b6b3e270807efa6a09e0b0fd1bcc3babb62"
+  },
+  "historical_receipt": "tex/provenance/image_preservation_audit.json",
+  "results": [
+    {
+      "family": "rar",
+      "condition": "weight_unmodified_supplied",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 512,
+        "clip_image_cosine": 512,
+        "class_alignment_retention": 512
+      },
+      "mean_class_clip": 0.3029786405095365,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation_among_original_positives": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_failure_reasons": {},
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_merge_0.75",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 67,
+        "class_alignment_retention": 454
+      },
+      "mean_class_clip": 0.30448729696217924,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 16,
+        "n": 512,
+        "rate": 0.03125
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 58,
+        "clip_image_cosine:outside_bounds": 445,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_merge_0.5",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 42,
+        "class_alignment_retention": 441
+      },
+      "mean_class_clip": 0.30453005066374317,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 262,
+        "n": 512,
+        "rate": 0.51171875
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 71,
+        "clip_image_cosine:outside_bounds": 470,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_merge_0.25",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 40,
+        "class_alignment_retention": 446
+      },
+      "mean_class_clip": 0.30460475766449235,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 498,
+        "n": 512,
+        "rate": 0.97265625
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 66,
+        "clip_image_cosine:outside_bounds": 472,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_merge_0",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 29,
+        "class_alignment_retention": 437
+      },
+      "mean_class_clip": 0.3034214635263197,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 508,
+        "n": 512,
+        "rate": 0.9921875
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 75,
+        "clip_image_cosine:outside_bounds": 483,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_clean_lora_500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 37,
+        "class_alignment_retention": 432
+      },
+      "mean_class_clip": 0.3028162665141281,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 443,
+        "n": 512,
+        "rate": 0.865234375
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 80,
+        "clip_image_cosine:outside_bounds": 475,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_clean_lora_2500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 28,
+        "class_alignment_retention": 451
+      },
+      "mean_class_clip": 0.30444097297731787,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 487,
+        "n": 512,
+        "rate": 0.951171875
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 61,
+        "clip_image_cosine:outside_bounds": 484,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_clean_full_500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 32,
+        "class_alignment_retention": 443
+      },
+      "mean_class_clip": 0.3031386572693009,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 326,
+        "n": 512,
+        "rate": 0.63671875
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 69,
+        "clip_image_cosine:outside_bounds": 480,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "weight_clean_full_2500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 34,
+        "class_alignment_retention": 444
+      },
+      "mean_class_clip": 0.30317853996530175,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 475,
+        "n": 512,
+        "rate": 0.927734375
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 68,
+        "clip_image_cosine:outside_bounds": 478,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "output_resize_only",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 512,
+        "clip_image_cosine": 512,
+        "class_alignment_retention": 512
+      },
+      "mean_class_clip": 0.30206525124958716,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation_among_original_positives": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_failure_reasons": {},
+      "joint_success_ids": []
+    },
+    {
+      "family": "rar",
+      "condition": "output_nfpa_0",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 356,
+        "clip_image_cosine": 161,
+        "class_alignment_retention": 281
+      },
+      "mean_class_clip": 0.2657581088715233,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 22,
+        "n": 512,
+        "rate": 0.04296875
+      },
+      "preservation": {
+        "count": 144,
+        "n": 512,
+        "rate": 0.28125
+      },
+      "preservation_among_original_positives": {
+        "count": 144,
+        "n": 512,
+        "rate": 0.28125
+      },
+      "joint_removal": {
+        "count": 4,
+        "n": 512,
+        "rate": 0.0078125
+      },
+      "removal_given_preservation": {
+        "count": 4,
+        "n": 144,
+        "rate": 0.027777777777777776
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 231,
+        "clip_image_cosine:outside_bounds": 351,
+        "lpips:outside_bounds": 156
+      },
+      "joint_success_ids": [
+        203,
+        291,
+        468,
+        507
+      ]
+    },
+    {
+      "family": "rar",
+      "condition": "output_nfpa_20",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 11,
+        "clip_image_cosine": 130,
+        "class_alignment_retention": 269
+      },
+      "mean_class_clip": 0.26461151070543565,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 157,
+        "n": 512,
+        "rate": 0.306640625
+      },
+      "preservation": {
+        "count": 8,
+        "n": 512,
+        "rate": 0.015625
+      },
+      "preservation_among_original_positives": {
+        "count": 8,
+        "n": 512,
+        "rate": 0.015625
+      },
+      "joint_removal": {
+        "count": 1,
+        "n": 512,
+        "rate": 0.001953125
+      },
+      "removal_given_preservation": {
+        "count": 1,
+        "n": 8,
+        "rate": 0.125
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 243,
+        "clip_image_cosine:outside_bounds": 382,
+        "lpips:outside_bounds": 501
+      },
+      "joint_success_ids": [
+        203
+      ]
+    },
+    {
+      "family": "rar",
+      "condition": "output_nfpa_40",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 2,
+        "clip_image_cosine": 115,
+        "class_alignment_retention": 262
+      },
+      "mean_class_clip": 0.26295921331620775,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 402,
+        "n": 512,
+        "rate": 0.78515625
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 250,
+        "clip_image_cosine:outside_bounds": 397,
+        "lpips:outside_bounds": 510
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_unmodified_supplied",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 512,
+        "clip_image_cosine": 512,
+        "class_alignment_retention": 512
+      },
+      "mean_class_clip": 0.2933678254194092,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation_among_original_positives": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_failure_reasons": {},
+      "joint_success_ids": []
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_merge_0.75",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 0,
+        "class_alignment_retention": 63
+      },
+      "mean_class_clip": 0.21408537303796038,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 449,
+        "clip_image_cosine:outside_bounds": 512,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_merge_0.5",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 0,
+        "class_alignment_retention": 106
+      },
+      "mean_class_clip": 0.2326500992057845,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 406,
+        "clip_image_cosine:outside_bounds": 512,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_merge_0.25",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 0,
+        "class_alignment_retention": 74
+      },
+      "mean_class_clip": 0.21996527403825894,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 438,
+        "clip_image_cosine:outside_bounds": 512,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_merge_0",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 244,
+        "clip_image_cosine": 299,
+        "class_alignment_retention": 472
+      },
+      "mean_class_clip": 0.29268027978832833,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation": {
+        "count": 193,
+        "n": 512,
+        "rate": 0.376953125
+      },
+      "preservation_among_original_positives": {
+        "count": 193,
+        "n": 512,
+        "rate": 0.376953125
+      },
+      "joint_removal": {
+        "count": 193,
+        "n": 512,
+        "rate": 0.376953125
+      },
+      "removal_given_preservation": {
+        "count": 193,
+        "n": 193,
+        "rate": 1.0
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 40,
+        "clip_image_cosine:outside_bounds": 213,
+        "lpips:outside_bounds": 268
+      },
+      "joint_success_ids": [
+        2,
+        6,
+        7,
+        9,
+        10,
+        15,
+        17,
+        19,
+        24,
+        25,
+        27,
+        31,
+        32,
+        36,
+        37,
+        41,
+        42,
+        43,
+        48,
+        53,
+        54,
+        57,
+        60,
+        71,
+        78,
+        80,
+        82,
+        89,
+        90,
+        92,
+        93,
+        94,
+        97,
+        98,
+        103,
+        105,
+        108,
+        109,
+        116,
+        117,
+        119,
+        124,
+        125,
+        127,
+        128,
+        129,
+        130,
+        140,
+        144,
+        145,
+        148,
+        149,
+        153,
+        155,
+        156,
+        157,
+        161,
+        162,
+        164,
+        166,
+        171,
+        176,
+        180,
+        191,
+        192,
+        193,
+        194,
+        196,
+        199,
+        201,
+        202,
+        204,
+        205,
+        207,
+        209,
+        211,
+        212,
+        213,
+        218,
+        221,
+        224,
+        225,
+        228,
+        229,
+        230,
+        231,
+        233,
+        235,
+        236,
+        238,
+        244,
+        245,
+        247,
+        248,
+        250,
+        253,
+        256,
+        258,
+        260,
+        262,
+        263,
+        264,
+        265,
+        267,
+        270,
+        271,
+        275,
+        279,
+        280,
+        282,
+        293,
+        294,
+        297,
+        301,
+        302,
+        306,
+        308,
+        310,
+        311,
+        312,
+        315,
+        318,
+        320,
+        321,
+        326,
+        327,
+        329,
+        330,
+        334,
+        336,
+        338,
+        341,
+        343,
+        344,
+        345,
+        346,
+        349,
+        350,
+        357,
+        358,
+        362,
+        366,
+        367,
+        368,
+        369,
+        372,
+        374,
+        375,
+        376,
+        377,
+        379,
+        384,
+        390,
+        391,
+        394,
+        399,
+        403,
+        413,
+        415,
+        416,
+        419,
+        420,
+        422,
+        425,
+        427,
+        430,
+        432,
+        433,
+        435,
+        436,
+        437,
+        439,
+        442,
+        446,
+        447,
+        449,
+        455,
+        457,
+        458,
+        459,
+        464,
+        465,
+        478,
+        483,
+        484,
+        485,
+        491,
+        492,
+        497,
+        503,
+        506,
+        507,
+        509
+      ]
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_clean_lora_500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 422,
+        "clip_image_cosine": 399,
+        "class_alignment_retention": 451
+      },
+      "mean_class_clip": 0.28685366158606485,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 504,
+        "n": 512,
+        "rate": 0.984375
+      },
+      "preservation": {
+        "count": 354,
+        "n": 512,
+        "rate": 0.69140625
+      },
+      "preservation_among_original_positives": {
+        "count": 354,
+        "n": 512,
+        "rate": 0.69140625
+      },
+      "joint_removal": {
+        "count": 348,
+        "n": 512,
+        "rate": 0.6796875
+      },
+      "removal_given_preservation": {
+        "count": 348,
+        "n": 354,
+        "rate": 0.9830508474576272
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 61,
+        "clip_image_cosine:outside_bounds": 113,
+        "lpips:outside_bounds": 90
+      },
+      "joint_success_ids": [
+        0,
+        2,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        24,
+        25,
+        26,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        35,
+        36,
+        38,
+        39,
+        41,
+        42,
+        44,
+        45,
+        47,
+        49,
+        51,
+        52,
+        53,
+        54,
+        55,
+        57,
+        58,
+        59,
+        61,
+        62,
+        63,
+        64,
+        66,
+        67,
+        68,
+        70,
+        71,
+        76,
+        77,
+        78,
+        80,
+        81,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        90,
+        91,
+        93,
+        94,
+        95,
+        98,
+        99,
+        101,
+        102,
+        103,
+        105,
+        106,
+        107,
+        108,
+        109,
+        112,
+        114,
+        115,
+        116,
+        118,
+        119,
+        120,
+        122,
+        123,
+        128,
+        129,
+        130,
+        131,
+        135,
+        136,
+        137,
+        138,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        147,
+        148,
+        149,
+        151,
+        153,
+        154,
+        155,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        165,
+        166,
+        168,
+        169,
+        171,
+        172,
+        174,
+        176,
+        178,
+        179,
+        180,
+        182,
+        183,
+        185,
+        188,
+        189,
+        191,
+        193,
+        195,
+        196,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        216,
+        217,
+        218,
+        219,
+        221,
+        222,
+        223,
+        224,
+        226,
+        227,
+        228,
+        229,
+        231,
+        232,
+        233,
+        234,
+        235,
+        238,
+        239,
+        242,
+        243,
+        244,
+        245,
+        246,
+        248,
+        250,
+        251,
+        252,
+        253,
+        255,
+        256,
+        257,
+        258,
+        259,
+        261,
+        263,
+        264,
+        266,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        275,
+        276,
+        279,
+        280,
+        281,
+        282,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        293,
+        296,
+        297,
+        298,
+        301,
+        303,
+        305,
+        306,
+        307,
+        308,
+        309,
+        310,
+        311,
+        314,
+        316,
+        318,
+        320,
+        321,
+        323,
+        324,
+        325,
+        326,
+        327,
+        328,
+        329,
+        330,
+        334,
+        335,
+        336,
+        337,
+        340,
+        341,
+        344,
+        345,
+        347,
+        349,
+        352,
+        353,
+        355,
+        356,
+        357,
+        358,
+        359,
+        360,
+        361,
+        362,
+        364,
+        365,
+        366,
+        367,
+        368,
+        369,
+        370,
+        371,
+        372,
+        374,
+        375,
+        377,
+        379,
+        380,
+        381,
+        383,
+        384,
+        385,
+        386,
+        387,
+        389,
+        390,
+        391,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400,
+        401,
+        402,
+        403,
+        406,
+        408,
+        413,
+        415,
+        418,
+        419,
+        420,
+        422,
+        424,
+        425,
+        426,
+        427,
+        428,
+        429,
+        430,
+        432,
+        433,
+        434,
+        437,
+        440,
+        442,
+        444,
+        446,
+        449,
+        450,
+        454,
+        455,
+        456,
+        458,
+        459,
+        461,
+        462,
+        463,
+        465,
+        467,
+        469,
+        471,
+        472,
+        473,
+        475,
+        477,
+        478,
+        479,
+        480,
+        483,
+        485,
+        486,
+        487,
+        489,
+        491,
+        492,
+        493,
+        495,
+        499,
+        502,
+        503,
+        504,
+        505,
+        506,
+        509,
+        510,
+        511
+      ]
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_clean_lora_2500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 417,
+        "clip_image_cosine": 383,
+        "class_alignment_retention": 443
+      },
+      "mean_class_clip": 0.2840481897292193,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 511,
+        "n": 512,
+        "rate": 0.998046875
+      },
+      "preservation": {
+        "count": 340,
+        "n": 512,
+        "rate": 0.6640625
+      },
+      "preservation_among_original_positives": {
+        "count": 340,
+        "n": 512,
+        "rate": 0.6640625
+      },
+      "joint_removal": {
+        "count": 339,
+        "n": 512,
+        "rate": 0.662109375
+      },
+      "removal_given_preservation": {
+        "count": 339,
+        "n": 340,
+        "rate": 0.9970588235294118
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 69,
+        "clip_image_cosine:outside_bounds": 129,
+        "lpips:outside_bounds": 95
+      },
+      "joint_success_ids": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        50,
+        51,
+        52,
+        54,
+        55,
+        57,
+        59,
+        60,
+        61,
+        62,
+        63,
+        67,
+        70,
+        71,
+        72,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        83,
+        84,
+        86,
+        87,
+        88,
+        90,
+        91,
+        93,
+        94,
+        95,
+        98,
+        99,
+        101,
+        102,
+        103,
+        105,
+        106,
+        107,
+        108,
+        109,
+        111,
+        112,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        122,
+        125,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        143,
+        144,
+        145,
+        148,
+        149,
+        151,
+        153,
+        154,
+        157,
+        158,
+        161,
+        162,
+        166,
+        168,
+        169,
+        171,
+        173,
+        177,
+        178,
+        180,
+        181,
+        182,
+        183,
+        185,
+        187,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        202,
+        203,
+        204,
+        205,
+        207,
+        208,
+        209,
+        211,
+        213,
+        215,
+        216,
+        217,
+        218,
+        219,
+        221,
+        222,
+        223,
+        224,
+        226,
+        227,
+        229,
+        231,
+        232,
+        235,
+        236,
+        238,
+        239,
+        242,
+        245,
+        246,
+        247,
+        250,
+        251,
+        252,
+        253,
+        254,
+        257,
+        258,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        269,
+        271,
+        272,
+        273,
+        275,
+        276,
+        277,
+        279,
+        280,
+        284,
+        285,
+        286,
+        287,
+        288,
+        290,
+        292,
+        293,
+        294,
+        295,
+        296,
+        297,
+        298,
+        301,
+        302,
+        303,
+        304,
+        306,
+        307,
+        309,
+        313,
+        314,
+        316,
+        318,
+        319,
+        323,
+        324,
+        327,
+        328,
+        329,
+        331,
+        332,
+        334,
+        336,
+        339,
+        340,
+        341,
+        343,
+        344,
+        345,
+        346,
+        349,
+        352,
+        353,
+        355,
+        357,
+        358,
+        359,
+        360,
+        362,
+        363,
+        365,
+        367,
+        368,
+        369,
+        374,
+        375,
+        377,
+        379,
+        380,
+        381,
+        384,
+        385,
+        386,
+        390,
+        391,
+        393,
+        394,
+        396,
+        398,
+        400,
+        401,
+        403,
+        405,
+        406,
+        407,
+        408,
+        410,
+        413,
+        414,
+        418,
+        419,
+        422,
+        424,
+        426,
+        427,
+        428,
+        429,
+        430,
+        431,
+        432,
+        433,
+        434,
+        435,
+        436,
+        440,
+        444,
+        446,
+        449,
+        450,
+        453,
+        454,
+        455,
+        458,
+        459,
+        460,
+        461,
+        463,
+        464,
+        465,
+        467,
+        469,
+        470,
+        471,
+        473,
+        475,
+        476,
+        477,
+        479,
+        480,
+        482,
+        483,
+        484,
+        485,
+        486,
+        487,
+        488,
+        489,
+        490,
+        491,
+        492,
+        493,
+        494,
+        498,
+        499,
+        500,
+        504,
+        506,
+        507,
+        510,
+        511
+      ]
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_clean_full_500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 294,
+        "clip_image_cosine": 289,
+        "class_alignment_retention": 405
+      },
+      "mean_class_clip": 0.2812711820297409,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 487,
+        "n": 512,
+        "rate": 0.951171875
+      },
+      "preservation": {
+        "count": 215,
+        "n": 512,
+        "rate": 0.419921875
+      },
+      "preservation_among_original_positives": {
+        "count": 215,
+        "n": 512,
+        "rate": 0.419921875
+      },
+      "joint_removal": {
+        "count": 203,
+        "n": 512,
+        "rate": 0.396484375
+      },
+      "removal_given_preservation": {
+        "count": 203,
+        "n": 215,
+        "rate": 0.9441860465116279
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 107,
+        "clip_image_cosine:outside_bounds": 223,
+        "lpips:outside_bounds": 218
+      },
+      "joint_success_ids": [
+        2,
+        4,
+        6,
+        7,
+        9,
+        10,
+        14,
+        16,
+        17,
+        19,
+        22,
+        25,
+        26,
+        27,
+        29,
+        30,
+        35,
+        42,
+        44,
+        45,
+        49,
+        51,
+        52,
+        53,
+        54,
+        55,
+        57,
+        59,
+        61,
+        62,
+        66,
+        71,
+        76,
+        77,
+        78,
+        80,
+        83,
+        84,
+        87,
+        88,
+        93,
+        98,
+        102,
+        103,
+        105,
+        107,
+        108,
+        109,
+        112,
+        115,
+        116,
+        118,
+        119,
+        120,
+        122,
+        128,
+        130,
+        136,
+        140,
+        141,
+        144,
+        145,
+        147,
+        148,
+        149,
+        151,
+        154,
+        156,
+        157,
+        159,
+        160,
+        161,
+        165,
+        166,
+        171,
+        174,
+        175,
+        176,
+        178,
+        180,
+        182,
+        183,
+        185,
+        191,
+        193,
+        194,
+        195,
+        196,
+        198,
+        205,
+        207,
+        210,
+        213,
+        216,
+        221,
+        222,
+        224,
+        226,
+        229,
+        231,
+        245,
+        247,
+        248,
+        253,
+        257,
+        258,
+        265,
+        266,
+        267,
+        268,
+        269,
+        276,
+        279,
+        280,
+        282,
+        293,
+        297,
+        302,
+        303,
+        306,
+        309,
+        315,
+        318,
+        321,
+        323,
+        324,
+        325,
+        335,
+        336,
+        337,
+        341,
+        344,
+        346,
+        349,
+        353,
+        358,
+        359,
+        364,
+        365,
+        366,
+        369,
+        374,
+        377,
+        379,
+        380,
+        385,
+        387,
+        390,
+        391,
+        394,
+        396,
+        397,
+        398,
+        399,
+        401,
+        406,
+        411,
+        413,
+        415,
+        418,
+        419,
+        420,
+        424,
+        425,
+        426,
+        430,
+        431,
+        432,
+        433,
+        434,
+        435,
+        437,
+        442,
+        444,
+        447,
+        449,
+        453,
+        455,
+        456,
+        458,
+        459,
+        461,
+        462,
+        463,
+        465,
+        467,
+        472,
+        473,
+        475,
+        477,
+        478,
+        481,
+        483,
+        485,
+        486,
+        487,
+        491,
+        502,
+        504,
+        505,
+        506,
+        510,
+        511
+      ]
+    },
+    {
+      "family": "dcae",
+      "condition": "weight_clean_full_2500",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 273,
+        "clip_image_cosine": 289,
+        "class_alignment_retention": 414
+      },
+      "mean_class_clip": 0.28161895301309414,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 510,
+        "n": 512,
+        "rate": 0.99609375
+      },
+      "preservation": {
+        "count": 199,
+        "n": 512,
+        "rate": 0.388671875
+      },
+      "preservation_among_original_positives": {
+        "count": 199,
+        "n": 512,
+        "rate": 0.388671875
+      },
+      "joint_removal": {
+        "count": 197,
+        "n": 512,
+        "rate": 0.384765625
+      },
+      "removal_given_preservation": {
+        "count": 197,
+        "n": 199,
+        "rate": 0.9899497487437185
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 98,
+        "clip_image_cosine:outside_bounds": 223,
+        "lpips:outside_bounds": 239
+      },
+      "joint_success_ids": [
+        0,
+        1,
+        3,
+        5,
+        6,
+        7,
+        9,
+        11,
+        15,
+        17,
+        19,
+        21,
+        22,
+        25,
+        27,
+        30,
+        31,
+        32,
+        33,
+        42,
+        44,
+        46,
+        47,
+        50,
+        51,
+        52,
+        54,
+        55,
+        57,
+        60,
+        61,
+        62,
+        63,
+        66,
+        67,
+        71,
+        75,
+        77,
+        78,
+        79,
+        80,
+        83,
+        84,
+        93,
+        94,
+        98,
+        102,
+        107,
+        108,
+        114,
+        118,
+        119,
+        120,
+        125,
+        128,
+        129,
+        130,
+        134,
+        136,
+        140,
+        144,
+        145,
+        148,
+        149,
+        151,
+        154,
+        157,
+        158,
+        161,
+        162,
+        166,
+        169,
+        171,
+        180,
+        181,
+        183,
+        185,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        198,
+        205,
+        207,
+        209,
+        211,
+        213,
+        217,
+        219,
+        221,
+        222,
+        224,
+        227,
+        229,
+        234,
+        235,
+        236,
+        238,
+        242,
+        244,
+        245,
+        250,
+        251,
+        252,
+        253,
+        254,
+        257,
+        258,
+        260,
+        261,
+        263,
+        264,
+        265,
+        266,
+        267,
+        269,
+        271,
+        275,
+        278,
+        279,
+        280,
+        286,
+        287,
+        288,
+        290,
+        292,
+        293,
+        294,
+        297,
+        300,
+        304,
+        306,
+        308,
+        318,
+        324,
+        329,
+        331,
+        332,
+        336,
+        349,
+        357,
+        358,
+        359,
+        361,
+        366,
+        374,
+        377,
+        379,
+        380,
+        381,
+        386,
+        390,
+        391,
+        394,
+        396,
+        398,
+        406,
+        407,
+        415,
+        418,
+        419,
+        422,
+        424,
+        433,
+        434,
+        435,
+        436,
+        446,
+        453,
+        455,
+        458,
+        459,
+        461,
+        463,
+        465,
+        471,
+        473,
+        475,
+        476,
+        477,
+        480,
+        483,
+        487,
+        489,
+        491,
+        492,
+        493,
+        498,
+        499,
+        500,
+        501,
+        504,
+        506,
+        510,
+        511
+      ]
+    },
+    {
+      "family": "dcae",
+      "condition": "output_resize_only",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 512,
+        "clip_image_cosine": 512,
+        "class_alignment_retention": 512
+      },
+      "mean_class_clip": 0.2933678254194092,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "preservation_among_original_positives": {
+        "count": 512,
+        "n": 512,
+        "rate": 1.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_failure_reasons": {},
+      "joint_success_ids": []
+    },
+    {
+      "family": "dcae",
+      "condition": "output_nfpa_0",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 298,
+        "clip_image_cosine": 197,
+        "class_alignment_retention": 341
+      },
+      "mean_class_clip": 0.26838824394508265,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 76,
+        "n": 512,
+        "rate": 0.1484375
+      },
+      "preservation": {
+        "count": 149,
+        "n": 512,
+        "rate": 0.291015625
+      },
+      "preservation_among_original_positives": {
+        "count": 149,
+        "n": 512,
+        "rate": 0.291015625
+      },
+      "joint_removal": {
+        "count": 22,
+        "n": 512,
+        "rate": 0.04296875
+      },
+      "removal_given_preservation": {
+        "count": 22,
+        "n": 149,
+        "rate": 0.1476510067114094
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 171,
+        "clip_image_cosine:outside_bounds": 315,
+        "lpips:outside_bounds": 214
+      },
+      "joint_success_ids": [
+        24,
+        93,
+        125,
+        158,
+        221,
+        229,
+        265,
+        292,
+        293,
+        303,
+        315,
+        318,
+        335,
+        343,
+        365,
+        368,
+        384,
+        385,
+        389,
+        416,
+        426,
+        427
+      ]
+    },
+    {
+      "family": "dcae",
+      "condition": "output_nfpa_20",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 3,
+        "clip_image_cosine": 160,
+        "class_alignment_retention": 320
+      },
+      "mean_class_clip": 0.2677270593412686,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 162,
+        "n": 512,
+        "rate": 0.31640625
+      },
+      "preservation": {
+        "count": 3,
+        "n": 512,
+        "rate": 0.005859375
+      },
+      "preservation_among_original_positives": {
+        "count": 3,
+        "n": 512,
+        "rate": 0.005859375
+      },
+      "joint_removal": {
+        "count": 2,
+        "n": 512,
+        "rate": 0.00390625
+      },
+      "removal_given_preservation": {
+        "count": 2,
+        "n": 3,
+        "rate": 0.6666666666666666
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 192,
+        "clip_image_cosine:outside_bounds": 352,
+        "lpips:outside_bounds": 509
+      },
+      "joint_success_ids": [
+        229,
+        384
+      ]
+    },
+    {
+      "family": "dcae",
+      "condition": "output_nfpa_40",
+      "bounds": {
+        "lpips": [
+          0.0,
+          0.2
+        ],
+        "clip_image_cosine": [
+          0.9,
+          1.000001
+        ],
+        "class_alignment_retention": [
+          0.9,
+          null
+        ]
+      },
+      "component_passes": {
+        "lpips": 0,
+        "clip_image_cosine": 128,
+        "class_alignment_retention": 322
+      },
+      "mean_class_clip": 0.26641215218114667,
+      "n": 512,
+      "originally_detected": 512,
+      "raw_removal": {
+        "count": 340,
+        "n": 512,
+        "rate": 0.6640625
+      },
+      "preservation": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "preservation_among_original_positives": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "joint_removal": {
+        "count": 0,
+        "n": 512,
+        "rate": 0.0
+      },
+      "removal_given_preservation": {
+        "count": 0,
+        "n": 0,
+        "rate": null
+      },
+      "preservation_failure_reasons": {
+        "class_alignment_retention:outside_bounds": 190,
+        "clip_image_cosine:outside_bounds": 384,
+        "lpips:outside_bounds": 512
+      },
+      "joint_success_ids": []
+    }
+  ],
+  "scope": "Paired-content preservation and class-alignment diagnostics. These do not measure population realism or certify human quality."
+}

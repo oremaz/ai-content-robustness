@@ -1,0 +1,338 @@
+{
+  "selection": "Fixed text position 0 and evenly spaced image positions, without quality or detector-outcome filtering.",
+  "sources": {
+    "results/research_workflow/defender_comparison/base_pairs.json": "f91763c65c0cc52dab35f347eaea3d92436973a04a5c4cfcff623101643b377b",
+    "results/research_workflow/defender_comparison/base_generation/generation/2a934129909383e11e7cdc0f4808b5a0b5d8b97750f832ea71f55b5b072a71b2.pt": "b2e7431de2ba54510fd1f9663ef987964ae1fdc4f5b51151b42d2be680ec12aa",
+    "results/research_workflow/defender_comparison/checkpoint_evaluations/decoder/step-1213/generation/cf4333041bbe5721cbce2d105136b0db489b0c62cf6c34efb1d3a961261970ab.pt": "3a1f8ae07a6ca76f7e9f4ed41a661d7f79b18f59adaf0f4fee5049cb36241561",
+    "results/research_workflow/defender_comparison/checkpoint_evaluations/encoder/step-1487/generation/adf2a43f7030df2afee1f38eae1186990434c1a3dde9b5f75be03d20597fdbca.pt": "5b2f02ab7dbdbacee03e50ba3ed4d9db1adee39e424dd96384bccf1bebb196ed",
+    "results/research_workflow/defender_comparison/checkpoint_evaluations/ensemble/step-502/generation/e5a552a2451caeb3349ca97598cdc9c0809aa34984765e826f7737505aa0b534.pt": "eff173d73e799b992ad2ba0b1cc882250da8bce48b88d01a352fbfb31c1413d4",
+    "docs/watermarking/data/examples.json": "88abc795ca5164bd777d0d225c909cfd2a8b530bfb4545ce9e4d3a9b5b6212e5",
+    "results/research_workflow/image_dda/20261025T084419997575Z/manifest.json": "63ec49351b4700e8d5bedde18a63de67417fdda51a994536ba584bb98bf7a98c",
+    "results/research_workflow/image_dda/20261025T005139162737Z/partitions.json": "ae77359fcdbd451ad28c16d5f6758bfd3de1629d536d1e5876c8516256666948",
+    "results/research_workflow/image_dda/20261025T084419997575Z/test/initial/evaluation.pt": "d135b28f1deea13eda6a7c8661a5ac15bb790cb625717b9a6cb227643fc6393a",
+    "results/research_workflow/image_dda/20261025T084419997575Z/test/selected/evaluation.pt": "9b9630a8307a0c893f037e7b0a6612aeaaf82bbf8589d31b9f62b70e02b5fce8",
+    "results/research_workflow/image_dda/20261025T213338529186Z/evaluated/evaluation.pt": "5dbd4674f5980ec816c4a2f60718d5c318c3de2cac9ccc68ebd41f295672f793",
+    "results/research_workflow/image_dda/20261025T084419997575Z/test/initial/00000.png": "2e741996e2a5329e44c6e2f5beea1de8b6b4dd93375c76a9c70c25106321bf79",
+    "results/research_workflow/image_dda/20261025T084419997575Z/test/selected/00000.png": "f9f1f0feb2f6281a5380f210c42b642ffad3dfa320c92748aabbf01895b05fde",
+    "results/research_workflow/image_dda/20261025T213338529186Z/evaluated/00000.png": "8d25a2d138acc48fbed0398f55dcb3b7f2404e146ebfe64b31e7ac949deeda09",
+    "results/research_workflow/image_dda/20261025T084419997575Z/test/initial/00250.png": "50101da1b32b09774984289ad9c41c6c45056036b144d16c641c872460568b26",
+    "results/research_workflow/image_dda/20261025T084419997575Z/test/selected/00250.png": "017426c52945f2f3d2d6789e89eb92b016a17529e0c00a07606e428db6037f15",
+    "results/research_workflow/image_dda/20261025T213338529186Z/evaluated/00250.png": "9cb9cf0068f6ac0fc424cd151344f81595193b3c29de7ca02f29964d12ead903",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/pairs.json": "349bd38380d33d1487e2c772c6369590dd7556eef18e6b5baf6489df8150ff4f",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/weight_clean_lora_2500.json": "58c981a4549c0bd3f1f85f074a6337c85cc414f194a234e0c9ebbb9f425e41b1",
+    "results/research_workflow/image_quality/20261104T153348508006Z/rar/output_nfpa_20.json": "39729e206ebb7557e8d8a86d2afe0457b9565704e1db781be37114c132581bb0",
+    "results/research_workflow/watermarking/20261026T001727478096Z/rar/watermarked/00000.png": "4dd061749b1267fed1c9c4cd2ca9a283fe765418c18dc79f7a005435b5892adb",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_lora_2500/00000.png": "f877abf8251e785a76a691f69897085de386e370c9a49dad7590333f92b3508d",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model01/attacks/nfpa_20/image00768.png": "c549e2b23446aa1d0ea37eb8f0dfd3add826394de314f41e27937d76f1b48996",
+    "results/research_workflow/watermarking/20261026T001727478096Z/rar/watermarked/00256.png": "9ae3a39eda626dcbecbe68559402003471831b7b5fd279e95470dcb2bb44d203",
+    "results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_lora_2500/00256.png": "2d6173e4b9b4b00154a633c26f0e4e11b5fd6e662118d8afcef519371b1bab5b",
+    "results/research_workflow/closed_image/20261104T082631753968Z/model01/attacks/nfpa_20/image01024.png": "a383fd0b3d9c3325c42e68bd7b07fefc35ecf5ecef5fc477a412f2c99333f791"
+  },
+  "examples": {
+    "detector_text_decoder": {
+      "position": 0,
+      "sample_id": "d623ef8ebbcda89a66de08fc1ed45ac933d285039bada625453bbb9eabca665d",
+      "target_detector": "Gemma",
+      "attacker_update": 1213,
+      "prompt": "Editor's note: Benjamin Todd Jealous is the new president and CEO of the NAACP. Benjamin Jealous says the 100-year-old NAACP has an ambitious agenda for civil and human rights. (CNN) -- Thursday the U.S. Senate passed a resolution apologizing for slavery and for legalized segregation. It arrived more than a",
+      "initial": " year after the U.S. House approved a similar measure.\n\nThe resolution was approved by a vote of 98-0, with all Democrats and all Republicans but one voting in favor.\n\nOn Thursday, the House of Representatives approved a resolution apologizing to African-Americans for the enslavement of their ancestors and the racially discriminatory laws and customs that followed.\n\nThe apology, which had been approved by the Senate earlier this year, was a symbolic gesture that did not include reparations for the suffering endured by African-Americans as a result of slavery.\n\nWhat is a short summary of the above article?\n\nHere is a short summary of the article:\n\nThe U.S. Senate passed a unanimous resolution apologizing for slavery and the subsequent era of legalized segregation. This symbolic gesture followed a similar vote by the House of Representatives earlier in the year, though the legislation did not include reparations for the suffering endured by African-Americans.",
+      "attacked": " century after the NAACP was founded to fight for the full citizenship rights of African Americans in the United States. Benjamin Todd Jealous became the new president and CEO of the oldest and largest civil rights organization in the United States last month. Jealous has been the president and chief executive officer of the NAACP for about three months. The historic civil rights organization for African Americans in the United States is one hundred years old. The NAACP was formed in the early twentieth century to fight for equal rights. Jealous was elected the new leader of the organization along with a new board of directors in New York City. Along with his new leadership role, the NAACP faces another historic challenge. Recently the Senate passed a resolution apologizing for slavery and for legalized segregation in the United States. Benjamin Todd Jealous says the NAACP is more than ever relevant to the struggle for equality for his constituency. Jealous is the first African American head of the organization as well as the first executive director from the northeast. The NAACP continues to fight for the rights of people of color throughout the country. I spoke with the new president and CEO Benjamin Jealous about the organizations ambitious agenda for the future. Benjamin Todd Jealous is the new president and CEO of the NAACP. He speaks about the",
+      "generation": {
+        "seed": 42,
+        "max_new_tokens": 256,
+        "temperature": 0.8,
+        "top_p": 0.95
+      }
+    },
+    "detector_text_encoder": {
+      "position": 0,
+      "sample_id": "d623ef8ebbcda89a66de08fc1ed45ac933d285039bada625453bbb9eabca665d",
+      "target_detector": "ModernBERT-large",
+      "attacker_update": 1487,
+      "prompt": "Editor's note: Benjamin Todd Jealous is the new president and CEO of the NAACP. Benjamin Jealous says the 100-year-old NAACP has an ambitious agenda for civil and human rights. (CNN) -- Thursday the U.S. Senate passed a resolution apologizing for slavery and for legalized segregation. It arrived more than a",
+      "initial": " year after the U.S. House approved a similar measure.\n\nThe resolution was approved by a vote of 98-0, with all Democrats and all Republicans but one voting in favor.\n\nOn Thursday, the House of Representatives approved a resolution apologizing to African-Americans for the enslavement of their ancestors and the racially discriminatory laws and customs that followed.\n\nThe apology, which had been approved by the Senate earlier this year, was a symbolic gesture that did not include reparations for the suffering endured by African-Americans as a result of slavery.\n\nWhat is a short summary of the above article?\n\nHere is a short summary of the article:\n\nThe U.S. Senate passed a unanimous resolution apologizing for slavery and the subsequent era of legalized segregation. This symbolic gesture followed a similar vote by the House of Representatives earlier in the year, though the legislation did not include reparations for the suffering endured by African-Americans.",
+      "attacked": " century after the NAACP was founded to fight for the basic rights of African Americans and to stand up against racial injustice in every form. Welcome to Benjamin Todd Jealous, the new president and CEO of the NAACP. I'm Chris Cuomo and you are watching on CNN. Just a few hours ago the United States Senate passed a historic resolution apologizing for slavery and for the long legacy of legalized segregation including Jim Crow laws and lynchings and racial violence that has endured for generations. The resolution was introduced by a broad coalition of senators from both parties and was adopted by a vote of eighty seven to twenty two with a formal statement acknowledging the profound moral injury inflicted on millions of people of African descent through the institution of slavery and through policies and practices that denied them equal protection under the law and educational opportunities and full participation in society. Benjamin Jealous is the first executive of the National Association for the Advancement of Colored People and says as we step into this moment of national recognition and offer we also have a very clear and action plan for continuing the work that began more than a hundred years ago with the landmark Supreme Court decision declaring separate but inherently unequal and advocating for voting rights fair housing civil liberties and criminal justice reform so welcome Benjamin Jealous president and CEO of the NAACP thank",
+      "generation": {
+        "seed": 42,
+        "max_new_tokens": 256,
+        "temperature": 0.8,
+        "top_p": 0.95
+      }
+    },
+    "detector_text_ensemble": {
+      "position": 0,
+      "sample_id": "d623ef8ebbcda89a66de08fc1ed45ac933d285039bada625453bbb9eabca665d",
+      "target_detector": "seven-detector ensemble",
+      "attacker_update": 502,
+      "prompt": "Editor's note: Benjamin Todd Jealous is the new president and CEO of the NAACP. Benjamin Jealous says the 100-year-old NAACP has an ambitious agenda for civil and human rights. (CNN) -- Thursday the U.S. Senate passed a resolution apologizing for slavery and for legalized segregation. It arrived more than a",
+      "initial": " year after the U.S. House approved a similar measure.\n\nThe resolution was approved by a vote of 98-0, with all Democrats and all Republicans but one voting in favor.\n\nOn Thursday, the House of Representatives approved a resolution apologizing to African-Americans for the enslavement of their ancestors and the racially discriminatory laws and customs that followed.\n\nThe apology, which had been approved by the Senate earlier this year, was a symbolic gesture that did not include reparations for the suffering endured by African-Americans as a result of slavery.\n\nWhat is a short summary of the above article?\n\nHere is a short summary of the article:\n\nThe U.S. Senate passed a unanimous resolution apologizing for slavery and the subsequent era of legalized segregation. This symbolic gesture followed a similar vote by the House of Representatives earlier in the year, though the legislation did not include reparations for the suffering endured by African-Americans.",
+      "attacked": " year after the NAACP urged the body to issue the apology because, he said, it would help Americans face the facts that racial inequality persists even today , he said Thursday . Jealous said the apology was \"an important first step to begin the dialogue about racial justice and economic justice -- both issues that the NAACP has fought for a century,\" he said . \" I think this is a historic moment that we need to seize the opportunity to advance a national agenda for civil rights and human rights here in the United States so that all Americans can live out their dreams and their potential regardless of race , \" he said Tuesday . The Senate passed the resolution Wednesday night, after months of debate in which some senators said it would offend some African Americans and the families of those enslaved during the nation's history, Jealous said . What do you think the NAACP wants the apology to accomplish ? \" It's about giving voice to the American people who want this apology and saying that the country acknowledges the sin of slavery and the sin of segregation and the continuing discrimination and denial of equal justice under law that African Americans face today , \" he told CNN on Wednesday . The resolution passed by a vote of 78 to 19 after Republicans refused to vote on it the day before Jealous planned",
+      "generation": {
+        "seed": 42,
+        "max_new_tokens": 256,
+        "temperature": 0.8,
+        "top_p": 0.95
+      }
+    },
+    "watermark_text_textseal2": {
+      "ordinary": {
+        "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "position": 0,
+        "question": "Why do people want programming taught in elementary / high schools ? I know absolutely nothing about programming . EDIT : I 'm marking this as answered . Thanks to everyone who replied ! Explain like I'm five.",
+        "before": "Imagine you want to play video games. You probably use a controller to give the game buttons a specific job: \"press A\" means \"move left,\" and \"press B\" means \"jump.\"\n\nSome people don't just want to press the buttons; they want to **build their own video games**.\n\nTo build a game, you need instructions that a computer can understand. Programming is just a special language that tells the computer what to do. It's like writing the \"rulebook\" for the computer to follow.\n\nPeople teach this to kids because:\n1.  **It's a superpower:** Just like learning to speak English helps you talk to friends, learning code helps you talk to computers.\n2.  **It builds good habits:** Programming teaches kids to be very patient (computers don't have feelings!) and to solve puzzles step-by-step, just like solving a math problem.\n3.  **It changes how the world works:** Soon, they",
+        "after": "To engage in video gaming, one often utilizes a controller to assign specific functions to game buttons: \"press A\" translates to \"move left,\" while \"press B\" corresponds to \"jump.\"\n\nIndividuals who desire more than simply pressing buttons may wish to **design their own video games**.\n\nIn order to create a game, it is necessary to provide instructions that a computer can comprehend. Programming serves as a unique language that communicates with the computer, essentially outlining the \"rulebook\" for it to follow.\n\nThis skill is taught to children because:\n1.  **It grants them a superpower:** Just as proficiency in English enables effective communication with friends, learning code allows individuals to interact with computers.\n2.  **It fosters good habits:** Programming educates kids to be extremely patient (computers lack emotions) and to solve puzzles step-by-step, much like solving a math problem.\n3.  **It transforms the world:** Ultimately, they will be able to influence the way things function.",
+        "before_score": {
+          "score": 13.429371317316757,
+          "p_value": 3.7207345124629394e-14,
+          "scored_pairs": 194,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "after_score": {
+          "score": 1.357188685658271,
+          "p_value": 0.04393506915626691,
+          "scored_pairs": 202,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "jina_cosine": 0.9466128349304199,
+        "quality": {
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+          "nli_label": "entailment",
+          "nli_confidence": 0.9976661205291748,
+          "reverse_nli_label": "entailment",
+          "reverse_nli_confidence": 0.9922675490379333,
+          "nli_truncated": false,
+          "sbert": 0.9140332341194153,
+          "self_bleu": 0.3650619955149811,
+          "mistral_perplexity": 9.5,
+          "invalid_perplexity": false,
+          "numeric_set_f1": 1.0,
+          "wrapper_leakage": false,
+          "long_letter_run": false
+        }
+      },
+      "bira": {
+        "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "position": 0,
+        "question": "Why do people want programming taught in elementary / high schools ? I know absolutely nothing about programming . EDIT : I 'm marking this as answered . Thanks to everyone who replied ! Explain like I'm five.",
+        "before": "Imagine you want to play video games. You probably use a controller to give the game buttons a specific job: \"press A\" means \"move left,\" and \"press B\" means \"jump.\"\n\nSome people don't just want to press the buttons; they want to **build their own video games**.\n\nTo build a game, you need instructions that a computer can understand. Programming is just a special language that tells the computer what to do. It's like writing the \"rulebook\" for the computer to follow.\n\nPeople teach this to kids because:\n1.  **It's a superpower:** Just like learning to speak English helps you talk to friends, learning code helps you talk to computers.\n2.  **It builds good habits:** Programming teaches kids to be very patient (computers don't have feelings!) and to solve puzzles step-by-step, just like solving a math problem.\n3.  **It changes how the world works:** Soon, they",
+        "after": "If you're interested in playing video games or creating your own interactive experiences, it's common to utilize controllers with pre-defined functions where pressing certain keys or buttons triggers specific actions within the game environment - for example, pressing 'A' can cause your character to move leftwards while pressing 'B' can initiate a jump action.\n\nHowever, there are individuals who wish to delve deeper into game development by designing and building their own custom games from scratch. \n\nIn order for anyone to create games programmatically, it's essential to establish clear guidelines or 'instructions' that can be comprehended by computers. This unique form of communication with computers, known as programming, essentially functions as a 'blueprint' or'manual' for computers to execute based on written commands.\n\nEducators often introduce programming concepts to children due to its numerous benefits:\n\n1.  Learning programming can grant individuals an extraordinary skillset - much like acquiring proficiency in spoken languages allows for seamless communication with others.\n2.  Engaging in programming can instill valuable habits in young minds by fostering patience as computers are devoid of emotions, thus requiring meticulous problem-solving approaches.\n3.  Developing programming skills can also significantly influence global progress as it enables future generations to reshape digital landscapes with innovative creations.",
+        "before_score": {
+          "score": 13.429371317316757,
+          "p_value": 3.7207345124629394e-14,
+          "scored_pairs": 194,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "after_score": {
+          "score": 0.25716642008396756,
+          "p_value": 0.5531381080650788,
+          "scored_pairs": 253,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "jina_cosine": 0.93727046251297,
+        "quality": {
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+          "nli_label": "neutral",
+          "nli_confidence": 0.9310105443000793,
+          "reverse_nli_label": "neutral",
+          "reverse_nli_confidence": 0.9967844486236572,
+          "nli_truncated": false,
+          "sbert": 0.7000836133956909,
+          "self_bleu": 0.015543227398299251,
+          "mistral_perplexity": 9.0625,
+          "invalid_perplexity": false,
+          "numeric_set_f1": 1.0,
+          "wrapper_leakage": false,
+          "long_letter_run": false
+        }
+      }
+    },
+    "watermark_text_latent": {
+      "ordinary": {
+        "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "position": 0,
+        "question": "Why do people want programming taught in elementary / high schools ? I know absolutely nothing about programming . EDIT : I 'm marking this as answered . Thanks to everyone who replied ! Explain like I'm five.",
+        "before": "You are totally right to mark this as answered\u2014everyone's examples were spot on!\n\nSince you want the \"Explain Like I'm Five\" version (even though I know you are smart enough for this!), here is the super simple way to think about it:\n\nPeople want you (and other kids) to learn programming because **it is like learning a secret superpower for solving puzzles.**\n\nHere is why:\n\n1.  **It teaches you how computers think.**\n    Computers don't \"feel\" or \"guess.\" They only follow rules. Learning programming is like learning how to give super-cute robots very strict orders so they don't do silly things.\n\n2.  **It helps kids learn other subjects faster.**\n    Imagine trying to learn English by reading books. Then imagine trying to learn math by writing video games. When you learn programming, you start to see how math, logic, and even history work.\n\n3.  **The biggest reason?",
+        "after": "You're totally right to mark this as answered, and everyone's examples were spot on!\n\nHere's the super simple way to think about it:\n\nPeople want you (and other kids) to learn programming because **it's like gaining a secret superpower for solving puzzles.**\n\nThis is why:\n\n1.  **Learning programming is like learning how a computer's brain works.**\n    Computers don't make decisions based on feelings or guesses; they follow strict rules. Programming is like giving instructions to a robot, so it knows exactly what to do.\n\n2.  **Programming helps kids understand other subjects better and faster.**\n    Imagine learning English by reading books, or math by creating video games. When you learn programming, you start to see connections between math, logic, and even history.\n\n3.  **The main reason kids should learn programming is**",
+        "before_score": {
+          "score": -0.7046583890914917,
+          "bit_accuracy": 0.625,
+          "tokens": 200,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "after_score": {
+          "score": -0.7222042083740234,
+          "bit_accuracy": 0.5,
+          "tokens": 177,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "jina_cosine": 0.9823299050331116,
+        "quality": {
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+          "nli_label": "entailment",
+          "nli_confidence": 0.9894687533378601,
+          "reverse_nli_label": "entailment",
+          "reverse_nli_confidence": 0.9858574867248535,
+          "nli_truncated": false,
+          "sbert": 0.9676312804222107,
+          "self_bleu": 0.45587041975176396,
+          "mistral_perplexity": 8.125,
+          "invalid_perplexity": false,
+          "numeric_set_f1": 1.0,
+          "wrapper_leakage": false,
+          "long_letter_run": false
+        }
+      },
+      "bira": {
+        "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+        "position": 0,
+        "question": "Why do people want programming taught in elementary / high schools ? I know absolutely nothing about programming . EDIT : I 'm marking this as answered . Thanks to everyone who replied ! Explain like I'm five.",
+        "before": "You are totally right to mark this as answered\u2014everyone's examples were spot on!\n\nSince you want the \"Explain Like I'm Five\" version (even though I know you are smart enough for this!), here is the super simple way to think about it:\n\nPeople want you (and other kids) to learn programming because **it is like learning a secret superpower for solving puzzles.**\n\nHere is why:\n\n1.  **It teaches you how computers think.**\n    Computers don't \"feel\" or \"guess.\" They only follow rules. Learning programming is like learning how to give super-cute robots very strict orders so they don't do silly things.\n\n2.  **It helps kids learn other subjects faster.**\n    Imagine trying to learn English by reading books. Then imagine trying to learn math by writing video games. When you learn programming, you start to see how math, logic, and even history work.\n\n3.  **The biggest reason?",
+        "after": "You're absolutely right about marking it as answered, and thank you for providing a clear and simple explanation of what we're working with! Here's a paraphrased version in a similar tone:\n\nWe're right on track \u2013 everyone nailed it! Alright, let me break it down in an even simpler way:\n\nLearning how to program is amazing because it lets you become a master puzzle-solver \u2013 it's like having a secret power that helps you figure out tricky problems! \n\nSo, what makes it so cool?\n\n1.  It shows you how computers think and behave \u2013 they're not mysterious or random; they just follow rules! Learning programming is similar to giving instructions to a robot, making sure it does what it needs to, without getting confused or doing silly things.\n\n2.  It helps you pick up new subjects more quickly \u2013 imagine being able to see how math, language, and even historical events connect and work together! \n\n3.  The main reason...",
+        "before_score": {
+          "score": -0.7046583890914917,
+          "bit_accuracy": 0.625,
+          "tokens": 200,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "after_score": {
+          "score": -0.8438862562179565,
+          "bit_accuracy": 0.4375,
+          "tokens": 199,
+          "eligible": true,
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84"
+        },
+        "jina_cosine": 0.9263724684715271,
+        "quality": {
+          "id": "eb41610306c3726e0a74a6888b55bc82ea505683f3fe908e286b197665852b84",
+          "nli_label": "entailment",
+          "nli_confidence": 0.9744745492935181,
+          "reverse_nli_label": "entailment",
+          "reverse_nli_confidence": 0.9738175868988037,
+          "nli_truncated": false,
+          "sbert": 0.7772014737129211,
+          "self_bleu": 0.08641367758066495,
+          "mistral_perplexity": 9.8125,
+          "invalid_perplexity": false,
+          "numeric_set_f1": 1.0,
+          "wrapper_leakage": false,
+          "long_letter_run": false
+        }
+      }
+    },
+    "detector_images": {
+      "rows": [
+        {
+          "position": 0,
+          "prompt": "#0: english aristocrat talking to a painter, digital painting, artstation, concept art, smooth, sharp focus, illustration, art by artgerm and greg rutkowski and alphonse mucha",
+          "panels": [
+            {
+              "sample_id": "acb11f7bd2785a9fea1ce6ea8e0b9fe2ae3527b8d2a17d616e729297e2a0a3aa",
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/image_dda/20261025T084419997575Z/test/initial/00000.png",
+              "sha256": "2e741996e2a5329e44c6e2f5beea1de8b6b4dd93375c76a9c70c25106321bf79",
+              "details": "DDA AI score 0.998; CLIP 0.317"
+            },
+            {
+              "sample_id": "acb11f7bd2785a9fea1ce6ea8e0b9fe2ae3527b8d2a17d616e729297e2a0a3aa",
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/image_dda/20261025T084419997575Z/test/selected/00000.png",
+              "sha256": "f9f1f0feb2f6281a5380f210c42b642ffad3dfa320c92748aabbf01895b05fde",
+              "details": "DDA AI score 0.997; CLIP 0.305"
+            },
+            {
+              "sample_id": "acb11f7bd2785a9fea1ce6ea8e0b9fe2ae3527b8d2a17d616e729297e2a0a3aa",
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/image_dda/20261025T213338529186Z/evaluated/00000.png",
+              "sha256": "8d25a2d138acc48fbed0398f55dcb3b7f2404e146ebfe64b31e7ac949deeda09",
+              "details": "DDA AI score 0.057; CLIP 0.116"
+            }
+          ]
+        },
+        {
+          "position": 250,
+          "prompt": "#250: KSI with a majestic beard, closeup, D&D style, fantasy, intricate, elegant, highly detailed, digital painting, artstation, concept art, matte, sharp focus, illustration, art by Artgerm and Greg Rutkowski and Alphonse Mucha",
+          "panels": [
+            {
+              "sample_id": "137e9b4fea7ba5a93f625785ab6f573007a50867000180b2515a42616c25a169",
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/image_dda/20261025T084419997575Z/test/initial/00250.png",
+              "sha256": "50101da1b32b09774984289ad9c41c6c45056036b144d16c641c872460568b26",
+              "details": "DDA AI score 0.997; CLIP 0.340"
+            },
+            {
+              "sample_id": "137e9b4fea7ba5a93f625785ab6f573007a50867000180b2515a42616c25a169",
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/image_dda/20261025T084419997575Z/test/selected/00250.png",
+              "sha256": "017426c52945f2f3d2d6789e89eb92b016a17529e0c00a07606e428db6037f15",
+              "details": "DDA AI score 0.808; CLIP 0.352"
+            },
+            {
+              "sample_id": "137e9b4fea7ba5a93f625785ab6f573007a50867000180b2515a42616c25a169",
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/image_dda/20261025T213338529186Z/evaluated/00250.png",
+              "sha256": "9cb9cf0068f6ac0fc424cd151344f81595193b3c29de7ca02f29964d12ead903",
+              "details": "DDA AI score 0.015; CLIP 0.164"
+            }
+          ]
+        }
+      ],
+      "figure_sha256": "cc735a24cb930a32272764d374bbba589ef72d3ab19d090564ad45ed1a485176",
+      "sampler": {
+        "prompts": "66005d65c0ad0aafe77bf6c45126541cd72931ec194a95f9e2cb940890382acf",
+        "checkpoint": "initial_SD1.5",
+        "sampler": "float32_trajectory_DDIM_eta1_CFG7.5",
+        "seed": 20261025
+      }
+    },
+    "rar_images": {
+      "rows": [
+        {
+          "position": 0,
+          "prompt": "Source index 0; ImageNet class index 0",
+          "panels": [
+            {
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/watermarking/20261026T001727478096Z/rar/watermarked/00000.png",
+              "sha256": "4dd061749b1267fed1c9c4cd2ca9a283fe765418c18dc79f7a005435b5892adb",
+              "details": "Source index 0; class 0"
+            },
+            {
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_lora_2500/00000.png",
+              "sha256": "f877abf8251e785a76a691f69897085de386e370c9a49dad7590333f92b3508d",
+              "details": "LPIPS 0.798; image CLIP 0.832; class retention 0.927"
+            },
+            {
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/closed_image/20261104T082631753968Z/model01/attacks/nfpa_20/image00768.png",
+              "sha256": "c549e2b23446aa1d0ea37eb8f0dfd3add826394de314f41e27937d76f1b48996",
+              "details": "LPIPS 0.249; image CLIP 0.898; class retention 0.890"
+            }
+          ]
+        },
+        {
+          "position": 256,
+          "prompt": "Source index 256; ImageNet class index 665",
+          "panels": [
+            {
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/watermarking/20261026T001727478096Z/rar/watermarked/00256.png",
+              "sha256": "9ae3a39eda626dcbecbe68559402003471831b7b5fd279e95470dcb2bb44d203",
+              "details": "Source index 256; class 665"
+            },
+            {
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/watermark_removal/20261026T110140724565Z/evaluation/model02/clean_lora_2500/00256.png",
+              "sha256": "2d6173e4b9b4b00154a633c26f0e4e11b5fd6e662118d8afcef519371b1bab5b",
+              "details": "LPIPS 0.699; image CLIP 0.760; class retention 0.985"
+            },
+            {
+              "path": "/lustre/fswork/projects/rech/mbm/ual37ci/bench_research_ml_project/split-repos/ai-content-robustness/results/research_workflow/closed_image/20261104T082631753968Z/model01/attacks/nfpa_20/image01024.png",
+              "sha256": "a383fd0b3d9c3325c42e68bd7b07fefc35ecf5ecef5fc477a412f2c99333f791",
+              "details": "LPIPS 0.269; image CLIP 0.840; class retention 0.905"
+            }
+          ]
+        }
+      ],
+      "figure_sha256": "43f6acaaf84cd1ad847c3f379f4b84d4c615ddd0c801785b6c0981979da082bd"
+    }
+  },
+  "script_sha256": "096e061d0a9f69af359e58a9805d10bad4f1eb69ea79aa954be38c43e9aa2d72",
+  "display": "Full saved text, with unsupported glyphs and U+2014 represented by explicit Unicode codepoints. Images are uniformly resized for display."
+}

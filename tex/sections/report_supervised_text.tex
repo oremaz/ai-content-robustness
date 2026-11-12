@@ -18,7 +18,7 @@ Gemma-4-E4B & .9075 & .8006 & .9499\\
 Nanbeige4.2-3B & .7004 & .7272 & .6223\\
 LFM2.5-2.6B & .9061 & .7633 & .9154\\\bottomrule
 \end{tabular}
-\caption{Macro F1 from the retained text notebook, job 1145971. Each column is a different evaluation distribution, not an independent retraining of every model.}
+\caption{Supervised AI-text detection: macro F1 of ten detectors fitted on MAGE, from retained notebook job 1145971. Columns evaluate the same fitted model on the MAGE holdout, external Pile texts and 2,000 peer reviews (1,000 human and 1,000 generated across five LLMs). Rows name the detector architecture; transformer rows use QLoRA classification. Higher macro F1 is better. These are single-run distribution comparisons, not separate retraining per column.}
 \end{table}
 
 \paragraph{Reading the result.} Qwen has the highest observed MAGE and Pile macro F1, while Gemma has the highest peer-review macro F1. A model ranking on one dataset therefore does not define a universal detector ranking. An encoder can be cheaper to use than a decoder classifier, but this experiment does not provide a matched-compute efficiency frontier.
