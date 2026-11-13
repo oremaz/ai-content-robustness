@@ -1,0 +1,12 @@
+\begin{table}[ht]\centering\small
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{lllllll}\toprule
+Version & Source & Source WM & AI Index & AI Gemma & WM Index & WM Gemma\\\midrule
+Clean & French & N/A & 100.00\% & 100.00\% & N/A & N/A\\
+Clean & Welsh & N/A & 89.50\% & 97.00\% & N/A & N/A\\
+TextSeal 2 & French & 100.00\% & 98.00\% & 98.50\% & 2.50\% & 2.00\%\\
+TextSeal 2 & Welsh & 99.50\% & 90.50\% & 98.49\%$^{\dagger}$ & 9.00\% & 7.00\%\\
+Text student & French & 4.50\% & 97.00\% & 97.50\% & 3.50\% & 2.50\%\\
+Text student & Welsh & 21.50\% & 82.00\% & 95.00\% & 11.50\% & 10.00\%\\
+\bottomrule\end{tabular}\end{adjustbox}
+\caption{French/Welsh pilot: 200 attempted outputs per condition; Gemma means TranslateGemma. Source WM is measured before translation. AI columns use the same frozen seven-member ensemble and 0.5 threshold. Watermark columns retain all 200 outputs. Texts below the released DivEye minimum of 15 words are unscorable for the full ensemble and are not successful valid evasions. $\dagger$TextSeal 2/Welsh/TranslateGemma: 199/200 scorable.}\label{tab:translation_french_welsh}\end{table}

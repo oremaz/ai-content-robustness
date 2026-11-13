@@ -1,0 +1,12 @@
+\begin{table}[ht]\centering\small
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{lllll}\toprule
+Version & Translator & AI detection & WM detected & WM loss$^*$\\\midrule
+Clean & Index & 99.75\% & N/A & N/A\\
+Clean & TranslateGemma & 99.75\% & N/A & N/A\\
+TextSeal 2 & Index & 99.70\% & 7.05\% & 92.91\%\\
+TextSeal 2 & TranslateGemma & 99.75\% & 5.50\% & 94.47\%\\
+Text student & Index & 99.10\% & 7.60\% & 55.52\%\\
+Text student & TranslateGemma & 99.35\% & 5.85\% & 66.56\%\\
+\bottomrule\end{tabular}\end{adjustbox}
+\caption{Chinese-requested generation followed by translation into English, 2,000 outputs per condition. AI detection uses the frozen ensemble at 0.5; WM detected is the translated watermark detection rate. $^*$WM loss conditions on a detected source watermark: 1,989 TextSeal 2 sources and 308 text-student sources. Loss is not a content-preserving removal rate. Unwatermarked controls have no WM test.}\label{tab:translation_chinese}\end{table}

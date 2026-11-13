@@ -409,3 +409,64 @@ passed in this checkout; the frozen Slurm launcher passed its shell syntax check
 The existing English/Chinese jobs and artifacts are unchanged. As in the Chinese study, requested source language
 does not guarantee compliance; source-language validity and translation
 adequacy must accompany interpretation of the raw detector/watermark rates.
+
+## French/Welsh partial results and short-input recovery
+
+Job `119154` stopped after 1h18m12s, with seven of twelve translated conditions
+fully evaluated. Clean-model French-to-English detection was 100% for both
+translators. Clean-model Welsh detection was 89.5% with Index and 97% with
+TranslateGemma. TextSeal 2 French detection was 98%/98.5% for Index/Gemma; its
+watermark detection fell from 100% on the French sources to 2.5%/2.0%. Welsh
+TextSeal 2 with Index had 90.5% ensemble detection and 9% watermark detection
+versus 99.5% watermark detection on the sources. Human ensemble false positives
+were 3/200 (1.5%) at the fixed 0.5 threshold. These are 200-output pilot results;
+language compliance and translation adequacy have not been established.
+
+One TextSeal 2 Welsh/Gemma translation contains twelve words. The released
+DivEye implementation requires at least fifteen, so it stopped ensemble scoring
+before the DistSeal conditions began. The corrected driver retains every text,
+records generated/scorable counts and unscorable IDs, and scores the unchanged
+seven-member ensemble only on supported inputs. Valid evasion still requires
+at least twenty words and divides its count by all attempted outputs, so an
+unscorable short text is not counted as a successful valid evasion. Watermark
+evaluation retains all outputs and its full denominator. The report identifies
+ensemble N as the scorable count; metric JSON retains all relevant counts.
+
+Replacement job `122138` uses one H100 in development QoS and `manifest-v2.json`,
+reusing the twenty-one completed stage receipts and saved output prefixes.
+Thirteen stages remain, including the failed scoring phase and all DistSeal
+conditions. No detector training, threshold or watermark key changed. All
+1,906 frozen hashes and the launcher syntax were checked; eighteen focused
+translation/transfer tests passed, including the unscorable-output denominator
+regression. The original manifest, source snapshot and failed log are retained.
+
+## Completed French/Welsh matrix
+
+Replacement job `122138` completed successfully in 1h00m02s (exit 0:0). All 34
+stage receipts and all twelve translated conditions are complete. Each condition
+attempted 200 outputs; TextSeal 2/Welsh/TranslateGemma has 199 scorable outputs.
+The seven frozen detector members and original thresholds are unchanged.
+
+| Version | Source | Source WM | AI Index | AI Gemma | WM Index | WM Gemma |
+|---|---|---:|---:|---:|---:|---:|
+| Clean | French | N/A | 100.00% | 100.00% | N/A | N/A |
+| Clean | Welsh | N/A | 89.50% | 97.00% | N/A | N/A |
+| TextSeal 2 | French | 100.00% | 98.00% | 98.50% | 2.50% | 2.00% |
+| TextSeal 2 | Welsh | 99.50% | 90.50% | 98.49% | 9.00% | 7.00% |
+| Local text student | French | 4.50% | 97.00% | 97.50% | 3.50% | 2.50% |
+| Local text student | Welsh | 21.50% | 82.00% | 95.00% | 11.50% | 10.00% |
+
+Source WM is measured before translation. Human ensemble false positives remain
+3/200 (1.5%) at threshold 0.5. The text student begins with only 9/200 French
+and 43/200 Welsh source watermarks, so raw translated rates alone do not measure
+translation-induced loss. Language compliance and adequacy remain unassessed.
+
+The portable report snapshot includes the complete Chinese matrix, this pilot
+and the 128+128 Gemma transfer result. Regenerate the report tables without GPU
+inference with `PYTHONPATH=. uv run --no-sync python tex/translation_summary.py`.
+Refreshing the snapshot from local run artifacts uses both `--translation-root`
+and `--gemma-run`; full input hashes are retained in the exported provenance.
+An independent audit recomputed ensemble means, human false positives, ROC AUC,
+watermark counts and conditional losses from saved member scores across all 22
+evaluation conditions. The updated PDF has 48 pages, with the translation
+section on pages 46-47 immediately before references.

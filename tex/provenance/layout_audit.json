@@ -1,10 +1,10 @@
 {
   "report": {
-    "pages": 45,
+    "pages": 48,
     "references_pages": 1,
-    "text_only_pages_excluding_references": 27,
-    "text_only_count_method": "Recompiled the same active sources after removing figure, table and longtable environments including captions; counted pages before References. Front matter and equations are included.",
-    "pdf_sha256": "e2ac74fe5a207fc7d7166f406c45a5b77ef076cf8527d4a6b89ee929539a2bce",
+    "text_only_pages_excluding_references": 29,
+    "text_only_count_method": "Recompiled the active TeX after removing figure, table, longtable and recordfigure environments including captions. Counted pages before References; front matter and equations are included. Removed-float references are intentionally unresolved only in this temporary counting build.",
+    "pdf_sha256": "0dddac6cb7b76062a8522744908aaa485c975483c612c0e20f0b219b524017be",
     "out_of_page_text_pages": [],
     "overfull_vboxes": 0,
     "overfull_hboxes": 0,
@@ -13,15 +13,33 @@
     "duplicate_labels": 0,
     "summary_pages": 1,
     "validation": {
-      "date": "2026-11-12",
-      "focused_cpu_tests_passed": 27,
-      "portable_publication_files": 171,
-      "portable_publication_galleries": 54,
-      "retained_result_tables_numeric_rows_unchanged": 11,
-      "retained_image_rule_rows_verified": 26,
-      "qualitative_source_hashes_verified": true,
-      "visual_review": "Summary; attack notation and mathematics; full text comparisons; SD1.5 and RAR paired images; retained image table; teacher and rejected clock examples.",
-      "scope": "Report and reporting assets only; no new model training or RAR improvement job."
+      "date": "2026-11-13",
+      "focused_cpu_tests_passed": 21,
+      "cached_score_conditions_verified": 22,
+      "translation_conditions_completed": 18,
+      "french_welsh_stages_completed": 34,
+      "all_seven_members_verified": true,
+      "full_pdf_build": "XeLaTeX and BibTeX via latexmk, no overflow/missing glyph/undefined-reference warnings",
+      "visual_review": "Updated Qwen-instruct/Gemma page 7 and final translation pages 46-47, including all six French/Welsh rows and the 199/200 coverage marker.",
+      "translation_section_before_references": true,
+      "provenance": "tex/provenance/translation_transfer_results.json",
+      "score_validation": "tex/provenance/translation_report_validation.json",
+      "scope": "Report additions, portable metrics and explicit short-output handling; frozen detectors and watermarks unchanged."
+    },
+    "historical_validation": {
+      "pdf_sha256": "e2ac74fe5a207fc7d7166f406c45a5b77ef076cf8527d4a6b89ee929539a2bce",
+      "pages": 45,
+      "validation": {
+        "date": "2026-11-12",
+        "focused_cpu_tests_passed": 27,
+        "portable_publication_files": 171,
+        "portable_publication_galleries": 54,
+        "retained_result_tables_numeric_rows_unchanged": 11,
+        "retained_image_rule_rows_verified": 26,
+        "qualitative_source_hashes_verified": true,
+        "visual_review": "Summary; attack notation and mathematics; full text comparisons; SD1.5 and RAR paired images; retained image table; teacher and rejected clock examples.",
+        "scope": "Report and reporting assets only; no new model training or RAR improvement job."
+      }
     }
   }
 }

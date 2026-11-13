@@ -1,0 +1,8 @@
+\begin{table}[ht]\centering\small
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{llll}\toprule
+Held-out class & $N$ & Flagged AI & Rate\\\midrule
+Gemma-4-12B-it outputs & 128 & 128 & 100.00\%\\
+Human continuations & 128 & 3 & 2.34\%\\
+\bottomrule\end{tabular}\end{adjustbox}
+\caption{Zero-shot generator transfer within CNN/DailyMail news. The unchanged Qwen-instruct-warmed seven-member ensemble flags scores at least 0.5. The human row is a false-positive rate, not a detection success rate. No Gemma-12B fitting or threshold adjustment is performed. ROC AUC on these 256 passages is 1.00.}\label{tab:generator_transfer}\end{table}

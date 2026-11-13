@@ -52,5 +52,21 @@ releasing approximately 24 GB while preserving all instruct files.
 This is a 128-sample pilot of generator transfer within the news domain. Each
 sample changes a class-specific rate by 0.78125 percentage points. Disjointness
 from local detector adaptation does not establish absence of these articles
-from the original pretrained models' data. No result is claimed before scoring
-completes.
+from the original pretrained models' data.
+
+Job `120562` completed successfully in 14m56s. At the fixed threshold 0.5,
+the frozen ensemble detected 128/128 Gemma outputs (100%) and falsely flagged
+3/128 human passages (2.34375%). Accuracy was 98.828125% and ROC AUC was 1.0.
+There were no empty outputs or outputs shorter than 20 words. At the separately
+recorded Qwen-validation threshold 0.412454, detection remained 128/128 and
+human false positives were 4/128 (3.125%). The nominal 1% validation target is
+not a guaranteed test false-positive rate. Both stages have completed receipts,
+and Slurm recorded exit status 0:0. These measurements do not establish perfect
+detection outside this small held-out cohort.
+
+The report now describes the CNN/DailyMail-only Qwen-specific warmup explicitly,
+alongside the earlier MAGE/released initializations. Its Gemma claim is generator
+transfer within news, with held-out human controls. The new table is generated
+from `tex/provenance/translation_transfer_results.json` by
+`PYTHONPATH=. uv run --no-sync python tex/translation_summary.py`. The translation
+section follows the conclusions and immediately precedes the references.

@@ -137,3 +137,43 @@ def test_pilot_mauve_reports_actual_sample_count(tmp_path):
     assert driver.read(tmp_path/'mauve.json')['n']==2000
     driver.report({'directory':str(tmp_path)})
     assert '2,000 samples' in (tmp_path/'results.md').read_text()
+
+
+def test_unscorable_output_is_retained_and_not_a_successful_evasion(tmp_path, monkeypatch):
+    import sys
+
+    rows=[{'id':name,'text':' '.join(['word']*count)} for name,count in [('short',12),('medium',18),('valid',25)]]
+    driver.save(tmp_path/'base_en_test.json',{'rows':rows})
+    driver.save(tmp_path/'partitions.json',{'text':{'test':[{'id':r['id'],'human_text':'human '*25} for r in rows]}})
+    driver.save(tmp_path/'warmup_checkpoints.json',{})
+    driver.save(tmp_path/'validation_scores.json',{'diveye':[.9,.1]})
+
+    class Pool:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def clear(self):
+            pass
+
+    calls=[]
+    def score(pool, texts, path):
+        calls.append(texts)
+        assert all(len(text.split())>=15 for text in texts)
+        return {'diveye':[.2]*len(texts)}
+
+    def metrics(ai, human, threshold=.5):
+        return {'num_ai':len(ai),'num_human':len(human)}
+
+    prefix='ai_content_detector.rl_evasion.defender_comparison.'
+    monkeypatch.setitem(sys.modules,prefix+'defenders',SimpleNamespace(DefenderPool=Pool))
+    monkeypatch.setitem(sys.modules,prefix+'protocol',SimpleNamespace(score_checkpointed=score,
+        classification_metrics=metrics,validation_threshold=lambda values:.4))
+    config={'directory':str(tmp_path),'num_samples':3,'plan':{'specifications':{'diveye':{'family':'diveye'}}}}
+    driver.score_condition(config,'base','en',None,None)
+    result=driver.read(tmp_path/'scores/base_en_metrics.json')
+    assert result['ensemble_mean']=={'num_ai':2,'num_human':3}
+    assert result['ensemble_scoring']['unscorable_ids']==['short']
+    assert result['ensemble_scoring']['n_generated']==3
+    assert result['valid_evasion_fraction_of_all_outputs']==pytest.approx(1/3)
+    assert result['conditional_valid_evasion']==1.
+    assert driver.read(tmp_path/'base_en_test.json')['rows']==rows

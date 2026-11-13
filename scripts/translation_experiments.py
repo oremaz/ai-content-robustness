@@ -355,11 +355,15 @@ def score_condition(config, arm, lang, translator, stop, source_only=False):
     result={}
     humans=[dict(id=r['id'],text=r['human_text']) for r in evaluation]
     if not source_only:
+        minimum_words=15 if any(s['family']=='diveye' for s in config['plan']['specifications'].values()) else 1
+        scorable=[r for r in rows if len(r['text'].split())>=minimum_words]
+        result['ensemble_scoring']=dict(n_generated=len(rows),n_scorable=len(scorable),minimum_words=minimum_words,
+            unscorable_ids=[r['id'] for r in rows if len(r['text'].split())<minimum_words])
         pool=DefenderPool(config['plan']['specifications'],directory/'adapted_defenders',
             checkpoints=read(directory/'warmup_checkpoints.json'),retain_on_cpu=False)
         pool.inference_batch_sizes=config.get('detector_batch_sizes',{})
         try:
-            scores=score_checkpointed(pool,[r['text'] for r in rows],directory/'scores'/label)
+            scores=score_checkpointed(pool,[r['text'] for r in scorable],directory/'scores'/label)
             null=score_checkpointed(pool,[r['text'] for r in humans],directory/'scores'/'human')
         finally:
             pool.clear()
@@ -371,8 +375,8 @@ def score_condition(config, arm, lang, translator, stop, source_only=False):
         result['ensemble_mean']=classification_metrics(ensemble,human)
         result['ensemble_validation_1pct_fpr']=classification_metrics(ensemble,human,threshold)
         result['diagnostic_members']={k:classification_metrics(v,null[k]) for k,v in scores.items()}
-        valid=np.array([len(r['text'].split())>=20 for r in rows])
-        result['valid_evasion_fraction_of_all_outputs']=float(np.mean(valid & (ensemble<.5)))
+        valid=np.array([len(r['text'].split())>=20 for r in scorable],dtype=bool)
+        result['valid_evasion_fraction_of_all_outputs']=float(np.sum(valid & (ensemble<.5))/len(rows))
         result['conditional_valid_evasion']=float(np.mean(ensemble[valid]<.5)) if valid.any() else None
         result['empty_outputs']=sum(not r['text'].strip() for r in rows)
         result['short_outputs_under_20_words']=sum(len(r['text'].split())<20 for r in rows)
@@ -537,7 +541,9 @@ def _report(config):
         metric=result['ensemble_mean']
         watermark=result.get('watermark')
         rate=f"{watermark['detection_rate']:.2%}" if watermark else 'N/A'
-        lines.append(f"| {path.stem.removesuffix('_metrics')} | {metric['num_ai']} | {metric['ai_detection_rate']:.2%} | {metric['human_false_positive_rate']:.2%} | {rate} |")
+        detection=f"{metric['ai_detection_rate']:.2%}" if metric['ai_detection_rate'] is not None else 'N/A'
+        false_positive=f"{metric['human_false_positive_rate']:.2%}" if metric['human_false_positive_rate'] is not None else 'N/A'
+        lines.append(f"| {path.stem.removesuffix('_metrics')} | {metric['num_ai']} | {detection} | {false_positive} | {rate} |")
     if (directory/'mauve.json').exists():
         lines += ['', f"## Direct-English MAUVE ({read(directory/'mauve.json')['n']:,} samples)", '',
                   '| Arm | Seed 42 | Seed 43 | Seed 44 |', '|---|---:|---:|---:|']
@@ -545,6 +551,7 @@ def _report(config):
             lines.append('| '+arm+' | '+' | '.join(f"{values[str(k)]:.4f}" for k in (42,43,44))+' |')
         lines += ['', 'Custom response-only Mistral features. MAUVE alone does not establish preserved quality.']
     lines += ['', 'Raw detection is separate from language compliance and translation adequacy. See per-condition JSON for eligibility and validation-threshold results.', '']
+    lines += ['Ensemble N counts scorable outputs. With DivEye, fewer than 15 words is unscorable; JSON records attempted counts and excluded IDs. Such outputs are not counted as successful valid evasions.', '']
     (directory/'results.md').write_text('\n'.join(lines))
 
 

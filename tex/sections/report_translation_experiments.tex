@@ -1,0 +1,92 @@
+\section{Translation attacks on frozen detectors and text watermarks}
+\label{sec:translation_experiments}
+
+\paragraph{Question and protocol.}
+Does generating outside English and translating back into English remove
+detector evidence or a watermark? The generator is Qwen3.5-9B instruct, in
+three versions: unwatermarked, the native TextSeal~2 sampler, and the local
+DistSeal-inspired latent text student. The last is a merged model distilled for
+5,000 updates, not an official released DistSeal text checkpoint. All versions
+receive an English news prefix and an instruction to continue in Simplified
+Chinese, French or Welsh. Index-Translate-9B and TranslateGemma-12B independently
+translate each saved continuation into English, without adding a watermark.
+This is foreign-language generation followed by translation, not a round trip
+starting from a saved English answer.
+
+The fixed cohort is separate from the CNN/DailyMail warmup and validation IDs
+described in Section~\ref{sec:adaptation}. The Chinese comparison uses
+the first 2,000 test prefixes per version, and the French/Welsh pilot uses the
+same first 200. Source generation uses temperature 1, top-$p$ 0.95 and a
+256-new-token cap; translation is greedy with a 1,024-token cap. Token budgets
+are tokenizer-specific, so they do not imply equal information across
+languages. Saved output prefixes and checkpointed inference allow exact
+resumption without regenerating completed texts.
+
+\paragraph{Separate detector and watermark outcomes.}
+The primary AI detector is the unchanged equal-weight mean of the seven
+Qwen-warmed member scores, with threshold 0.5. No translated texts are used
+for fitting or recalibration. TextSeal~2 detection uses its native
+$p\leq 0.001$ rule. The text student's extractor threshold, approximately
+$-0.615143$, is frozen from human and unwatermarked English validation
+responses. A source watermark is scored before translation, and the same
+owner test is applied afterward. Conditional watermark loss is the fraction
+of \emph{initially detectable source watermarks} no longer detected after
+translation; it is different from the raw translated detection rate.
+
+\paragraph{Chinese-to-English results.}
+Direct-English ensemble detection is 99.80\% for the clean generator,
+99.95\% for TextSeal~2 and 98.35\% for the text student. The corresponding
+English watermark detection rates are 99.60\% and 58.65\%. On the
+Chinese-requested sources, watermark detection is 1,989/2,000 (99.45\%) for
+TextSeal~2 and only 308/2,000 (15.40\%) for the student. The student's weak
+source-language baseline must therefore be separated from translation-induced
+loss. Table~\ref{tab:translation_chinese} reports final English outcomes.
+Human false positives on the matched 2,000 English controls are 0.50\% for
+the ensemble, 0.05\% for TextSeal~2 and 0.60\% for the student.
+
+\input{generated/translation_chinese}
+
+\paragraph{French and Welsh pilot.}
+Table~\ref{tab:translation_french_welsh} keeps source language, model version
+and translator separate. At the fixed ensemble threshold, the first 200 human
+controls have 3/200 false positives (1.50\%); this differs from the larger
+Chinese cohort's empirical rate. The clean-model French outputs are all
+detected after either translator, whereas Welsh-to-English through Index
+shows greater evasion. The TextSeal~2 French-source watermark is detectable in
+200/200 sources, falling to 5/200 after Index and 4/200 after TranslateGemma.
+The Welsh TextSeal~2 sources have 199/200 detectable watermarks.
+
+The released DivEye component requires at least 15 words. One 12-word
+Welsh-to-English translation stopped the initial job. The resumed protocol
+preserves every output, records attempted and scorable counts, and treats
+unsupported short texts as unscorable for the full ensemble. It does not
+substitute a smaller ensemble or manufacture a score. A valid-evasion count
+requires at least 20 words and uses \emph{all attempted outputs} as its
+denominator. Watermark detection retains the full output set independently
+of detector coverage.
+
+\input{generated/translation_french_welsh}
+
+\paragraph{Interpretation and limits.}
+The observations separate two kinds of evidence: the frozen ensemble largely
+retains discrimination in the Chinese and French conditions, while translation
+removes most detectable TextSeal~2 marks; Welsh is more sensitive to the chosen
+translator. They do not establish universal translation robustness or
+content-preserving watermark removal. Language instructions are imperfectly
+followed: 226/2,000 clean and 146/2,000 TextSeal~2 Chinese-requested sources
+contain no Han characters, with manually inspected examples in English.
+These are raw requested-language results, not a fully language-validated
+Chinese subset. Source-language compliance and translation adequacy remain
+unassessed for the complete matrix, including Welsh. Student thresholds were
+calibrated on English rather than language-matched human controls.
+
+The direct-English quality check uses 2,000 samples and custom Mistral
+final-token MAUVE features with three clustering seeds. Values are low across
+versions: 0.0205--0.0240 for the clean model, 0.0210--0.0232 for TextSeal~2,
+and 0.0377--0.0420 for the student. These custom-feature scores are not directly
+comparable to default GPT-2 MAUVE. This proxy alone does not establish preserved quality, and it is
+not a translated-output adequacy test. The smaller pilots also have limited
+resolution and uncertainty. Portable metrics, source hashes, coverage and
+frozen protocol identities are retained in
+\path{tex/provenance/translation_transfer_results.json}. No translation-robust
+detector or watermark defense is trained in these experiments.

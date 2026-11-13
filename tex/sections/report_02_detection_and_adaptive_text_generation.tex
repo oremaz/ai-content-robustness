@@ -18,5 +18,34 @@ Each defender update uses fresh fitting outputs while evaluation reuses the orig
 
 The RoBERTa diagnostic illustrates checkpoint instability: evasion on 100 prompts reaches 98\% at step 500 and falls to 36\% at step 600. Selecting a favorable checkpoint after viewing diagnostic results can overstate robustness or attack reliability. Confirmatory testing must use untouched prompts and a prespecified selection rule.
 
+\paragraph{Qwen instruct adaptation and transfer to Gemma.}
+A separate experiment further adapts the seven existing detectors to
+\texttt{Qwen3.5-9B} instruct. The warmup pool contains 984 paired CNN/DailyMail
+examples: English human news continuations and outputs requested in English
+from the unwatermarked instruction-tuned generator. The existing workers use
+their paired fitting/validation split. No foreign-language generation or
+translation outputs enter this warmup. ``English'' describes the requested
+language; the outputs were not strictly language-filtered. These are further
+adaptation steps, not training from scratch: several selected components were
+previously fitted on MAGE (Section~\ref{sec:text_bench}), and other components
+retain their released initialization.
+
+The ensemble and its operating thresholds are then frozen. A zero-shot
+generator-transfer pilot uses 128 disjoint news prefixes with
+\texttt{Gemma-4-12B-it}, its native instruction template and thinking disabled,
+plus the 128 matching held-out human continuations. Neither these articles nor
+the 2,000-example translation evaluation overlap the local warmup or validation
+IDs. This is a local split audit; article overlap with earlier checkpoint
+fitting or general pretraining corpora has not been exhaustively audited.
+Table~\ref{tab:generator_transfer} shows strong discrimination on this small
+cohort: all 128 Gemma outputs are detected and three human passages are falsely
+flagged. The result supports transfer to a new generator \emph{within the news
+domain}; it is distinct from the cross-dataset evidence in
+Section~\ref{sec:text_bench}. Human passages are held-out controls, not an unseen
+class. Translation experiments with the same frozen ensemble appear in
+Section~\ref{sec:translation_experiments}.
+
+\input{generated/generator_transfer}
+
 
 \input{generated/detector_text_examples}

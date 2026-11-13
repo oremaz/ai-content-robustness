@@ -203,6 +203,17 @@ ensemble. Job `119154` requests one H100 in development QoS with checkpointing
 and automatic requeue. Its 1,200 source texts and 2,400 translations are stored
 under `french-welsh-200/`, alongside the English/Chinese pilot. It reuses the
 existing watermarked models and calibration without training new detectors.
+Job `119154` saved seven conditions before DivEye rejected one twelve-word
+translation. Replacement job `122138` resumes the remaining work, explicitly
+reporting unscorable short outputs while preserving all texts and the frozen
+ensemble. The length-handling revision passed 18 focused tests.
+The resumed job completed all twelve conditions. French ensemble detection is
+97% to 100%; Welsh ranges from 82% to 98.49%, depending on model and translator.
+TextSeal 2 watermark detection falls to 2% to 2.5% after French translation and
+7% to 9% after Welsh translation. The local text student's source watermark is
+already weak in these languages (4.5% French, 21.5% Welsh), so its translated
+rates require comparison with those baselines. The report retains all counts,
+including the one TextSeal 2/Welsh/Gemma output too short for DivEye.
 
 A zero-shot generator-transfer pilot evaluates the same frozen Qwen-warmed
 ensemble on 128 English continuations from `google/gemma-4-12B-it` and 128
@@ -212,6 +223,9 @@ QoS, native instruction formatting with thinking disabled, and existing
 checkpointed generation/scoring. The earlier base-model preparation was removed
 at the user's request, freeing approximately 24 GB. The [transfer protocol](docs/experiments/generator_transfer.md)
 records the command, model revision, validation and pilot limitations.
+Job `120562` completed in 14m56s: at the unchanged ensemble threshold 0.5,
+all 128 Gemma outputs were detected and 3/128 human controls were falsely
+flagged (2.34%); ROC AUC was 1.0. This is a small news-domain transfer pilot.
 
 ## Code structure
 
@@ -298,17 +312,25 @@ hashed source snapshots. The [compute ledger](tex/provenance/compute_budget.json
 records the development experiments' 60 H100-hour budget and historical usage.
 
 Build the modular report with XeLaTeX and BibTeX.
+On the research cluster, first load `texlive/20240312`. The Gemma and translation
+tables regenerate from the checked-in portable metrics without GPU inference:
+
+```bash
+PYTHONPATH=. uv run --no-sync python tex/translation_summary.py
+```
 
 ```bash
 cd tex
 latexmk -xelatex report.tex
 ```
 
-The revised PDF has 45 pages, including figures, tables and 1 reference page.
-The text-only build has 27 pages excluding references, within the roughly
+The revised PDF has 48 pages, including figures, tables and 1 reference page.
+The text-only build has 29 pages excluding references, within the roughly
 40-page text limit. The [layout audit](tex/provenance/layout_audit.json) records
-the current PDF hash, page-count method and checks. The report revision passed
-27 focused CPU tests and the portable publication audit (171 files, 54 galleries).
+the current PDF hash, page-count method and checks. This translation/report
+revision passed 21 focused CPU tests and an independent cache audit across 22
+evaluation conditions. The earlier watermark publication audit remains recorded
+separately in the layout audit's historical validation.
 
 The report includes paired detector-evasion and watermark-removal examples,
 mathematical attack descriptions, and explicit target-access labels. The main

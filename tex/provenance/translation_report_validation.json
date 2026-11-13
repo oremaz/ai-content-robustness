@@ -1,0 +1,247 @@
+{
+  "conditions_checked": 22,
+  "complete_matrix": true,
+  "checks": [
+    "disjoint IDs and human references",
+    "ordered cohort alignment",
+    "translation source hashes",
+    "all seven frozen checkpoint identities",
+    "finite per-member score coverage",
+    "ensemble means and detection counts",
+    "human false positives",
+    "ROC AUC",
+    "valid-evasion denominator",
+    "unscorable coverage",
+    "watermark counts and conditional loss"
+  ],
+  "conditions": [
+    {
+      "group": "english-chinese-2k",
+      "condition": "base_en",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1996,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "base_zh-Hans_gemma",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1995,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "base_zh-Hans_index",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1995,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "latent_en",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1967,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "latent_zh-Hans_gemma",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1987,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "latent_zh-Hans_index",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1982,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "textseal2_en",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1999,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "textseal2_zh-Hans_gemma",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1995,
+      "human_false_positives": 10
+    },
+    {
+      "group": "english-chinese-2k",
+      "condition": "textseal2_zh-Hans_index",
+      "attempted": 2000,
+      "scorable": 2000,
+      "ai_detected": 1994,
+      "human_false_positives": 10
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "base_cy_gemma",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 194,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "base_cy_index",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 179,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "base_fr_gemma",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 200,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "base_fr_index",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 200,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "latent_cy_gemma",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 190,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "latent_cy_index",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 164,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "latent_fr_gemma",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 195,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "latent_fr_index",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 194,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "textseal2_cy_gemma",
+      "attempted": 200,
+      "scorable": 199,
+      "ai_detected": 196,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "textseal2_cy_index",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 181,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "textseal2_fr_gemma",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 197,
+      "human_false_positives": 3
+    },
+    {
+      "group": "french-welsh-200",
+      "condition": "textseal2_fr_index",
+      "attempted": 200,
+      "scorable": 200,
+      "ai_detected": 196,
+      "human_false_positives": 3
+    },
+    {
+      "group": "gemma4-12b-it-128-20261112T223454Z",
+      "condition": "base_en",
+      "attempted": 128,
+      "scorable": 128,
+      "ai_detected": 128,
+      "human_false_positives": 3
+    }
+  ],
+  "checked_at_utc": "2026-11-13T00:58:17.447630+00:00",
+  "portable_snapshot_sha256": "ba3433ba9b7e45005211219f3c405c92213bb40c15911cd8d5e341e4689e8452",
+  "jobs": {
+    "120562": {
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed": "00:14:56"
+    },
+    "122138": {
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed": "01:00:02"
+    }
+  },
+  "pdf": {
+    "pages": 48,
+    "reference_first_page": 48,
+    "reference_pages": 1,
+    "pdf_sha256": "0dddac6cb7b76062a8522744908aaa485c975483c612c0e20f0b219b524017be",
+    "overfull_hboxes": 0,
+    "overfull_vboxes": 0,
+    "missing_glyphs": 0,
+    "undefined_citations_or_references": 0,
+    "duplicate_labels": 0,
+    "translation_section_before_references": true,
+    "cached_conditions_verified": 22
+  },
+  "verified_checkpoint_file_hashes": {
+    "binoculars": {
+      "completed.pt": "955fd017fa3a4b48d329667f0869adba5c0f66f2a79eee50c7e54a5b621259d4"
+    },
+    "fast_detect_gpt": {
+      "completed.pt": "5be0ea8dfae42d5b1703872070d94b2cf2833a7339f85a6ccb17d11b2ffae130"
+    },
+    "diveye": {
+      "completed.pt": "aaa6e4164472cacb2c563af806dab6021915e4741e00e59efba8f9ce0a60002f",
+      "classifier.pkl": "581cf5fd52f475ad7e4733ec6fa013eb0a0694fbc6e8d0b302716fd0798e4d4b"
+    },
+    "roberta": {
+      "completed.pt": "8fc3dd4c31d327272858a97f42ae06b2a5ffd0f0001e84b7f799d8923d987200"
+    },
+    "tfidf": {
+      "completed.pt": "e328d9d17132600b0f115d78f7ec734bbd513ee993c2626e4606971ddc6b7a3d",
+      "classifier.pkl": "edecca10ac9e537692f1613aa547b6820ee690c5037581b1b60bf01fa74a9aca"
+    },
+    "modernbert_large": {
+      "completed.pt": "69d38e074acb6adfa229d618cdc0e7d85d4ba3ad8e4e4afaa2608f32da837a06"
+    },
+    "decoder_classifier": {
+      "completed.pt": "d7a1085e52a4a5dc507e4316fac753efdbae01df2e61ed1d1958068132cd659b"
+    }
+  }
+}
